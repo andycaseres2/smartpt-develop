@@ -11,7 +11,9 @@ const Planning = () => {
         date="4/12/2023 - 8/12/2023"
         userName="Kenet Sebastián Segura Murillo"
       />
-      {userRole === "admin" ? <AdminPlanning /> : <WorkerPlanning />}
+      <div className="w-full flex flex-col bg-primary-pink-50 p-[33px]">
+        {userRole === "admin" ? <AdminPlanning /> : <WorkerPlanning />}
+      </div>
     </div>
   );
 };
