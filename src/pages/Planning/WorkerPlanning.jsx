@@ -1,74 +1,282 @@
 import { useState } from "react";
 import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
 import Select from "../../components/Selects/Select";
+import Tabs from "../../components/Tabs/Tabs";
+import RowTable from "../../components/Tables/RowTable";
+import ColumnTable from "../../components/Tables/ColumnTable";
+import InputDate from "../../components/Inputs/InputDate";
 
 const WorkerPlanning = () => {
   const [activeTab, setActiveTab] = useState(1);
   const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
+  const [stateRow, setStateRow] = useState({});
+  console.log("stateRow", stateRow);
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
 
   const tabs = [
-    { id: 1, label: "Tab 1" },
-    { id: 2, label: "Tab 2" },
+    { id: 1, label: "Actividades" },
+    { id: 2, label: "Consolidado" },
   ];
 
-  const options = ["Opción 1", "Opción 2", "Opción 3"];
+  const options = [
+    { id: 1, value: "SmartPR" },
+    { id: 2, value: "MTC" },
+    { id: 3, value: "Ford" },
+    { id: 4, value: "Toyota" },
+  ];
+
+  const optionsActivity = [
+    { id: 1, value: "Actividad 1" },
+    { id: 2, value: "Actividad 2" },
+    { id: 3, value: "Actividad 3" },
+    { id: 4, value: "Actividad 4" },
+  ];
+
+  const optionsProcess = [
+    { id: 1, value: "Proceso 1" },
+    { id: 2, value: "Proceso 2" },
+    { id: 3, value: "Proceso 3" },
+    { id: 4, value: "Proceso 4" },
+  ];
 
   const handleSelect = (selectedOption) => {
     setInitialOptionSelect(selectedOption);
   };
 
+  const handleChange = (e) => {
+    setStateRow((prevState) => {
+      return {
+        ...prevState,
+        [e.target.name]: e.target.value,
+      };
+    });
+  };
+
+  const columnTitlesActivity = [
+    "Cliente",
+    "Tarea",
+    "Fecha inicio",
+    "Fecha estimada ",
+    "Estado",
+    "Comentarios",
+    "Proceso",
+    "Actividad",
+    "Hora estimada",
+    "Hora real",
+    "Documentos asociados",
+    "Fecha fin",
+    "",
+  ];
+
+  const columnWidths = [
+    "w-44", // Ancho para Columna 1
+    "w-[400px]", // Ancho para Columna 2
+    "w-32", // Ancho para Columna 3
+    "w-32", // Ancho para Columna 4
+    "w-52", // Ancho para Columna 5
+    "w-72", // Ancho para Columna 6
+    "w-64", // Ancho para Columna 7
+    "w-72", // Ancho para Columna 8
+    "w-32", // Ancho para Columna 9
+    "w-32", // Ancho para Columna 10
+    "w-64", // Ancho para Columna 11
+    "w-32", // Ancho para Columna 12
+    "w-44", // Ancho para Columna 13
+  ];
+
+  const listItems = [
+    {
+      data: "Ford",
+      editComponent: "select",
+      options: [
+        { id: 1, value: "SmartPR" },
+        { id: 2, value: "MTC" },
+        { id: 3, value: "Ford" },
+        { id: 4, value: "Toyota" },
+      ],
+      key_name: "cliente",
+    },
+    {
+      data: "Construcción del contenido del mes del cliente ",
+      editComponent: "input",
+      type: "text",
+      key_name: "tarea",
+    },
+    {
+      data: "2024-01-26",
+      editComponent: "input",
+      type: "date",
+      key_name: "fecha_inicio",
+    },
+    {
+      data: "2024-01-26",
+      editComponent: "input",
+      type: "date",
+      key_name: "fecha_estimada",
+    },
+    {
+      data: "En proceso",
+      editComponent: "status",
+      options: [
+        { id: 1, value: "Pendiente" },
+        { id: 2, value: "Finalizado" },
+        { id: 3, value: "En ejecucion" },
+        { id: 4, value: "En proceso" },
+      ],
+      key_name: "estado",
+    },
+    {
+      data: "Contenidos mensual para SmartPR ",
+      editComponent: "input",
+      type: "text",
+      key_name: "comentarios",
+    },
+    {
+      data: "Gestión_Clientes_Actuales",
+      editComponent: "input",
+      type: "text",
+      key_name: "proceso",
+    },
+    {
+      data: "Diseño Plan de Trabajo de  Cliente",
+      editComponent: "input",
+      type: "text",
+      key_name: "actividad",
+    },
+    {
+      data: "01:00",
+      editComponent: "input",
+      type: "time",
+      key_name: "hora_estimada",
+    },
+    {
+      data: "00:30",
+      editComponent: "input",
+      type: "time",
+      key_name: "hora_real",
+    },
+    {
+      data: "Contenido SmartPR.xlsx",
+      editComponent: "input",
+      type: "text",
+      key_name: "documentos_asociados",
+    },
+    {
+      data: "2024-01-26",
+      editComponent: "input",
+      type: "date",
+      key_name: "fecha_fin",
+    },
+  ];
+
   return (
     <div className="flex flex-col">
-      <div className="w-full flex justify-between">
+      <div className="w-full flex justify-between z-[2]">
         <div className="flex items-end tab">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={
-                activeTab === tab.id
-                  ? "w-[151px] h-[51px] text-black font-semibold bg-white rounded-t-lg"
-                  : "w-[151px] h-[40px] text-black bg-[#E4E4E4] rounded-t-lg border border-white"
-              }
-              onClick={() => handleTabClick(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-          <div className="flex gap-2 items-center ml-5 h-full ">
-            <p className="font-base font-semibold">Total horas programadas:</p>
-            <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500 ">
-              25 horas
-            </span>
+          <div className="flex items-end">
+            <Tabs
+              tabs={tabs}
+              activeTab={activeTab}
+              handleTabClick={handleTabClick}
+            />
           </div>
+          {activeTab === 1 && (
+            <div className="flex gap-2 items-center ml-5 h-full ">
+              <p className="font-base font-semibold">
+                Total horas programadas:
+              </p>
+              <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500 ">
+                25 horas
+              </span>
+            </div>
+          )}
         </div>
-        <div className="flex gap-3 items-center">
-          <Select
-            options={options}
-            onSelect={handleSelect}
-            initialOption={initialOptionSelect}
-          />
-          <ButtonWithIcon
-            buttonColor={"bg-primary-red-600"}
-            text={"Añadir actividad"}
-          />
-        </div>
-      </div>
-
-      <div className="bg-white rounded-bl-md rounded-r-md">
-        {activeTab === 1 && (
-          <div>
-            <h2>Contenido de la pestaña 1</h2>
-            {/* Contenido de la pestaña 1 */}
+        {activeTab === 1 ? (
+          <div className="flex gap-3 items-center mb-2">
+            <Select
+              options={options}
+              onSelect={handleSelect}
+              initialOption={initialOptionSelect}
+              modeEdit={true}
+            />
+            <ButtonWithIcon
+              buttonColor={"bg-primary-red-600"}
+              text={"Añadir actividad"}
+            />
+          </div>
+        ) : (
+          <div className="flex gap-3 items-center mb-2">
+            <Select
+              options={options}
+              onSelect={handleSelect}
+              initialOption={initialOptionSelect}
+              modeEdit={true}
+            />
+            <Select
+              options={optionsActivity}
+              onSelect={handleSelect}
+              initialOption={"Actividad"}
+              modeEdit={true}
+            />
+            <Select
+              options={optionsProcess}
+              onSelect={handleSelect}
+              initialOption={"Proceso"}
+              modeEdit={true}
+            />
+            <InputDate text={"Fecha inicio"} />
+            <InputDate text={"Fecha fin"} />
           </div>
         )}
+      </div>
+
+      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[680px]">
+        {activeTab === 1 && (
+          <div className="overflow-x-auto h-full">
+            <div className="min-w-max">
+              <table className="min-w-full">
+                <thead>
+                  <ColumnTable
+                    columnTitlesActivity={columnTitlesActivity}
+                    columnWidths={columnWidths}
+                  />
+                </thead>
+                <tbody className="border-b border-gray-300">
+                  <RowTable
+                    listItems={listItems}
+                    columnWidths={columnWidths}
+                    stateRow={stateRow}
+                    handleChange={handleChange}
+                  />
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {activeTab === 2 && (
-          <div>
-            <h2>Contenido de la pestaña 2</h2>
-            {/* Contenido de la pestaña 2 */}
+          <div className="overflow-x-auto h-full">
+            <div className="min-w-max">
+              <table className="min-w-full">
+                <thead>
+                  <ColumnTable
+                    columnTitlesActivity={columnTitlesActivity}
+                    columnWidths={columnWidths}
+                  />
+                </thead>
+                <tbody className="border-b border-gray-300">
+                  <RowTable
+                    listItems={listItems}
+                    columnWidths={columnWidths}
+                    stateRow={stateRow}
+                    handleChange={handleChange}
+                  />
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

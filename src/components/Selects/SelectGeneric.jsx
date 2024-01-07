@@ -1,16 +1,13 @@
 import { useEffect, useState } from "react";
 import ArrowDown from "../../assets/Icons/ArrowDown";
 
-const Select = ({
+const SelectGeneric = ({
   options,
   onSelect,
   initialOption,
-  colorArrow,
-  modeEdit,
   styleSelect,
-  handleChange,
   key_name,
-  zIndez,
+  handleChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -21,11 +18,11 @@ const Select = ({
       const foundOption = options.find(
         (option) => option.value === initialOption
       );
-      if (foundOption && modeEdit) {
+      if (foundOption) {
         handleChange({ target: { name: key_name, value: foundOption.id } });
       }
     }
-  }, [initialOption, key_name, modeEdit]);
+  }, [initialOption, key_name]);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -34,51 +31,28 @@ const Select = ({
   const handleOptionClick = (option, id) => {
     setSelectedOption(option);
     setIsOpen(false);
-    onSelect(option);
+    onSelect(option); // Llamar a la función onSelect cuando se selecciona una opción
     handleChange({ target: { name: key_name, value: id } });
   };
 
-  function selectColors(option) {
-    switch (option) {
-      case "Pendiente":
-        return "bg-red-500 text-white fill-white";
-      case "En proceso":
-        return "bg-yellow-500 text-white fill-white";
-      case "Finalizado":
-        return "bg-green-500 text-white fill-white";
-      case "En ejecucion":
-        return "bg-blue-500 text-white fill-white";
-      default:
-        return "bg-white";
-    }
-  }
-
   return (
     <div
-      className="relative inline-block z-0"
+      className="relative inline-block"
       onBlur={() => setIsOpen(false)}
       tabIndex={0}
     >
       <div
-        className={`${selectColors(selectedOption)} py-2 ${
+        className={`py-2 ${
           styleSelect || "px-4"
-        } rounded cursor-pointer font-semibold relative flex items-center justify-between gap-4 ${zIndez}`}
+        } rounded cursor-pointer font-semibold relative flex items-center justify-between gap-4 bg-gray-200 shadow-lg`}
         onClick={toggleDropdown}
       >
         {selectedOption}
 
-        {modeEdit && (
-          <>
-            {isOpen ? (
-              <ArrowDown fill={colorArrow} className="rotate-180" />
-            ) : (
-              <ArrowDown fill={colorArrow} />
-            )}
-          </>
-        )}
+        {isOpen ? <ArrowDown className="rotate-180" /> : <ArrowDown />}
       </div>
-      {isOpen && modeEdit && (
-        <div className="absolute top-[37px] left-0 w-full bg-white border border-gray-300 mt-1 rounded shadow-lg">
+      {isOpen && (
+        <div className="absolute top-[37px] left-0 w-full bg-gray-200 border border-gray-300 mt-1 rounded">
           {options.map((option) => (
             <div
               key={option.id}
@@ -94,4 +68,4 @@ const Select = ({
   );
 };
 
-export default Select;
+export default SelectGeneric;

@@ -5,7 +5,7 @@ export const userStore = create((set) => {
   const storedToken = localStorage.getItem("token");
 
   return {
-    user: storedUser ? JSON.parse(storedUser) : [],
+    user: storedUser ? JSON.parse(storedUser) : [1],
     setUser: (user) => {
       set({ user });
       localStorage.setItem("user", JSON.stringify(user));

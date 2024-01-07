@@ -3,11 +3,13 @@ import Router from "./router/Router";
 import { userStore } from "./store/userStore";
 
 function App() {
-  const { user } = userStore((state) => state);
+  const { user } = userStore();
   return (
-    <main className="min-h-screen flex w-full">
-      {user && <Sidebar />}
-      <Router />
+    <main className="min-h-screen flex">
+      {!!user.length && <Sidebar />}
+      <div className="flex-1 overflow-hidden">
+        <Router />
+      </div>
     </main>
   );
 }
