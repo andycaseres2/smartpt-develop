@@ -44,7 +44,7 @@ const SelectGeneric = ({
       <div
         className={`py-2 ${
           styleSelect || "px-4"
-        } rounded cursor-pointer font-semibold relative flex items-center justify-between gap-4 bg-gray-200 shadow-lg`}
+        } rounded cursor-pointer font-semibold relative flex items-center justify-between gap-4 bg-gray-100 shadow-lg`}
         onClick={toggleDropdown}
       >
         {selectedOption}
@@ -52,11 +52,11 @@ const SelectGeneric = ({
         {isOpen ? <ArrowDown className="rotate-180" /> : <ArrowDown />}
       </div>
       {isOpen && (
-        <div className="absolute top-[37px] left-0 w-full bg-gray-200 border border-gray-300 mt-1 rounded">
+        <div className="absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded">
           {options.map((option) => (
             <div
               key={option.id}
-              className="p-2 cursor-pointer hover:bg-gray-100"
+              className="p-2 cursor-pointer hover:bg-gray-200"
               onClick={() => handleOptionClick(option.value, option.id)}
             >
               {option.value}

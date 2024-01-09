@@ -5,11 +5,14 @@ import Tabs from "../../components/Tabs/Tabs";
 import RowTable from "../../components/Tables/RowTable";
 import ColumnTable from "../../components/Tables/ColumnTable";
 import InputDate from "../../components/Inputs/InputDate";
+import { stateStore } from "../../store/stateStore";
+import Pagination from "../../components/Paginations/Pagination";
 
 const WorkerPlanning = () => {
   const [activeTab, setActiveTab] = useState(1);
   const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
   const [stateRow, setStateRow] = useState({});
+  const { setOpenNotifications } = stateStore();
   console.log("stateRow", stateRow);
 
   const handleTabClick = (tab) => {
@@ -173,7 +176,7 @@ const WorkerPlanning = () => {
   ];
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
       <div className="w-full flex justify-between z-[2]">
         <div className="flex items-end tab">
           <div className="flex items-end">
@@ -233,7 +236,7 @@ const WorkerPlanning = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[680px]">
+      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[630px]">
         {activeTab === 1 && (
           <div className="overflow-x-auto h-full">
             <div className="min-w-max">
@@ -279,6 +282,9 @@ const WorkerPlanning = () => {
             </div>
           </div>
         )}
+      </div>
+      <div className="flex justify-end">
+        <Pagination />
       </div>
     </div>
   );

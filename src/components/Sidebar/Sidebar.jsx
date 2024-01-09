@@ -6,8 +6,10 @@ import DataIcon from "../../assets/Icons/DataIcon";
 import BudgetIcon from "../../assets/Icons/BudgetIcon";
 import DashboardIcon from "../../assets/Icons/DashboardIcon";
 import { useLocation } from "react-router-dom";
+import { stateStore } from "../../store/stateStore";
 
 const Sidebar = () => {
+  const { setOpenNotifications } = stateStore();
   const icons = [
     { icon: <CalendarIcon width={40} height={40} />, href: "/planeacion" },
     { icon: <SolicitudIcon width={40} height={40} />, href: "/solicitudes" },
@@ -23,6 +25,7 @@ const Sidebar = () => {
   return (
     <div
       className={`w-[100px] flex justify-between flex-col items-center py-9 border-r-2 border-[#D9D9D9]`}
+      onClick={() => setOpenNotifications(false)}
     >
       <LogoIcon redirect="/planeacion" />
       <div className="flex flex-col justify-center items-center gap-12">

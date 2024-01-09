@@ -22,7 +22,9 @@ const Select = ({
         (option) => option.value === initialOption
       );
       if (foundOption && modeEdit) {
-        handleChange({ target: { name: key_name, value: foundOption.id } });
+        if (handleChange) {
+          handleChange({ target: { name: key_name, value: foundOption.id } });
+        }
       }
     }
   }, [initialOption, key_name, modeEdit]);
@@ -35,7 +37,9 @@ const Select = ({
     setSelectedOption(option);
     setIsOpen(false);
     onSelect(option);
-    handleChange({ target: { name: key_name, value: id } });
+    if (handleChange) {
+      handleChange({ target: { name: key_name, value: id } });
+    }
   };
 
   function selectColors(option) {

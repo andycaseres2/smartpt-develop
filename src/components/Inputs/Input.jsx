@@ -40,7 +40,7 @@ const Input = ({ type, value, key_name, handleChange, initialValue }) => {
 
   return (
     <input
-      className="w-full border-none p-2 bg-primary-gray-50 rounded-md bg-transparent focus:outline-none"
+      className="w-full border-none p-2 bg-gray-100 rounded-md  focus:outline-none"
       type={type === "date" ? "date" : type}
       name={key_name}
       value={type === "date" ? formatDateForInput(inputValue) : inputValue}

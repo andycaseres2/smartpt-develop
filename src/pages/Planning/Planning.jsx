@@ -3,7 +3,7 @@ import AdminPlanning from "./AdminPlanning";
 import WorkerPlanning from "./WorkerPlanning";
 
 const Planning = () => {
-  const userRole = "";
+  const userRole = "admin";
   return (
     <div className="flex flex-col w-full h-screen">
       <Header

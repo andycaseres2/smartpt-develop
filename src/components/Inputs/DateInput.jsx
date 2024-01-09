@@ -22,7 +22,7 @@ const DateInput = ({ defaultValue, handleChange, key_name }) => {
 
   return (
     <input
-      className="w-full border-none p-2 bg-primary-gray-50 rounded-md bg-transparent"
+      className="w-full border-none p-2 bg-gray-100 rounded-md focus:outline-none"
       type="date"
       value={selectedDate}
       onChange={handleDateChange}

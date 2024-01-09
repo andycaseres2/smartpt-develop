@@ -25,7 +25,7 @@ const TimeInput = ({ defaultValue, handleChange, key_name, type }) => {
 
   return (
     <input
-      className="w-full border-none p-2 bg-primary-gray-50 rounded-md bg-transparent"
+      className="w-full border-none p-2 bg-gray-100 rounded-md  focus:outline-none"
       type={type}
       value={inputValue}
       onChange={handleInputChange}
