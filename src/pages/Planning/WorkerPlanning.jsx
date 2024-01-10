@@ -77,8 +77,8 @@ const WorkerPlanning = () => {
   const columnWidths = [
     "w-44", // Ancho para Columna 1
     "w-[400px]", // Ancho para Columna 2
-    "w-32", // Ancho para Columna 3
-    "w-32", // Ancho para Columna 4
+    "w-44", // Ancho para Columna 3
+    "w-44", // Ancho para Columna 4
     "w-52", // Ancho para Columna 5
     "w-72", // Ancho para Columna 6
     "w-64", // Ancho para Columna 7
@@ -86,11 +86,11 @@ const WorkerPlanning = () => {
     "w-32", // Ancho para Columna 9
     "w-32", // Ancho para Columna 10
     "w-64", // Ancho para Columna 11
-    "w-32", // Ancho para Columna 12
+    "w-44", // Ancho para Columna 12
     "w-44", // Ancho para Columna 13
   ];
 
-  const listItems = [
+  const [listItems, setListItems] = useState([
     {
       data: "Ford",
       editComponent: "select",
@@ -173,7 +173,7 @@ const WorkerPlanning = () => {
       type: "date",
       key_name: "fecha_fin",
     },
-  ];
+  ]);
 
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
@@ -203,7 +203,8 @@ const WorkerPlanning = () => {
               options={options}
               onSelect={handleSelect}
               initialOption={initialOptionSelect}
-              modeEdit={true}
+              readOnly={false}
+              editStatus={true}
             />
             <ButtonWithIcon
               buttonColor={"bg-primary-red-600"}
@@ -216,19 +217,22 @@ const WorkerPlanning = () => {
               options={options}
               onSelect={handleSelect}
               initialOption={initialOptionSelect}
-              modeEdit={true}
+              readOnly={false}
+              editStatus={true}
             />
             <Select
               options={optionsActivity}
               onSelect={handleSelect}
               initialOption={"Actividad"}
-              modeEdit={true}
+              readOnly={false}
+              editStatus={true}
             />
             <Select
               options={optionsProcess}
               onSelect={handleSelect}
               initialOption={"Proceso"}
-              modeEdit={true}
+              readOnly={false}
+              editStatus={true}
             />
             <InputDate text={"Fecha inicio"} />
             <InputDate text={"Fecha fin"} />
@@ -236,7 +240,7 @@ const WorkerPlanning = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[630px]">
+      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[645px]">
         {activeTab === 1 && (
           <div className="overflow-x-auto h-full">
             <div className="min-w-max">
@@ -245,6 +249,7 @@ const WorkerPlanning = () => {
                   <ColumnTable
                     columnTitlesActivity={columnTitlesActivity}
                     columnWidths={columnWidths}
+                    readOnly={false}
                   />
                 </thead>
                 <tbody className="border-b border-gray-300">
@@ -253,6 +258,16 @@ const WorkerPlanning = () => {
                     columnWidths={columnWidths}
                     stateRow={stateRow}
                     handleChange={handleChange}
+                    editStatus={true}
+                  />
+                </tbody>
+                <tbody className="border-b border-gray-300">
+                  <RowTable
+                    listItems={listItems}
+                    columnWidths={columnWidths}
+                    stateRow={stateRow}
+                    handleChange={handleChange}
+                    editStatus={true}
                   />
                 </tbody>
               </table>
@@ -268,6 +283,7 @@ const WorkerPlanning = () => {
                   <ColumnTable
                     columnTitlesActivity={columnTitlesActivity}
                     columnWidths={columnWidths}
+                    readOnly={true}
                   />
                 </thead>
                 <tbody className="border-b border-gray-300">
@@ -276,6 +292,7 @@ const WorkerPlanning = () => {
                     columnWidths={columnWidths}
                     stateRow={stateRow}
                     handleChange={handleChange}
+                    readOnly={true}
                   />
                 </tbody>
               </table>
@@ -283,9 +300,11 @@ const WorkerPlanning = () => {
           </div>
         )}
       </div>
-      <div className="flex justify-end">
-        <Pagination />
-      </div>
+      {activeTab === 2 && (
+        <div className="flex justify-end">
+          <Pagination />
+        </div>
+      )}
     </div>
   );
 };

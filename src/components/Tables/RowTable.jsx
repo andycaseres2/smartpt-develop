@@ -10,7 +10,14 @@ import TimeInput from "../Inputs/TimeInput";
 import Select from "../Selects/Select";
 import SelectGeneric from "../Selects/SelectGeneric";
 
-const RowTable = ({ listItems, columnWidths, stateRow, handleChange }) => {
+const RowTable = ({
+  listItems,
+  columnWidths,
+  stateRow,
+  handleChange,
+  readOnly,
+  editStatus,
+}) => {
   const [modeEdit, setModeEdit] = useState(false);
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
     useState("");
@@ -29,7 +36,7 @@ const RowTable = ({ listItems, columnWidths, stateRow, handleChange }) => {
     setInitialOptionSelectOption(newOptions);
   };
   return (
-    <tr className="justify-start flex w-full gap-8 py-3 px-4">
+    <tr className="justify-start flex w-full gap-8 py-1 px-4">
       {listItems.map((item, index) => (
         <td
           key={index}
@@ -43,7 +50,7 @@ const RowTable = ({ listItems, columnWidths, stateRow, handleChange }) => {
               }
               initialOption={item.data}
               colorArrow={"white"}
-              modeEdit={modeEdit}
+              readOnly={readOnly}
               key_name={item.key_name}
               handleChange={handleChange}
             />
@@ -55,9 +62,10 @@ const RowTable = ({ listItems, columnWidths, stateRow, handleChange }) => {
               }
               initialOption={item.data}
               colorArrow={"white"}
-              modeEdit={modeEdit}
+              readOnly={readOnly}
               key_name={item.key_name}
               handleChange={handleChange}
+              editStatus={editStatus}
             />
           ) : item.editComponent === "input" &&
             item.type === "text" &&
@@ -80,7 +88,6 @@ const RowTable = ({ listItems, columnWidths, stateRow, handleChange }) => {
                 handleSelectOption(selectedOption, index)
               }
               initialOption={item.data}
-              modeEdit={modeEdit}
               key_name={item.key_name}
               handleChange={handleChange}
             />
@@ -117,23 +124,24 @@ const RowTable = ({ listItems, columnWidths, stateRow, handleChange }) => {
         </td>
       ))}
 
-      {!modeEdit ? (
-        <td className="flex w-44 items-center gap-4 justify-center">
-          <PencilIcon
-            action={() => setModeEdit(true)}
-            className={"cursor-pointer hover:scale-105"}
-          />
-          <ProfilePicture className={"cursor-pointer hover:scale-105"} />
-        </td>
-      ) : (
-        <td className="flex w-44 items-center gap-4 justify-center">
-          <CheckIcon className={"cursor-pointer hover:scale-105"} />
-          <CloseIcon
-            action={() => setModeEdit(false)}
-            className={"cursor-pointer hover:scale-105"}
-          />
-        </td>
-      )}
+      {!readOnly &&
+        (!modeEdit ? (
+          <td className="flex w-44 items-center gap-4 justify-center">
+            <PencilIcon
+              action={() => setModeEdit(true)}
+              className={"cursor-pointer hover:scale-105"}
+            />
+            <ProfilePicture className={"cursor-pointer hover:scale-105"} />
+          </td>
+        ) : (
+          <td className="flex w-44 items-center gap-4 justify-center">
+            <CheckIcon className={"cursor-pointer hover:scale-105"} />
+            <CloseIcon
+              action={() => setModeEdit(false)}
+              className={"cursor-pointer hover:scale-105"}
+            />
+          </td>
+        ))}
     </tr>
   );
 };

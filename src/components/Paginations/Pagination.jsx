@@ -53,7 +53,7 @@ const Pagination = () => {
       pageNumbers.push(
         <span
           key={i}
-          className={`cursor-pointer h-8 w-8 flex justify-center items-center mr-2 rounded ${isActive}`}
+          className={`cursor-pointer h-7 w-7 flex justify-center items-center mr-2 rounded ${isActive}`}
           onClick={() => handleClick(i)}
         >
           {i}
@@ -65,7 +65,7 @@ const Pagination = () => {
   };
 
   return (
-    <div className="flex items-center justify-center mt-3">
+    <div className="flex items-center justify-center mt-2">
       <ButtonWithChildren action={() => jumpToPage(-5)}>
         <ArrowFromPrev />
       </ButtonWithChildren>

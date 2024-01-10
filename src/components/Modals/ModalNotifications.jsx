@@ -81,20 +81,12 @@ const ModalNotifications = ({ styleContainer }) => {
         <div className="flex flex-col mt-1 p-3 w-full overflow-y-auto overflow-hidden h-[290px]">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="w-7 h-7 accent-primary-red-600"
-              />
               <p className="text-black">
                 <strong>Juan Camilo Motta Ospina </strong>
                 te ha asignado una tarea. (4/12/2023 - 4:25pm)
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="w-7 h-7 accent-primary-red-600"
-              />
               <p className="text-black">
                 <strong>Juan Camilo Motta Ospina </strong>
                 te ha asignado una tarea. (4/12/2023 - 4:25pm)

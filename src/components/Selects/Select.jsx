@@ -6,7 +6,8 @@ const Select = ({
   onSelect,
   initialOption,
   colorArrow,
-  modeEdit,
+  readOnly,
+  editStatus,
   styleSelect,
   handleChange,
   key_name,
@@ -21,15 +22,18 @@ const Select = ({
       const foundOption = options.find(
         (option) => option.value === initialOption
       );
-      if (foundOption && modeEdit) {
+      if (foundOption) {
         if (handleChange) {
           handleChange({ target: { name: key_name, value: foundOption.id } });
         }
       }
     }
-  }, [initialOption, key_name, modeEdit]);
+  }, [initialOption, key_name]);
 
   const toggleDropdown = () => {
+    if (readOnly) {
+      return;
+    }
     setIsOpen(!isOpen);
   };
 
@@ -59,30 +63,34 @@ const Select = ({
 
   return (
     <div
-      className="relative inline-block z-0"
+      className="relative inline-block"
       onBlur={() => setIsOpen(false)}
       tabIndex={0}
     >
       <div
         className={`${selectColors(selectedOption)} py-2 ${
-          styleSelect || "px-4"
-        } rounded cursor-pointer font-semibold relative flex items-center justify-between gap-4 ${zIndez}`}
+          styleSelect || "px-5"
+        } rounded cursor-pointer font-semibold relative flex items-center ${
+          readOnly ? "justify-between" : " justify-center"
+        }  gap-4  ${zIndez}`}
         onClick={toggleDropdown}
       >
         {selectedOption}
 
-        {modeEdit && (
+        {(!readOnly || (editStatus !== undefined && editStatus)) && (
           <>
-            {isOpen ? (
-              <ArrowDown fill={colorArrow} className="rotate-180" />
-            ) : (
-              <ArrowDown fill={colorArrow} />
-            )}
+            {editStatus ? (
+              isOpen ? (
+                <ArrowDown fill={colorArrow} className="rotate-180" />
+              ) : (
+                <ArrowDown fill={colorArrow} />
+              )
+            ) : null}
           </>
         )}
       </div>
-      {isOpen && modeEdit && (
-        <div className="absolute top-[37px] left-0 w-full bg-white border border-gray-300 mt-1 rounded shadow-lg">
+      {isOpen && (
+        <div className="absolute top-[37px] left-0 w-full bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-full">
           {options.map((option) => (
             <div
               key={option.id}
