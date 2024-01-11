@@ -68,8 +68,8 @@ const Select = ({
       tabIndex={0}
     >
       <div
-        className={`${selectColors(selectedOption)} py-2 ${
-          styleSelect || "px-5"
+        className={`${selectColors(selectedOption)} py-2 text-[15px] ${
+          styleSelect || "px-4"
         } rounded cursor-pointer font-semibold relative flex items-center ${
           readOnly ? "justify-between" : " justify-center"
         }  gap-4  ${zIndez}`}
@@ -90,7 +90,7 @@ const Select = ({
         )}
       </div>
       {isOpen && (
-        <div className="absolute top-[37px] left-0 w-full bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-full">
+        <div className="absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-full">
           {options.map((option) => (
             <div
               key={option.id}

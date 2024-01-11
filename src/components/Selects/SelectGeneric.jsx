@@ -37,7 +37,7 @@ const SelectGeneric = ({
 
   return (
     <div
-      className="relative inline-block"
+      className="relative inline-block w-full"
       onBlur={() => setIsOpen(false)}
       tabIndex={0}
     >

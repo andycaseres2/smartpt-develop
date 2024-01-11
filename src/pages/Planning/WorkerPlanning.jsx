@@ -11,9 +11,12 @@ import Pagination from "../../components/Paginations/Pagination";
 const WorkerPlanning = () => {
   const [activeTab, setActiveTab] = useState(1);
   const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
+  const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
+    useState("Actividad");
+  const [initialOptionSelectProcess, setInitialOptionSelectProcess] =
+    useState("Proceso");
   const [stateRow, setStateRow] = useState({});
   const { setOpenNotifications } = stateStore();
-  console.log("stateRow", stateRow);
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
@@ -47,6 +50,14 @@ const WorkerPlanning = () => {
 
   const handleSelect = (selectedOption) => {
     setInitialOptionSelect(selectedOption);
+  };
+
+  const handleSelectProcess = (selectedOption) => {
+    setInitialOptionSelectProcess(selectedOption);
+  };
+
+  const handleSelectActivity = (selectedOption) => {
+    setInitialOptionSelectActivity(selectedOption);
   };
 
   const handleChange = (e) => {
@@ -90,7 +101,7 @@ const WorkerPlanning = () => {
     "w-44", // Ancho para Columna 13
   ];
 
-  const [listItems, setListItems] = useState([
+  const listItems = [
     {
       data: "Ford",
       editComponent: "select",
@@ -173,7 +184,7 @@ const WorkerPlanning = () => {
       type: "date",
       key_name: "fecha_fin",
     },
-  ]);
+  ];
 
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
@@ -222,15 +233,15 @@ const WorkerPlanning = () => {
             />
             <Select
               options={optionsActivity}
-              onSelect={handleSelect}
-              initialOption={"Actividad"}
+              onSelect={handleSelectActivity}
+              initialOption={initialOptionSelectActivity}
               readOnly={false}
               editStatus={true}
             />
             <Select
               options={optionsProcess}
-              onSelect={handleSelect}
-              initialOption={"Proceso"}
+              onSelect={handleSelectProcess}
+              initialOption={initialOptionSelectProcess}
               readOnly={false}
               editStatus={true}
             />

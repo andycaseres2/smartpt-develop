@@ -28,7 +28,6 @@ const InputDate = ({ text }) => {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
-  console.log(selectedDate);
 
   return (
     <div

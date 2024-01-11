@@ -17,8 +17,9 @@ const RowTable = ({
   handleChange,
   readOnly,
   editStatus,
+  editMode,
 }) => {
-  const [modeEdit, setModeEdit] = useState(false);
+  const [modeEdit, setModeEdit] = useState(editMode ?? false);
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
     useState("");
   const [initialOptionSelectOption, setInitialOptionSelectOption] =
@@ -36,8 +37,8 @@ const RowTable = ({
     setInitialOptionSelectOption(newOptions);
   };
   return (
-    <tr className="justify-start flex w-full gap-8 py-1 px-4">
-      {listItems.map((item, index) => (
+    <tr className="justify-start flex w-full gap-6 py-1 px-4">
+      {listItems?.map((item, index) => (
         <td
           key={index}
           className={`${columnWidths[index]} flex items-center justify-start`}

@@ -12,7 +12,7 @@ const Header = ({ title, date, userName }) => {
   };
   return (
     <div
-      className="flex justify-between items-center bg-primary-red-600 px-8 py-4 text-white relative z-10"
+      className="header flex justify-between items-center bg-primary-red-600 px-8 py-4 text-white relative z-10"
       onClick={() => setOpenNotifications(false)}
     >
       <div className="flex flex-col z-30">
