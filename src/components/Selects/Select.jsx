@@ -70,8 +70,7 @@ const Select = ({
       <div
         className={`${selectColors(selectedOption)} py-2 text-[15px] ${
           styleSelect || "px-4"
-        } rounded cursor-pointer font-semibold relative flex items-center ${
-          readOnly ? "justify-between" : "justify-center"
+        } rounded cursor-pointer font-semibold relative flex items-center justify-between
         }  gap-4  ${zIndez} ${!initialOption ? "w-[157px] !justify-end" : ""}`}
         onClick={toggleDropdown}
       >
@@ -94,7 +93,7 @@ const Select = ({
           {options.map((option) => (
             <div
               key={option.id}
-              className="p-2 cursor-pointer hover:bg-gray-100"
+              className="p-2 cursor-pointer hover:bg-gray-100 w-full"
               onClick={() => handleOptionClick(option.value, option.id)}
             >
               {option.value}

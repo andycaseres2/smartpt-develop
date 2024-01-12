@@ -1,4 +1,4 @@
-const ArrowFromPrev = () => {
+const ArrowFromPrev = ({ color }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -9,9 +9,13 @@ const ArrowFromPrev = () => {
     >
       <path
         d="M0.45 5.25981C0.25 5.14434 0.249999 4.85566 0.449999 4.74019L7.05 0.929679C7.25 0.814209 7.5 0.958547 7.5 1.18949L7.5 8.81051C7.5 9.04145 7.25 9.18579 7.05 9.07032L0.45 5.25981Z"
-        fill="#ED0200"
+        fill={color || "#ED0200"}
       />
-      <path d="M0.5 9L0.5 1" stroke="#ED0200" strokeLinecap="round" />
+      <path
+        d="M0.5 9L0.5 1"
+        stroke={color || "#ED0200"}
+        strokeLinecap="round"
+      />
     </svg>
   );
 };

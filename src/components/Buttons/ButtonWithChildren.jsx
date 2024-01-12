@@ -1,8 +1,8 @@
-const ButtonWithChildren = ({ action, children }) => {
+const ButtonWithChildren = ({ action, children, borderColor }) => {
   return (
     <button
       onClick={action}
-      className="h-7 w-7 rounded flex justify-center items-center border border-red-500 bg-transparent mr-2"
+      className={`h-7 w-7 rounded flex justify-center items-center border ${borderColor} bg-transparent mr-2`}
     >
       {children}
     </button>

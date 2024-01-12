@@ -39,7 +39,7 @@ const RowTableNewActivity = ({
   };
   return (
     <div className="flex justify-between w-full">
-      <tr className="justify-start flex gap-5 py-1 px-4 w-max">
+      <tr className="justify-start flex gap-5 py-1 px-2 w-max">
         {listItems?.map((item, index) => (
           <td
             key={index}

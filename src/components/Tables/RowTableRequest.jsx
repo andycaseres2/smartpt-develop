@@ -1,8 +1,6 @@
 import { useState } from "react";
-import CheckIcon from "../../assets/Icons/CheckIcon";
 import CloseIcon from "../../assets/Icons/CloseIcon";
 import PencilIcon from "../../assets/Icons/PencilIcon";
-import ProfilePicture from "../../assets/Icons/ProfilePicture";
 import { formatTime } from "../../utils/formatTime";
 import DateInput from "../Inputs/DateInput";
 import Input from "../Inputs/Input";
@@ -10,7 +8,7 @@ import TimeInput from "../Inputs/TimeInput";
 import Select from "../Selects/Select";
 import SelectGeneric from "../Selects/SelectGeneric";
 
-const RowTable = ({
+const RowTableRequest = ({
   listItems,
   columnWidths,
   stateRow,
@@ -37,7 +35,7 @@ const RowTable = ({
     setInitialOptionSelectOption(newOptions);
   };
   return (
-    <tr className="justify-start flex w-full gap-6 py-1 px-2">
+    <tr className="justify-start flex w-full gap-8 py-1 px-2">
       {listItems?.map((item, index) => (
         <td
           key={index}
@@ -54,6 +52,7 @@ const RowTable = ({
               readOnly={readOnly}
               key_name={item.key_name}
               handleChange={handleChange}
+              editStatus={modeEdit || editStatus}
             />
           ) : item.editComponent === "status" && !modeEdit ? (
             <Select
@@ -66,7 +65,7 @@ const RowTable = ({
               readOnly={readOnly}
               key_name={item.key_name}
               handleChange={handleChange}
-              editStatus={editStatus}
+              editStatus={modeEdit || editStatus}
             />
           ) : item.editComponent === "input" &&
             item.type === "text" &&
@@ -127,16 +126,14 @@ const RowTable = ({
 
       {!readOnly &&
         (!modeEdit ? (
-          <td className="flex w-44 items-center gap-4 justify-center">
+          <td className="flex w-10 items-center gap-4 justify-center">
             <PencilIcon
               action={() => setModeEdit(true)}
               className={"cursor-pointer hover:scale-105"}
             />
-            <ProfilePicture className={"cursor-pointer hover:scale-105"} />
           </td>
         ) : (
-          <td className="flex w-44 items-center gap-4 justify-center">
-            <CheckIcon className={"cursor-pointer hover:scale-105"} />
+          <td className="flex w-10 items-center gap-4 justify-center">
             <CloseIcon
               action={() => setModeEdit(false)}
               className={"cursor-pointer hover:scale-105"}
@@ -147,4 +144,4 @@ const RowTable = ({
   );
 };
 
-export default RowTable;
+export default RowTableRequest;

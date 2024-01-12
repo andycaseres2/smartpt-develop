@@ -4,9 +4,13 @@ import ArrowDropPrev from "../../assets/Icons/ArrowDropPrev";
 import ArrowDropNext from "../../assets/Icons/ArrowDropNext";
 import ArrowFromNext from "../../assets/Icons/ArrowFromNext";
 import ArrowFromPrev from "../../assets/Icons/ArrowFromPrev";
+import { useLocation } from "react-router-dom";
+import { getColor } from "../../utils/getColor";
 
 const Pagination = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   const totalPages = 20; // Total de páginas
   const pagesToShow = 5; // Número de páginas a mostrar
@@ -48,8 +52,8 @@ const Pagination = () => {
     for (let i = startPage; i <= endPage; i++) {
       const isActive =
         currentPage === i
-          ? "bg-primary-red-600"
-          : "border border-primary-red-600 bg-transparent";
+          ? getColor(currentPath).bg
+          : `border ${getColor(currentPath).border} bg-transparent`;
       pageNumbers.push(
         <span
           key={i}
@@ -66,18 +70,30 @@ const Pagination = () => {
 
   return (
     <div className="flex items-center justify-center mt-2">
-      <ButtonWithChildren action={() => jumpToPage(-5)}>
-        <ArrowFromPrev />
+      <ButtonWithChildren
+        borderColor={getColor(currentPath).border}
+        action={() => jumpToPage(-5)}
+      >
+        <ArrowFromPrev color={getColor(currentPath).hex} />
       </ButtonWithChildren>
-      <ButtonWithChildren action={goToPrev}>
-        <ArrowDropPrev />
+      <ButtonWithChildren
+        borderColor={getColor(currentPath).border}
+        action={goToPrev}
+      >
+        <ArrowDropPrev color={getColor(currentPath).hex} />
       </ButtonWithChildren>
       {renderPageNumbers()}
-      <ButtonWithChildren action={goToNext}>
-        <ArrowDropNext />
+      <ButtonWithChildren
+        borderColor={getColor(currentPath).border}
+        action={goToNext}
+      >
+        <ArrowDropNext color={getColor(currentPath).hex} />
       </ButtonWithChildren>
-      <ButtonWithChildren action={() => jumpToPage(5)}>
-        <ArrowFromNext />
+      <ButtonWithChildren
+        borderColor={getColor(currentPath).border}
+        action={() => jumpToPage(5)}
+      >
+        <ArrowFromNext color={getColor(currentPath).hex} />
       </ButtonWithChildren>
     </div>
   );
