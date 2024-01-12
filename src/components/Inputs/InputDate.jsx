@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Calendar from "../../assets/Icons/Calendar";
 
-const InputDate = ({ text }) => {
+const InputDate = ({ text, position }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef(null);
@@ -31,7 +31,9 @@ const InputDate = ({ text }) => {
 
   return (
     <div
-      className="bg-white shadow-lg rounded-lg px-4 py-2 flex justify-between items-center gap-2 relative cursor-pointer"
+      className={`bg-white h-[40px] shadow-3xl rounded-lg px-4 py-2 flex justify-between items-center gap-2 relative cursor-pointer ${
+        !text ? "w-[157px]" : ""
+      }`}
       onClick={() => setCalendarOpen(!calendarOpen)}
       ref={calendarRef}
     >
@@ -45,7 +47,7 @@ const InputDate = ({ text }) => {
         <Calendar />
       </div>
       {calendarOpen && (
-        <div className="absolute top-11 right-0">
+        <div className={`${position ?? "absolute top-11 right-0"}`}>
           <DatePicker
             selected={selectedDate}
             onChange={handleDateChange}

@@ -10,15 +10,32 @@ import { stateStore } from "../../store/stateStore";
 
 const Sidebar = () => {
   const { setOpenNotifications } = stateStore();
-  const icons = [
-    { icon: <CalendarIcon width={40} height={40} />, href: "/planeacion" },
-    { icon: <SolicitudIcon width={40} height={40} />, href: "/solicitudes" },
+  const links = [
+    {
+      icon: <CalendarIcon width={40} height={40} />,
+      href: "/planeacion",
+      color: "bg-primary-red-600",
+    },
+    {
+      icon: <SolicitudIcon width={40} height={40} />,
+      href: "/solicitudes",
+      color: "bg-primary-yellow-600",
+    },
     {
       icon: <DataIcon width={40} height={40} />,
       href: "/solicitudes/informacion",
+      color: "bg-primary-green-600",
     },
-    { icon: <BudgetIcon width={40} height={40} />, href: "/presupuesto" },
-    { icon: <DashboardIcon width={40} height={40} />, href: "/dashboard" },
+    {
+      icon: <BudgetIcon width={40} height={40} />,
+      href: "/presupuesto",
+      color: "bg-primary-red-600",
+    },
+    {
+      icon: <DashboardIcon width={40} height={40} />,
+      href: "/dashboard",
+      color: "bg-primary-purple-600",
+    },
   ];
   const location = useLocation();
   const currentPath = location.pathname;
@@ -29,12 +46,12 @@ const Sidebar = () => {
     >
       <LogoIcon redirect="/planeacion" />
       <div className="flex flex-col justify-center items-center gap-12">
-        {icons.map((item, index) => (
+        {links.map((item, index) => (
           <a
             key={index}
             href={item.href}
             className={`p-3 flex justify-center items-center rounded-2xl transition-all ${
-              currentPath === item.href ? "bg-primary-red-600" : ""
+              currentPath === item.href ? item.color : ""
             }`}
           >
             {item.icon}

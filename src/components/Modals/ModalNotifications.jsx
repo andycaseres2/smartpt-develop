@@ -14,12 +14,13 @@ const ModalNotifications = ({ styleContainer }) => {
   };
 
   const handleClickInsideModal = (e) => {
-    e.stopPropagation(); // Evita que el evento se propague
+    e.stopPropagation();
   };
 
   return (
     <div
-      className={`${styleContainer} w-[370px] h-[450px] bg-white rounded-lg shadow-lg z-[9999] overflow-hidden`}
+      className={`${styleContainer} w-[370px] h-[450px] bg-white rounded-lg shadow-lg z-[50] overflow-hidden`}
+      onClick={(e) => e.stopPropagation()}
     >
       <div className="flex justify-start p-3 border-b border-gray-300">
         <h1 className="text-2xl font-semibold text-black">Actividades</h1>
@@ -31,7 +32,7 @@ const ModalNotifications = ({ styleContainer }) => {
         {tabs.map((tab) => (
           <div
             className={`text-black cursor-pointer text-base flex justify-between w-full items-center text-center mt-2 ${
-              activeTab === tab.id && "border-b border-primary-red-600"
+              activeTab === tab.id && "border-b-4 border-primary-red-600"
             }`}
             key={tab.id}
             onClick={() => handleTabClick(tab.id)}
@@ -47,7 +48,7 @@ const ModalNotifications = ({ styleContainer }) => {
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
-                className="w-7 h-7 accent-primary-red-600"
+                className="w-7 h-7 accent-primary-red-600 cursor-pointer"
               />
               <p className="text-black">
                 <strong>Juan Camilo Motta Ospina </strong>
@@ -57,7 +58,7 @@ const ModalNotifications = ({ styleContainer }) => {
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
-                className="w-7 h-7 accent-primary-red-600"
+                className="w-7 h-7 accent-primary-red-600 cursor-pointer"
               />
               <p className="text-black">
                 <strong>Juan Camilo Motta Ospina </strong>
@@ -67,7 +68,7 @@ const ModalNotifications = ({ styleContainer }) => {
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
-                className="w-7 h-7 accent-primary-red-600"
+                className="w-7 h-7 accent-primary-red-600 cursor-pointer"
               />
               <p className="text-black">
                 <strong>Juan Camilo Motta Ospina </strong>

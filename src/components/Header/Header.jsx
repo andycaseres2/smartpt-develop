@@ -2,9 +2,23 @@ import BellIcon from "../../assets/Icons/BellIcon";
 
 import ModalNotifications from "../Modals/ModalNotifications";
 import { stateStore } from "../../store/stateStore";
+import { useLocation } from "react-router-dom";
 
-const Header = ({ title, date, userName }) => {
+const Header = ({ title, date, userName, baseColor }) => {
   const { openNotifications, setOpenNotifications } = stateStore();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const getColor = () => {
+    if (currentPath === "/planeacion") {
+      return "#D93535";
+    }
+    if (currentPath === "/solicitudes") {
+      return "#FAA500";
+    }
+  };
+
+  console.log(currentPath);
 
   const handleOpenNotifications = (e) => {
     e.stopPropagation();
@@ -12,7 +26,7 @@ const Header = ({ title, date, userName }) => {
   };
   return (
     <div
-      className="header flex justify-between items-center bg-primary-red-600 px-8 py-4 text-white relative z-10"
+      className={`header flex justify-between items-center ${baseColor} px-8 py-4 text-white relative z-10`}
       onClick={() => setOpenNotifications(false)}
     >
       <div className="flex flex-col z-30">
@@ -29,7 +43,7 @@ const Header = ({ title, date, userName }) => {
           onClick={handleOpenNotifications}
         >
           <BellIcon
-            fill={openNotifications && "red"}
+            fill={openNotifications && getColor(currentPath)}
             className="cursor-pointer z-50"
             action={handleOpenNotifications}
           />

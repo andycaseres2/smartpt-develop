@@ -9,6 +9,7 @@ import RowTableNewActivity from "../../components/Tables/RowTableNewActivity";
 import InputDate from "../../components/Inputs/InputDate";
 import Pagination from "../../components/Paginations/Pagination";
 import { stateStore } from "../../store/stateStore";
+import ColumnTableAddActivity from "../../components/Tables/ColumnTableAddActivity";
 
 const AdminPlanning = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -133,7 +134,7 @@ const AdminPlanning = () => {
     "w-[250px]",
     "w-[120px]",
     "w-[130px]",
-    "w-[130px]",
+    "w-[165px]",
   ];
 
   const columnsAddActivity = [
@@ -254,6 +255,7 @@ const AdminPlanning = () => {
       return ""; // Otros porcentajes
     }
   };
+
   const currentDate = new Date().toISOString().split("T")[0];
   const listAddActivity = [
     {
@@ -442,7 +444,7 @@ const AdminPlanning = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[645px] p-4 shadow-lg">
+      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[660px] p-4 shadow-lg">
         {activeTab === 1 && (
           <div className="flex w-full h-full gap-3">
             <WorkerList
@@ -673,7 +675,7 @@ const AdminPlanning = () => {
 
                   <table className="min-w-full">
                     <thead>
-                      <ColumnTable
+                      <ColumnTableAddActivity
                         columnTitlesActivity={columnsAddActivity}
                         columnWidths={columnWidthsNewActivity}
                         readOnly={false}
@@ -711,7 +713,7 @@ const AdminPlanning = () => {
 
                   <table className="min-w-full">
                     <thead>
-                      <ColumnTable
+                      <ColumnTableAddActivity
                         columnTitlesActivity={columnsAddActivity}
                         columnWidths={columnWidthsNewActivity}
                         readOnly={false}

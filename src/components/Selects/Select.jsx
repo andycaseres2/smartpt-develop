@@ -71,8 +71,8 @@ const Select = ({
         className={`${selectColors(selectedOption)} py-2 text-[15px] ${
           styleSelect || "px-4"
         } rounded cursor-pointer font-semibold relative flex items-center ${
-          readOnly ? "justify-between" : " justify-center"
-        }  gap-4  ${zIndez}`}
+          readOnly ? "justify-between" : "justify-center"
+        }  gap-4  ${zIndez} ${!initialOption ? "w-[157px] !justify-end" : ""}`}
         onClick={toggleDropdown}
       >
         {selectedOption}

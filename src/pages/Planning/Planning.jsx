@@ -10,8 +10,9 @@ const Planning = () => {
         title="Planeación semanal"
         date="4/12/2023 - 8/12/2023"
         userName="Kenet Sebastián Segura Murillo"
+        baseColor="bg-primary-red-600"
       />
-      <div className="w-full flex flex-col bg-primary-pink-50 p-[33px] h-full">
+      <div className="w-full flex flex-col bg-primary-pink-50 py-4 px-6 h-full">
         {userRole === "admin" ? <AdminPlanning /> : <WorkerPlanning />}
       </div>
     </div>

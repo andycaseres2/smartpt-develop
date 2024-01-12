@@ -44,7 +44,9 @@ const SelectGeneric = ({
       <div
         className={`py-2 ${
           styleSelect || "px-4"
-        } rounded cursor-pointer font-semibold relative flex items-center justify-between gap-4 bg-gray-100 shadow-lg`}
+        } rounded cursor-pointer font-semibold relative flex items-center  gap-4 bg-white shadow-3xl h-[40px] ${
+          !initialOption ? "justify-end pr-2" : "justify-between"
+        }`}
         onClick={toggleDropdown}
       >
         {selectedOption}

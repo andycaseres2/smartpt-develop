@@ -251,7 +251,7 @@ const WorkerPlanning = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[645px]">
+      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[660px]">
         {activeTab === 1 && (
           <div className="overflow-x-auto h-full">
             <div className="min-w-max">

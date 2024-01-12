@@ -39,7 +39,7 @@ const RowTableNewActivity = ({
   };
   return (
     <div className="flex justify-between w-full">
-      <tr className="justify-start flex w-full gap-6 py-1 px-4">
+      <tr className="justify-start flex gap-5 py-1 px-4 w-max">
         {listItems?.map((item, index) => (
           <td
             key={index}
@@ -129,7 +129,7 @@ const RowTableNewActivity = ({
         ))}
       </tr>
       {showButtonsEdit && (
-        <td className="flex w-32 items-center gap-4 justify-center">
+        <td className="flex w-28 items-center gap-4 justify-start">
           {!modeEdit ? (
             <>
               <PencilIcon
