@@ -13,6 +13,18 @@ export const getColor = (currentPath) => {
       border: "border-primary-yellow-600",
       bg: "bg-primary-yellow-600",
     };
+  } else if (currentPath === "/solicitudes/informacion") {
+    result = {
+      hex: "#75EED1",
+      border: "border-primary-lightblue-600",
+      bg: "bg-primary-lightblue-600",
+    };
+  } else if (currentPath === "/presupuesto") {
+    result = {
+      hex: "#2961CE",
+      border: "border-primary-blue-600",
+      bg: "bg-primary-blue-600",
+    };
   }
 
   return result;

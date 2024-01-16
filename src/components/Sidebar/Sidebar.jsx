@@ -10,35 +10,66 @@ import { stateStore } from "../../store/stateStore";
 
 const Sidebar = () => {
   const { setOpenNotifications } = stateStore();
+  const location = useLocation();
+  const currentPath = location.pathname;
   const links = [
     {
-      icon: <CalendarIcon width={40} height={40} />,
+      icon: (
+        <CalendarIcon
+          fill={currentPath === "/planeacion" ? "white" : ""}
+          width={40}
+          height={40}
+        />
+      ),
       href: "/planeacion",
       color: "bg-primary-red-600",
     },
     {
-      icon: <SolicitudIcon width={40} height={40} />,
+      icon: (
+        <SolicitudIcon
+          fill={currentPath === "/solicitudes" ? "white" : ""}
+          width={40}
+          height={40}
+        />
+      ),
       href: "/solicitudes",
       color: "bg-primary-yellow-600",
     },
     {
-      icon: <DataIcon width={40} height={40} />,
+      icon: (
+        <DataIcon
+          fill={currentPath === "/solicitudes/informacion" ? "white" : ""}
+          width={40}
+          height={40}
+        />
+      ),
       href: "/solicitudes/informacion",
-      color: "bg-primary-green-600",
+      color: "bg-primary-lightblue-600",
     },
     {
-      icon: <BudgetIcon width={40} height={40} />,
+      icon: (
+        <BudgetIcon
+          fill={currentPath === "/presupuesto" ? "white" : ""}
+          width={40}
+          height={40}
+        />
+      ),
       href: "/presupuesto",
-      color: "bg-primary-red-600",
+      color: "bg-primary-blue-600",
     },
     {
-      icon: <DashboardIcon width={40} height={40} />,
+      icon: (
+        <DashboardIcon
+          fill={currentPath === "/dashboard" ? "white" : ""}
+          width={40}
+          height={40}
+        />
+      ),
       href: "/dashboard",
       color: "bg-primary-purple-600",
     },
   ];
-  const location = useLocation();
-  const currentPath = location.pathname;
+
   return (
     <div
       className={`w-[100px] flex justify-between flex-col items-center py-9 border-r-2 border-[#D9D9D9]`}
@@ -50,7 +81,7 @@ const Sidebar = () => {
           <a
             key={index}
             href={item.href}
-            className={`p-3 flex justify-center items-center rounded-2xl transition-all ${
+            className={`p-3 flex  justify-center items-center rounded-2xl transition-all ${
               currentPath === item.href ? item.color : ""
             }`}
           >

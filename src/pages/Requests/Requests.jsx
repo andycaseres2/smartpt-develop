@@ -7,7 +7,7 @@ const Requests = () => {
   return (
     <div className="flex flex-col w-full h-screen">
       <Header
-        title="Planeación semanal"
+        title="Solicitudes de diseño"
         date="4/12/2023 - 8/12/2023"
         userName="Kenet Sebastián Segura Murillo"
       />

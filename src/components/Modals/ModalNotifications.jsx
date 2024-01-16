@@ -1,5 +1,7 @@
 import { useState } from "react";
 import Button from "../Buttons/Button";
+import NotificationItem from "../Notifications/NotificationItem";
+import NotificationsTab from "../Tabs/NotificationsTab";
 
 const ModalNotifications = ({ styleContainer }) => {
   const [activeTab, setActiveTab] = useState(1);
@@ -25,74 +27,28 @@ const ModalNotifications = ({ styleContainer }) => {
       <div className="flex justify-start p-3 border-b border-gray-300">
         <h1 className="text-2xl font-semibold text-black">Actividades</h1>
       </div>
-      <div
-        className="flex items-center w-full"
-        onClick={handleClickInsideModal}
-      >
-        {tabs.map((tab) => (
-          <div
-            className={`text-black cursor-pointer text-base flex justify-between w-full items-center text-center mt-2 ${
-              activeTab === tab.id && "border-b-4 border-primary-red-600"
-            }`}
-            key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
-          >
-            <span className={`text-black text-base w-full`}>{tab.label}</span>
-          </div>
-        ))}
-      </div>
+
+      <NotificationsTab
+        tabs={tabs}
+        activeTab={activeTab}
+        handleTabClick={handleTabClick}
+        handleClickInsideModal={handleClickInsideModal}
+      />
 
       {activeTab === 1 && (
         <div className="flex flex-col mt-1 p-3 w-full overflow-y-auto overflow-hidden h-[290px]">
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="w-7 h-7 accent-primary-red-600 cursor-pointer"
-              />
-              <p className="text-black">
-                <strong>Juan Camilo Motta Ospina </strong>
-                te ha asignado una tarea. (4/12/2023 - 4:25pm)
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="w-7 h-7 accent-primary-red-600 cursor-pointer"
-              />
-              <p className="text-black">
-                <strong>Juan Camilo Motta Ospina </strong>
-                te ha asignado una tarea. (4/12/2023 - 4:25pm)
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="w-7 h-7 accent-primary-red-600 cursor-pointer"
-              />
-              <p className="text-black">
-                <strong>Juan Camilo Motta Ospina </strong>
-                te ha asignado una tarea. (4/12/2023 - 4:25pm)
-              </p>
-            </div>
+            <NotificationItem showInput={true} />
+            <NotificationItem showInput={true} />
+            <NotificationItem showInput={true} />
           </div>
         </div>
       )}
       {activeTab === 2 && (
         <div className="flex flex-col mt-1 p-3 w-full overflow-y-auto overflow-hidden h-[290px]">
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <p className="text-black">
-                <strong>Juan Camilo Motta Ospina </strong>
-                te ha asignado una tarea. (4/12/2023 - 4:25pm)
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <p className="text-black">
-                <strong>Juan Camilo Motta Ospina </strong>
-                te ha asignado una tarea. (4/12/2023 - 4:25pm)
-              </p>
-            </div>
+            <NotificationItem showInput={false} />
+            <NotificationItem showInput={false} />
           </div>
         </div>
       )}

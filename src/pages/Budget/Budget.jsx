@@ -1,5 +1,19 @@
-const Budget = () => {
-  return <div>Budget</div>;
+import Header from "../../components/Header/Header";
+import BudgetContent from "./BudgetContent";
+
+const RequestsData = () => {
+  return (
+    <div className="flex flex-col w-full h-screen">
+      <Header
+        title="Solicitudes data universe"
+        date="4/12/2023 - 8/12/2023"
+        userName="Kenet Sebastián Segura Murillo"
+      />
+      <div className="w-full flex flex-col bg-primary-blue-50 py-4 px-6 h-full">
+        <BudgetContent />
+      </div>
+    </div>
+  );
 };
 
-export default Budget;
+export default RequestsData;

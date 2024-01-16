@@ -5,7 +5,7 @@ import { stateStore } from "../../store/stateStore";
 import { useLocation } from "react-router-dom";
 import { getColor } from "../../utils/getColor";
 
-const Header = ({ title, date, userName }) => {
+const Header = ({ title, date, userName, textColor }) => {
   const { openNotifications, setOpenNotifications } = stateStore();
   const location = useLocation();
   const currentPath = location.pathname;
@@ -18,7 +18,7 @@ const Header = ({ title, date, userName }) => {
     <div
       className={`header flex justify-between items-center ${
         getColor(currentPath).bg
-      } px-8 py-4 text-white relative z-10`}
+      } px-8 py-4 ${textColor ?? "text-white"}  relative z-10`}
       onClick={() => setOpenNotifications(false)}
     >
       <div className="flex flex-col z-30">
@@ -36,6 +36,9 @@ const Header = ({ title, date, userName }) => {
         >
           <BellIcon
             fill={openNotifications && getColor(currentPath).hex}
+            optionalColor={
+              currentPath === "/solicitudes/informacion" && "#477BFF"
+            }
             className="cursor-pointer z-50"
             action={handleOpenNotifications}
           />
