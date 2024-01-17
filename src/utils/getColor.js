@@ -25,6 +25,12 @@ export const getColor = (currentPath) => {
       border: "border-primary-blue-600",
       bg: "bg-primary-blue-600",
     };
+  } else if (currentPath === "/dashboard") {
+    result = {
+      hex: "#6528E5",
+      border: "border-primary-purple-600",
+      bg: "bg-primary-purple-600",
+    };
   }
 
   return result;

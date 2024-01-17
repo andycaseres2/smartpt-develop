@@ -8,6 +8,7 @@ const SelectGeneric = ({
   styleSelect,
   key_name,
   handleChange,
+  readOnly,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -42,18 +43,20 @@ const SelectGeneric = ({
       tabIndex={0}
     >
       <div
-        className={`py-2 ${
-          styleSelect || "px-4"
-        } rounded cursor-pointer font-semibold relative flex items-center  gap-4 bg-white shadow-3xl h-[40px] ${
+        className={`py-2 ${styleSelect || "px-4"} rounded ${
+          !readOnly ? "cursor-pointer" : ""
+        } font-semibold relative flex items-center  gap-4 bg-white shadow-3xl h-[40px] ${
           !initialOption ? "justify-end pr-2" : "justify-between"
         }`}
         onClick={toggleDropdown}
       >
-        {selectedOption}
+        <span className="w-max">{selectedOption}</span>
 
-        {isOpen ? <ArrowDown className="rotate-180" /> : <ArrowDown />}
+        {!readOnly && (
+          <>{isOpen ? <ArrowDown className="rotate-180" /> : <ArrowDown />}</>
+        )}
       </div>
-      {isOpen && (
+      {isOpen && !readOnly && (
         <div className="absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded">
           {options.map((option) => (
             <div

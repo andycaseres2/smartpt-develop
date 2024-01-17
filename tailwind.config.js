@@ -4,6 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        "primary-red-500": "#F70000",
         "primary-red-600": "#D93535",
         "primary-pink-50": "#FFCDCD",
         "primary-pink-500": "#FF6B7C",
@@ -11,8 +12,9 @@ export default {
         "primary-yellow-50": "#FFF4CD",
         "primary-yellow-500": "#FBD34D",
         "primary-yellow-600": "#FAA500",
-        "primary-purple-500": "#805FA5",
-        "primary-purple-600": "#6B257D",
+        "primary-purple-50": "#DDD7FF",
+        "primary-purple-500": "#6B257D",
+        "primary-purple-600": "#6528E5",
         "primary-blue-50": "#D7E4FF",
         "primary-blue-500": "#477BFF",
         "primary-blue-600": "#2961CE",

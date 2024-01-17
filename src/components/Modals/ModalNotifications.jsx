@@ -2,9 +2,13 @@ import { useState } from "react";
 import Button from "../Buttons/Button";
 import NotificationItem from "../Notifications/NotificationItem";
 import NotificationsTab from "../Tabs/NotificationsTab";
+import NotificationItemBudget from "../Notifications/NotificationItemBudget";
+import { useLocation } from "react-router-dom";
 
 const ModalNotifications = ({ styleContainer }) => {
   const [activeTab, setActiveTab] = useState(1);
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   const tabs = [
     { id: 1, label: "Pendiente" },
@@ -21,7 +25,7 @@ const ModalNotifications = ({ styleContainer }) => {
 
   return (
     <div
-      className={`${styleContainer} w-[370px] h-[450px] bg-white rounded-lg shadow-lg z-[50] overflow-hidden`}
+      className={`${styleContainer} w-[380px] h-[450px] bg-white rounded-lg shadow-lg z-[50] overflow-hidden`}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex justify-start p-3 border-b border-gray-300">
@@ -41,6 +45,9 @@ const ModalNotifications = ({ styleContainer }) => {
             <NotificationItem showInput={true} />
             <NotificationItem showInput={true} />
             <NotificationItem showInput={true} />
+            {currentPath === "/presupuesto" && (
+              <NotificationItemBudget showInput={true} />
+            )}
           </div>
         </div>
       )}

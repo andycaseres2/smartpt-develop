@@ -5,7 +5,7 @@ const RequestsData = () => {
   return (
     <div className="flex flex-col w-full h-screen">
       <Header
-        title="Solicitudes data universe"
+        title="Presupuesto clientes"
         date="4/12/2023 - 8/12/2023"
         userName="Kenet Sebastián Segura Murillo"
       />

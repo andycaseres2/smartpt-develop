@@ -10,6 +10,7 @@ import InputDate from "../../components/Inputs/InputDate";
 import Pagination from "../../components/Paginations/Pagination";
 import { stateStore } from "../../store/stateStore";
 import ColumnTableAddActivity from "../../components/Tables/ColumnTableAddActivity";
+import CirclePlus from "../../assets/Icons/CirclePlus";
 
 const AdminPlanning = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -411,6 +412,7 @@ const AdminPlanning = () => {
             <ButtonWithIcon
               buttonColor={"bg-primary-red-600"}
               text={"Añadir actividad"}
+              icon={<CirclePlus />}
             />
           </div>
         )}
@@ -699,6 +701,7 @@ const AdminPlanning = () => {
                     <ButtonWithIcon
                       text={"Añadir actividad"}
                       disabled={false}
+                      icon={<CirclePlus />}
                     />
                   </div>
                 </div>

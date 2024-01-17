@@ -9,6 +9,7 @@ import InputTime from "../../components/Inputs/InputTime";
 import Select from "../../components/Selects/Select";
 import RowTableRequest from "../../components/Tables/RowTableRequest";
 import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
+import CirclePlus from "../../assets/Icons/CirclePlus";
 
 const WorkerRequest = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -374,6 +375,7 @@ const WorkerRequest = () => {
               </div>
               <div className="flex justify-end py-8 px-6">
                 <ButtonWithIcon text="Registrar solicitud" onClick={() => {}} />
+                icon={<CirclePlus />}
               </div>
             </div>
           </div>

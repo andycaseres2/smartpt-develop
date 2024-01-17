@@ -11,12 +11,23 @@ import RowTableBudget from "../../components/Tables/RowTableBudget";
 import ProfileCheck from "../../assets/Icons/ProfileCheck";
 import CircleCheck from "../../assets/Icons/CircleCheck";
 import ExportIcon from "../../assets/Icons/ExportIcon";
+import Modal from "../../components/Modals/Modal";
+import BudgetModalContent from "./BudgetModalContent";
+import CirclePlus from "../../assets/Icons/CirclePlus";
 
 const BudgetContent = () => {
   const [activeTab, setActiveTab] = useState(1);
   const { setOpenNotifications } = stateStore();
   const [stateRow, setStateRow] = useState({});
+  const [isOpenModal, setIsOpenModal] = useState(false);
 
+  const handleOpenModal = () => {
+    setIsOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsOpenModal(false);
+  };
   const handleChange = (e) => {
     setStateRow((prevState) => {
       return {
@@ -288,11 +299,11 @@ const BudgetContent = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
-                          <th className="py-2">Descripción</th>
-                          <th className="py-2">Cantidad</th>
-                          <th className="py-2">Coste unitario</th>
-                          <th className="py-2">Total</th>
-                          <th className="py-2">Total USD</th>
+                          <th className="py-2 text-left">Descripción</th>
+                          <th className="py-2 text-left">Cantidad</th>
+                          <th className="py-2 text-left">Coste unitario</th>
+                          <th className="py-2 text-left">Total</th>
+                          <th className="py-2 text-left">Total USD</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -364,6 +375,7 @@ const BudgetContent = () => {
                 <ButtonWithIcon
                   text="Registrar presupuesto"
                   onClick={() => {}}
+                  icon={<CirclePlus />}
                 />
               </div>
             </div>
@@ -391,6 +403,7 @@ const BudgetContent = () => {
                         handleChange={handleChange}
                         readOnly={false}
                         editStatus={false}
+                        onOpenModal={handleOpenModal}
                       />
                     </tbody>
                   </table>
@@ -437,6 +450,7 @@ const BudgetContent = () => {
                       stateRow={stateRow}
                       handleChange={handleChange}
                       readOnly={true}
+                      onOpenModal={handleOpenModal}
                     />
                   </tbody>
                 </table>
@@ -449,6 +463,12 @@ const BudgetContent = () => {
         <div className="flex justify-end">
           <Pagination />
         </div>
+      )}
+
+      {isOpenModal && (
+        <Modal onClose={handleCloseModal}>
+          <BudgetModalContent data={data} />
+        </Modal>
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Calendar from "../../assets/Icons/Calendar";
 
-const InputDate = ({ text, position }) => {
+const InputDate = ({ text, position, styleInput }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef(null);
@@ -32,15 +32,15 @@ const InputDate = ({ text, position }) => {
   return (
     <div
       className={`bg-white h-[40px] shadow-3xl rounded-lg px-4 py-2 flex justify-between items-center gap-2 relative cursor-pointer ${
-        !text ? "w-[157px]" : ""
+        !text ? "w-[157px]" : styleInput || ""
       }`}
       onClick={() => setCalendarOpen(!calendarOpen)}
       ref={calendarRef}
     >
       {selectedDate ? (
-        <span className="font-semibold">{selectedDate}</span>
+        <span className="font-semibold w-max">{selectedDate}</span>
       ) : (
-        <span className="font-semibold">{text}</span>
+        <span className="font-semibold w-max">{text}</span>
       )}
 
       <div className="relative">

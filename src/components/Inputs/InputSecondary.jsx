@@ -6,6 +6,7 @@ const InputSecondary = ({
   key_name,
   handleChange,
   initialValue,
+  readOnly,
 }) => {
   const [inputValue, setInputValue] = useState("");
 
@@ -51,6 +52,7 @@ const InputSecondary = ({
       name={key_name}
       value={type === "date" ? formatDateForInput(inputValue) : inputValue}
       onChange={handleInputChange}
+      readOnly={readOnly || false}
     />
   );
 };

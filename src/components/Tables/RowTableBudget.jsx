@@ -17,6 +17,7 @@ const RowTableBudget = ({
   readOnly,
   editStatus,
   editMode,
+  onOpenModal,
 }) => {
   const [modeEdit, setModeEdit] = useState(editMode ?? false);
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
@@ -35,6 +36,7 @@ const RowTableBudget = ({
     newOptions[index] = selectedOption;
     setInitialOptionSelectOption(newOptions);
   };
+
   return (
     <tr className="justify-start flex w-full gap-8 py-2 px-2">
       {listItems?.map((item, index) => (
@@ -126,7 +128,10 @@ const RowTableBudget = ({
       ))}
 
       <td className="flex items-center gap-4 justify-center">
-        <EyeIcon className={"cursor-pointer hover:scale-105"} />
+        <EyeIcon
+          action={onOpenModal}
+          className={"cursor-pointer hover:scale-105"}
+        />
         {!readOnly &&
           (!modeEdit ? (
             <td className="flex w-10 items-center gap-4 justify-center">

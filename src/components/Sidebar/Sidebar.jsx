@@ -72,7 +72,7 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`w-[100px] flex justify-between flex-col items-center py-9 border-r-2 border-[#D9D9D9]`}
+      className={`w-[100px] flex justify-between flex-col items-center py-9 shadow-3xl`}
       onClick={() => setOpenNotifications(false)}
     >
       <LogoIcon redirect="/planeacion" />

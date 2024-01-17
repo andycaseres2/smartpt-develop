@@ -7,6 +7,7 @@ import ColumnTable from "../../components/Tables/ColumnTable";
 import InputDate from "../../components/Inputs/InputDate";
 import { stateStore } from "../../store/stateStore";
 import Pagination from "../../components/Paginations/Pagination";
+import CirclePlus from "../../assets/Icons/CirclePlus";
 
 const WorkerPlanning = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -220,6 +221,7 @@ const WorkerPlanning = () => {
             <ButtonWithIcon
               buttonColor={"bg-primary-red-600"}
               text={"Añadir actividad"}
+              icon={<CirclePlus />}
             />
           </div>
         ) : (
