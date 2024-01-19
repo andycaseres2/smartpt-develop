@@ -1,10 +1,31 @@
+import { useState } from "react";
 import CirclePlus from "../../assets/Icons/CirclePlus";
-import ExportIcon from "../../assets/Icons/ExportIcon";
 import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
-import InputDate from "../../components/Inputs/InputDate";
-import SelectGeneric from "../../components/Selects/SelectGeneric";
+import CollaboratorsPlanning from "./components/CollaboratorsPlanning";
+import ClientsPlanning from "./components/ClientsPlanning";
+import GeneralDashboards from "./components/GeneralDashboards";
 
 const DashboardContent = () => {
+  const [generalDashboard, setGeneralDashboard] = useState(true);
+  const [collaboratorsPlanningState, setCollaboratorsPlanningState] =
+    useState(false);
+  const [clientsPlanningState, setClientsPlanningState] = useState(false);
+
+  const handleShowGeneralDashboard = () => {
+    setGeneralDashboard(true);
+    setCollaboratorsPlanningState(false);
+    setClientsPlanningState(false);
+  };
+  const handleShowCollaboratorsPlanningState = () => {
+    setGeneralDashboard(false);
+    setCollaboratorsPlanningState(true);
+    setClientsPlanningState(false);
+  };
+  const handleShowClientsPlanningState = () => {
+    setGeneralDashboard(false);
+    setCollaboratorsPlanningState(false);
+    setClientsPlanningState(true);
+  };
   return (
     <div className="w-full flex flex-col gap-4">
       <div className="w-full flex justify-center gap-4">
@@ -12,13 +33,15 @@ const DashboardContent = () => {
           buttonColor={"bg-primary-red-500 h-[53px]"}
           text="Dashboard general"
           iconRight={<CirclePlus />}
+          action={handleShowGeneralDashboard}
         />
         <ButtonWithIcon
           buttonColor={
-            "bg-white border border-yellow-600 text-yellow-600 h-[53px]"
+            "bg-white border border-primary-orange-500 !text-primary-orange-500 h-[53px]"
           }
           text="Estado planeación colaboradores"
-          iconRight={<CirclePlus fill={"#FAA500"} />}
+          iconRight={<CirclePlus fill={"#F76800"} />}
+          action={handleShowCollaboratorsPlanningState}
         />
         <ButtonWithIcon
           buttonColor={
@@ -26,38 +49,12 @@ const DashboardContent = () => {
           }
           text="Estado planeación clientes"
           iconRight={<CirclePlus fill={"#2961CE"} />}
+          action={handleShowClientsPlanningState}
         />
       </div>
-      <div className="w-full h-[675px] bg-white p-5 shadow-3xl rounded-lg">
-        <div className="flex justify-between">
-          <h1 className="w-max text-primary-red-500 text-[32px] font-bold">
-            Dashboard general
-          </h1>
-          <div className="flex gap-4">
-            <SelectGeneric
-              options={[]}
-              initialOption={"Grupo de trabajo"}
-              key_name=""
-              handleChange={() => {}}
-            />
-            <SelectGeneric
-              options={[]}
-              initialOption={"Colaborador"}
-              key_name=""
-              handleChange={() => {}}
-            />
-            <InputDate text={"Fecha inicio"} />
-            <InputDate text={"Fecha fin"} />
-          </div>
-        </div>
-        <div className="flex justify-start mt-4">
-          <ButtonWithIcon
-            buttonColor={"bg-primary-red-500"}
-            text="Dashboard general"
-            iconRight={<ExportIcon />}
-          />
-        </div>
-      </div>
+      {generalDashboard && <GeneralDashboards />}
+      {collaboratorsPlanningState && <CollaboratorsPlanning />}
+      {clientsPlanningState && <ClientsPlanning />}
     </div>
   );
 };

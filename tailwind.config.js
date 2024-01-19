@@ -12,6 +12,7 @@ export default {
         "primary-yellow-50": "#FFF4CD",
         "primary-yellow-500": "#FBD34D",
         "primary-yellow-600": "#FAA500",
+        "primary-orange-500": "#F76800",
         "primary-purple-50": "#DDD7FF",
         "primary-purple-500": "#6B257D",
         "primary-purple-600": "#6528E5",

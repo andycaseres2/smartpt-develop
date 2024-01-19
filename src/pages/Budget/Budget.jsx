@@ -1,7 +1,7 @@
 import Header from "../../components/Header/Header";
 import BudgetContent from "./BudgetContent";
 
-const RequestsData = () => {
+const Budget = () => {
   return (
     <div className="flex flex-col w-full h-screen">
       <Header
@@ -16,4 +16,4 @@ const RequestsData = () => {
   );
 };
 
-export default RequestsData;
+export default Budget;

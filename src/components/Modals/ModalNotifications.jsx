@@ -25,7 +25,7 @@ const ModalNotifications = ({ styleContainer }) => {
 
   return (
     <div
-      className={`${styleContainer} w-[380px] h-[450px] bg-white rounded-lg shadow-lg z-[50] overflow-hidden`}
+      className={`${styleContainer} modal-notifications w-[380px] h-[450px] bg-white rounded-lg shadow-lg !z-50 overflow-hidden`}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex justify-start p-3 border-b border-gray-300">
