@@ -50,14 +50,16 @@ const SelectGeneric = ({
         }`}
         onClick={toggleDropdown}
       >
-        <span className="w-max">{selectedOption}</span>
+        <span className="overflow-hidden whitespace-nowrap overflow-ellipsis w-full">
+          {selectedOption}
+        </span>
 
         {!readOnly && (
           <>{isOpen ? <ArrowDown className="rotate-180" /> : <ArrowDown />}</>
         )}
       </div>
       {isOpen && !readOnly && (
-        <div className="absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded">
+        <div className="absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded h-[300px] overflow-y-auto">
           {options.map((option) => (
             <div
               key={option.id}

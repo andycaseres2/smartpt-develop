@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ButtonWithChildren from "../Buttons/ButtonWithChildren";
 import ArrowDropPrev from "../../assets/Icons/ArrowDropPrev";
 import ArrowDropNext from "../../assets/Icons/ArrowDropNext";
@@ -6,8 +6,9 @@ import ArrowFromNext from "../../assets/Icons/ArrowFromNext";
 import ArrowFromPrev from "../../assets/Icons/ArrowFromPrev";
 import { useLocation } from "react-router-dom";
 import { getColor } from "../../utils/getColor";
+import { getData } from "../../services/getData";
 
-const Pagination = () => {
+const Pagination = ({ setTasks }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const location = useLocation();
   const currentPath = location.pathname;
@@ -18,6 +19,26 @@ const Pagination = () => {
   const handleClick = (page) => {
     setCurrentPage(page);
   };
+
+  useEffect(() => {
+    // Leer la  URL base desde el archivo .env
+    const baseUrl = "https://central.logotexo.com/smartpr/";
+
+    // Definir los endpoints utilizando la URL base
+    const pageEndpoint = `${baseUrl}FormattedTask?page=${currentPage}&size=10`;
+
+    // Realizar solicitudes al montar el componente
+    const fetchDataOnMount = async () => {
+      try {
+        const pageData = await getData(pageEndpoint);
+        setTasks(pageData);
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+    };
+
+    fetchDataOnMount(); // Llamar a la función al montar el componente
+  }, [currentPage]);
 
   const goToPrev = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));

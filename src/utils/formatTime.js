@@ -1,5 +1,11 @@
 export const formatTime = (timeString) => {
+  // Check if timeString is a valid string
+  if (typeof timeString !== "string" || !timeString.includes(":")) {
+    return "Invalid time format";
+  }
+
   const [hours, minutes] = timeString.split(":").map(parseFloat);
+
   if (hours === 1 && minutes === 0) {
     return "1 hora";
   } else if (hours === 0 && minutes === 1) {

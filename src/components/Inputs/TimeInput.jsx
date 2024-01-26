@@ -5,7 +5,7 @@ const TimeInput = ({ defaultValue, handleChange, key_name, type }) => {
 
   useEffect(() => {
     if (defaultValue) {
-      setInputValue(defaultValue);
+      setInputValue(formatTime(defaultValue));
       handleChange({
         target: {
           name: key_name,
@@ -15,11 +15,40 @@ const TimeInput = ({ defaultValue, handleChange, key_name, type }) => {
     }
   }, [defaultValue]);
 
+  // Función para formatear el tiempo
+  const formatTime = (time) => {
+    // Asegurarse de que time sea un número
+    const parsedTime = parseFloat(time);
+
+    if (!isNaN(parsedTime)) {
+      // Formatear el tiempo como "HH:mm"
+      const hours = Math.floor(parsedTime);
+      const minutes = Math.round((parsedTime - hours) * 60);
+
+      const formattedTime = `${String(hours).padStart(2, "0")}:${String(
+        minutes
+      ).padStart(2, "0")}`;
+
+      return formattedTime;
+    } else {
+      // Devolver el valor original si no se puede parsear como número
+      return time;
+    }
+  };
+
   const handleInputChange = (e) => {
     const newValue = e.target.value;
+
+    // Convertir el formato "20:20" a 20.20
+    const partes = newValue.split(":");
+    const parte1 = parseInt(partes[0], 10);
+    const parte2 = parseInt(partes[1], 10);
+    const nuevoValor = parte1 * 60 + parte2;
+
     setInputValue(newValue);
+
     handleChange({
-      target: { name: key_name, value: newValue },
+      target: { name: key_name, value: nuevoValor },
     });
   };
 

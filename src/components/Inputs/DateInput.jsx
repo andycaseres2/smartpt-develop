@@ -4,7 +4,7 @@ const DateInput = ({ defaultValue, handleChange, key_name }) => {
   const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
-    setSelectedDate(defaultValue);
+    setSelectedDate(defaultValue.split("T")[0]);
     if (defaultValue) {
       handleChange({
         target: { name: key_name, value: defaultValue },
@@ -14,9 +14,13 @@ const DateInput = ({ defaultValue, handleChange, key_name }) => {
 
   const handleDateChange = (e) => {
     const newDate = e.target.value;
+
+    // Convertir la fecha al formato deseado
+    const formattedDate = new Date(newDate).toISOString();
+
     setSelectedDate(newDate);
     handleChange({
-      target: { name: key_name, value: newDate },
+      target: { name: key_name, value: formattedDate },
     });
   };
 

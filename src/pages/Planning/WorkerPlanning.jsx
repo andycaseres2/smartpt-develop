@@ -9,7 +9,14 @@ import { stateStore } from "../../store/stateStore";
 import Pagination from "../../components/Paginations/Pagination";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 
-const WorkerPlanning = () => {
+const WorkerPlanning = ({
+  clients,
+  activities,
+  processes,
+  tasks,
+  setTasks,
+  setRealTime,
+}) => {
   const [activeTab, setActiveTab] = useState(1);
   const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
@@ -26,27 +33,6 @@ const WorkerPlanning = () => {
   const tabs = [
     { id: 1, label: "Actividades" },
     { id: 2, label: "Consolidado" },
-  ];
-
-  const options = [
-    { id: 1, value: "SmartPR" },
-    { id: 2, value: "MTC" },
-    { id: 3, value: "Ford" },
-    { id: 4, value: "Toyota" },
-  ];
-
-  const optionsActivity = [
-    { id: 1, value: "Actividad 1" },
-    { id: 2, value: "Actividad 2" },
-    { id: 3, value: "Actividad 3" },
-    { id: 4, value: "Actividad 4" },
-  ];
-
-  const optionsProcess = [
-    { id: 1, value: "Proceso 1" },
-    { id: 2, value: "Proceso 2" },
-    { id: 3, value: "Proceso 3" },
-    { id: 4, value: "Proceso 4" },
   ];
 
   const handleSelect = (selectedOption) => {
@@ -70,21 +56,7 @@ const WorkerPlanning = () => {
     });
   };
 
-  const columnTitlesActivity = [
-    "Cliente",
-    "Tarea",
-    "Fecha inicio",
-    "Fecha estimada ",
-    "Estado",
-    "Comentarios",
-    "Proceso",
-    "Actividad",
-    "Hora estimada",
-    "Hora real",
-    "Documentos asociados",
-    "Fecha fin",
-    "",
-  ];
+  0;
 
   const columnWidths = [
     "w-44", // Ancho para Columna 1
@@ -102,90 +74,30 @@ const WorkerPlanning = () => {
     "w-44", // Ancho para Columna 13
   ];
 
-  const listItems = [
-    {
-      data: "Ford",
-      editComponent: "select",
-      options: [
-        { id: 1, value: "SmartPR" },
-        { id: 2, value: "MTC" },
-        { id: 3, value: "Ford" },
-        { id: 4, value: "Toyota" },
-      ],
-      key_name: "cliente",
-    },
-    {
-      data: "Construcción del contenido del mes del cliente ",
-      editComponent: "input",
-      type: "text",
-      key_name: "tarea",
-    },
-    {
-      data: "2024-01-26",
-      editComponent: "input",
-      type: "date",
-      key_name: "fecha_inicio",
-    },
-    {
-      data: "2024-01-26",
-      editComponent: "input",
-      type: "date",
-      key_name: "fecha_estimada",
-    },
-    {
-      data: "En proceso",
-      editComponent: "status",
-      options: [
-        { id: 1, value: "Pendiente" },
-        { id: 2, value: "Finalizado" },
-        { id: 3, value: "En ejecucion" },
-        { id: 4, value: "En proceso" },
-      ],
-      key_name: "estado",
-    },
-    {
-      data: "Contenidos mensual para SmartPR ",
-      editComponent: "input",
-      type: "text",
-      key_name: "comentarios",
-    },
-    {
-      data: "Gestión_Clientes_Actuales",
-      editComponent: "input",
-      type: "text",
-      key_name: "proceso",
-    },
-    {
-      data: "Diseño Plan de Trabajo de  Cliente",
-      editComponent: "input",
-      type: "text",
-      key_name: "actividad",
-    },
-    {
-      data: "01:00",
-      editComponent: "input",
-      type: "time",
-      key_name: "hora_estimada",
-    },
-    {
-      data: "00:30",
-      editComponent: "input",
-      type: "time",
-      key_name: "hora_real",
-    },
-    {
-      data: "Contenido SmartPR.xlsx",
-      editComponent: "input",
-      type: "text",
-      key_name: "documentos_asociados",
-    },
-    {
-      data: "2024-01-26",
-      editComponent: "input",
-      type: "date",
-      key_name: "fecha_fin",
-    },
+  const columnTitles = [
+    "Cliente",
+    "Tarea",
+    "Fecha inicio",
+    "Fecha estimada ",
+    "Estado",
+    "Comentarios",
+    "Proceso",
+    "Actividad",
+    "Hora estimada",
+    "Hora real",
+    "Documentos asociados",
+    "Fecha fin",
+    "",
   ];
+  const [newTaskAdd, setNewTaskAdd] = useState(false);
+  async function addTask(arrayTasks) {
+    const nuevaTarea = arrayTasks[0].map((task, index) =>
+      index === arrayTasks[0].length - 1 ? null : { ...task, data: "" }
+    );
+
+    await setTasks((prev) => [nuevaTarea, ...prev]);
+    setNewTaskAdd(true);
+  }
 
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
@@ -212,7 +124,7 @@ const WorkerPlanning = () => {
         {activeTab === 1 ? (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={options}
+              options={clients}
               onSelect={handleSelect}
               initialOption={initialOptionSelect}
               readOnly={false}
@@ -222,26 +134,27 @@ const WorkerPlanning = () => {
               buttonColor={"bg-primary-red-600"}
               text={"Añadir actividad"}
               icon={<CirclePlus />}
+              action={() => addTask(tasks)}
             />
           </div>
         ) : (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={options}
+              options={clients}
               onSelect={handleSelect}
               initialOption={initialOptionSelect}
               readOnly={false}
               editStatus={true}
             />
             <Select
-              options={optionsActivity}
+              options={activities}
               onSelect={handleSelectActivity}
               initialOption={initialOptionSelectActivity}
               readOnly={false}
               editStatus={true}
             />
             <Select
-              options={optionsProcess}
+              options={processes}
               onSelect={handleSelectProcess}
               initialOption={initialOptionSelectProcess}
               readOnly={false}
@@ -260,28 +173,26 @@ const WorkerPlanning = () => {
               <table className="min-w-full">
                 <thead>
                   <ColumnTable
-                    columnTitlesActivity={columnTitlesActivity}
+                    columnTitlesActivity={columnTitles}
                     columnWidths={columnWidths}
                     readOnly={false}
                   />
                 </thead>
                 <tbody className="border-b border-gray-300">
-                  <RowTable
-                    listItems={listItems}
-                    columnWidths={columnWidths}
-                    stateRow={stateRow}
-                    handleChange={handleChange}
-                    editStatus={true}
-                  />
-                </tbody>
-                <tbody className="border-b border-gray-300">
-                  <RowTable
-                    listItems={listItems}
-                    columnWidths={columnWidths}
-                    stateRow={stateRow}
-                    handleChange={handleChange}
-                    editStatus={true}
-                  />
+                  {tasks.map((item, index) => (
+                    <RowTable
+                      key={index}
+                      index={index}
+                      listItems={item}
+                      columnWidths={columnWidths}
+                      stateRow={stateRow}
+                      handleChange={handleChange}
+                      editStatus={true}
+                      newTaskAdd={newTaskAdd}
+                      setNewTaskAdd={setNewTaskAdd}
+                      setRealTime={setRealTime}
+                    />
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -294,19 +205,23 @@ const WorkerPlanning = () => {
               <table className="min-w-full">
                 <thead>
                   <ColumnTable
-                    columnTitlesActivity={columnTitlesActivity}
+                    columnTitlesActivity={columnTitles}
                     columnWidths={columnWidths}
                     readOnly={true}
                   />
                 </thead>
                 <tbody className="border-b border-gray-300">
-                  <RowTable
-                    listItems={listItems}
-                    columnWidths={columnWidths}
-                    stateRow={stateRow}
-                    handleChange={handleChange}
-                    readOnly={true}
-                  />
+                  {tasks.map((item, index) => (
+                    <RowTable
+                      key={index}
+                      listItems={item}
+                      columnWidths={columnWidths}
+                      stateRow={stateRow}
+                      handleChange={handleChange}
+                      readOnly={true}
+                      newTaskAdd={newTaskAdd}
+                    />
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -315,7 +230,7 @@ const WorkerPlanning = () => {
       </div>
       {activeTab === 2 && (
         <div className="flex justify-end">
-          <Pagination />
+          <Pagination setTasks={setTasks} />
         </div>
       )}
     </div>

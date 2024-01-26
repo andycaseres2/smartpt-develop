@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ArrowDown from "../../assets/Icons/ArrowDown";
 
-const Select = ({
+const SelectStatus = ({
   options,
   onSelect,
   initialOption,
@@ -11,22 +11,26 @@ const Select = ({
   styleSelect,
   handleChange,
   key_name,
-  zIndez,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
 
   useEffect(() => {
     if (initialOption && Array.isArray(options)) {
       setSelectedOption(initialOption);
       const foundOption = options.find(
-        (option) => option.Name === initialOption
+        (option) => option.value === initialOption
       );
       if (foundOption) {
+        setSelectedOptionId(foundOption.id);
         if (handleChange) {
           handleChange({ target: { name: key_name, value: foundOption.id } });
         }
       }
+    } else {
+      setSelectedOptionId(1);
+      setSelectedOption("Pendiente");
     }
   }, [initialOption, key_name]);
 
@@ -39,12 +43,28 @@ const Select = ({
 
   const handleOptionClick = (option, id) => {
     setSelectedOption(option);
+    setSelectedOptionId(id);
     setIsOpen(false);
     onSelect(option);
     if (handleChange) {
       handleChange({ target: { name: key_name, value: id } });
     }
   };
+
+  function selectColors(id) {
+    switch (id) {
+      case 1:
+        return "bg-red-500 text-white fill-white";
+      case 2:
+        return "bg-yellow-500 text-white fill-white";
+      case 3:
+        return "bg-green-500 text-white fill-white";
+      case 4:
+        return "bg-blue-500 text-white fill-white";
+      default:
+        return "bg-white";
+    }
+  }
 
   return (
     <div
@@ -53,17 +73,12 @@ const Select = ({
       tabIndex={0}
     >
       <div
-        className={`bg-white py-2 text-[15px] ${
+        className={`${selectColors(selectedOptionId)} py-2 text-[15px] ${
           styleSelect || "px-4"
-        } rounded cursor-pointer font-semibold relative flex items-center justify-between w-[157px] gap-4  ${zIndez} ${
-          !initialOption ? "w-[157px] !justify-end" : ""
-        }`}
+        } rounded cursor-pointer font-semibold relative flex items-center justify-between gap-4 w-44`}
         onClick={toggleDropdown}
       >
-        <span className="overflow-hidden whitespace-nowrap overflow-ellipsis w-full">
-          {selectedOption}
-        </span>
-
+        {selectedOption}
         {(!readOnly || (editStatus !== undefined && editStatus)) && (
           <>
             {editStatus ? (
@@ -77,14 +92,14 @@ const Select = ({
         )}
       </div>
       {isOpen && (
-        <div className="absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-max h-[300px] overflow-y-auto">
+        <div className="absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-full">
           {options.map((option) => (
             <div
               key={option.id}
-              className="p-2 cursor-pointer hover:bg-gray-100 w-max"
-              onClick={() => handleOptionClick(option.Name, option.id)}
+              className="p-2 cursor-pointer hover:bg-gray-100 w-full"
+              onClick={() => handleOptionClick(option.value, option.id)}
             >
-              {option.Name}
+              {option.value}
             </div>
           ))}
         </div>
@@ -93,4 +108,4 @@ const Select = ({
   );
 };
 
-export default Select;
+export default SelectStatus;

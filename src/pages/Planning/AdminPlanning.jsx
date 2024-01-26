@@ -12,7 +12,7 @@ import { stateStore } from "../../store/stateStore";
 import ColumnTableAddActivity from "../../components/Tables/ColumnTableAddActivity";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 
-const AdminPlanning = () => {
+const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
   const [activeTab, setActiveTab] = useState(1);
   const { setOpenNotifications } = stateStore();
   const [selectedFrequencyOption, setselectedFrequencyOption] =
@@ -326,13 +326,6 @@ const AdminPlanning = () => {
     });
   };
 
-  const options = [
-    { id: 1, value: "SmartPR" },
-    { id: 2, value: "MTC" },
-    { id: 3, value: "Ford" },
-    { id: 4, value: "Toyota" },
-  ];
-
   const handleSelect = (selectedOption) => {
     setInitialOptionSelect(selectedOption);
   };
@@ -344,20 +337,6 @@ const AdminPlanning = () => {
   const handleSelectActivity = (selectedOption) => {
     setInitialOptionSelectActivity(selectedOption);
   };
-
-  const optionsActivity = [
-    { id: 1, value: "Actividad 1" },
-    { id: 2, value: "Actividad 2" },
-    { id: 3, value: "Actividad 3" },
-    { id: 4, value: "Actividad 4" },
-  ];
-
-  const optionsProcess = [
-    { id: 1, value: "Proceso 1" },
-    { id: 2, value: "Proceso 2" },
-    { id: 3, value: "Proceso 3" },
-    { id: 4, value: "Proceso 4" },
-  ];
 
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
@@ -403,7 +382,7 @@ const AdminPlanning = () => {
         {activeTab === 3 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={options}
+              options={clients}
               onSelect={handleSelect}
               initialOption={initialOptionSelect}
               readOnly={false}
@@ -420,21 +399,21 @@ const AdminPlanning = () => {
         {activeTab === 4 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={options}
+              options={clients}
               onSelect={handleSelect}
               initialOption={initialOptionSelect}
               readOnly={false}
               editStatus={true}
             />
             <Select
-              options={optionsActivity}
+              options={activities}
               onSelect={handleSelectActivity}
               initialOption={initialOptionSelectActivity}
               readOnly={false}
               editStatus={true}
             />
             <Select
-              options={optionsProcess}
+              options={processes}
               onSelect={handleSelectProcess}
               initialOption={initialOptionSelectProcess}
               readOnly={false}
@@ -834,7 +813,7 @@ const AdminPlanning = () => {
       </div>
       {activeTab === 4 && (
         <div className="flex justify-end">
-          <Pagination />
+          <Pagination setTasks={setTasks} />
         </div>
       )}
     </div>

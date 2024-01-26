@@ -18,4 +18,10 @@ module.exports = {
     ],
     "react/prop-types": "off",
   },
+  env: {
+    browser: true,
+  },
+  globals: {
+    process: true,
+  },
 };
