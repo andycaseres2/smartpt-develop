@@ -9,11 +9,7 @@ const InputDate = ({ text, position, styleInput }) => {
   const calendarRef = useRef(null);
 
   const handleDateChange = (date) => {
-    const formattedDate = `${("0" + date.getDate()).slice(-2)}/${(
-      "0" +
-      (date.getMonth() + 1)
-    ).slice(-2)}/${date.getFullYear()}`;
-    setSelectedDate(formattedDate);
+    setSelectedDate(date);
     setCalendarOpen(false);
   };
 
@@ -29,16 +25,28 @@ const InputDate = ({ text, position, styleInput }) => {
     };
   }, []);
 
+  const formatSelectedDate = (date) => {
+    if (!date) {
+      return "";
+    }
+    const formattedDate = `${date.getFullYear()}/${(date.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")}`;
+    return formattedDate;
+  };
+
   return (
     <div
-      className={`bg-white h-[40px] shadow-3xl rounded-lg px-4 z-[1] py-2 flex justify-between items-center gap-2 relative cursor-pointer ${
+      className={`bg-white h-[40px] shadow-3xl rounded px-4 z-[1] py-2 flex justify-between items-center gap-2 relative cursor-pointer ${
         !text ? "w-[157px]" : styleInput || ""
       }`}
       onClick={() => setCalendarOpen(!calendarOpen)}
       ref={calendarRef}
     >
       {selectedDate ? (
-        <span className="font-semibold w-max">{selectedDate}</span>
+        <span className="font-semibold w-max">
+          {formatSelectedDate(selectedDate)}
+        </span>
       ) : (
         <span className="font-semibold w-max">{text}</span>
       )}
@@ -47,7 +55,7 @@ const InputDate = ({ text, position, styleInput }) => {
         <Calendar />
       </div>
       {calendarOpen && (
-        <div className={`${position ?? "absolute top-11 right-0"}`}>
+        <div className={`${position ?? "absolute top-11 right-0 h-max"}`}>
           <DatePicker
             selected={selectedDate}
             onChange={handleDateChange}

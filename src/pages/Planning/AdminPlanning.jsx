@@ -12,7 +12,15 @@ import { stateStore } from "../../store/stateStore";
 import ColumnTableAddActivity from "../../components/Tables/ColumnTableAddActivity";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 
-const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
+const AdminPlanning = ({
+  clients,
+  activities,
+  processes,
+  tasks,
+  setTasks,
+  setRealTime,
+  totalTimes,
+}) => {
   const [activeTab, setActiveTab] = useState(1);
   const { setOpenNotifications } = stateStore();
   const [selectedFrequencyOption, setselectedFrequencyOption] =
@@ -127,7 +135,6 @@ const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
     "w-32", // Ancho para Columna 10
     "w-64", // Ancho para Columna 11
     "w-44", // Ancho para Columna 12
-    "w-44", // Ancho para Columna 13
   ];
 
   const columnWidthsNewActivity = [
@@ -338,6 +345,16 @@ const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
     setInitialOptionSelectActivity(selectedOption);
   };
 
+  const [newTaskAdd, setNewTaskAdd] = useState(false);
+  async function addTask(arrayTasks) {
+    const nuevaTarea = arrayTasks[0].map((task, index) =>
+      index === arrayTasks[0].length - 1 ? null : { ...task, data: "" }
+    );
+
+    await setTasks((prev) => [nuevaTarea, ...prev]);
+    setNewTaskAdd(true);
+  }
+
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
       <div className="w-full flex justify-between z-[2]">
@@ -355,7 +372,7 @@ const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
                 Total horas programadas:
               </p>
               <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500 ">
-                25 horas
+                {totalTimes} horas
               </span>
             </div>
           )}
@@ -392,18 +409,20 @@ const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
               buttonColor={"bg-primary-red-600"}
               text={"Añadir actividad"}
               icon={<CirclePlus />}
+              action={() => addTask(tasks)}
             />
           </div>
         )}
 
         {activeTab === 4 && (
-          <div className="flex gap-3 items-center mb-2">
+          <div className="flex gap-2 items-center mb-2 w-full justify-end">
             <Select
               options={clients}
               onSelect={handleSelect}
               initialOption={initialOptionSelect}
               readOnly={false}
               editStatus={true}
+              styleSelect={"!w-[130px] !justify-center px-3"}
             />
             <Select
               options={activities}
@@ -411,6 +430,7 @@ const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
               initialOption={initialOptionSelectActivity}
               readOnly={false}
               editStatus={true}
+              styleSelect={"!w-[130px] !justify-center px-3"}
             />
             <Select
               options={processes}
@@ -418,6 +438,7 @@ const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
               initialOption={initialOptionSelectProcess}
               readOnly={false}
               editStatus={true}
+              styleSelect={"!w-[130px] !justify-center px-3"}
             />
             <InputDate text={"Fecha inicio"} />
             <InputDate text={"Fecha fin"} />
@@ -763,23 +784,21 @@ const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
                     readOnly={false}
                   />
                 </thead>
-                <tbody className="border-b border-gray-300">
-                  <RowTable
-                    listItems={listItems}
-                    columnWidths={columnWidths}
-                    stateRow={stateRow}
-                    handleChange={handleChange}
-                    editStatus={true}
-                  />
-                </tbody>
-                <tbody className="border-b border-gray-300">
-                  <RowTable
-                    listItems={listItems}
-                    columnWidths={columnWidths}
-                    stateRow={stateRow}
-                    handleChange={handleChange}
-                    editStatus={true}
-                  />
+                <tbody className="">
+                  {tasks.map((item, index) => (
+                    <RowTable
+                      key={index}
+                      index={index}
+                      listItems={item}
+                      columnWidths={columnWidths}
+                      stateRow={stateRow}
+                      handleChange={handleChange}
+                      editStatus={true}
+                      newTaskAdd={newTaskAdd}
+                      setNewTaskAdd={setNewTaskAdd}
+                      setRealTime={setRealTime}
+                    />
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -797,14 +816,18 @@ const AdminPlanning = ({ clients, activities, processes, tasks, setTasks }) => {
                     readOnly={true}
                   />
                 </thead>
-                <tbody className="border-b border-gray-300">
-                  <RowTable
-                    listItems={listItems}
-                    columnWidths={columnWidths}
-                    stateRow={stateRow}
-                    handleChange={handleChange}
-                    readOnly={true}
-                  />
+                <tbody className="">
+                  {tasks.map((item, index) => (
+                    <RowTable
+                      key={index}
+                      listItems={item}
+                      columnWidths={columnWidths}
+                      stateRow={stateRow}
+                      handleChange={handleChange}
+                      readOnly={true}
+                      newTaskAdd={newTaskAdd}
+                    />
+                  ))}
                 </tbody>
               </table>
             </div>

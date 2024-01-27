@@ -169,7 +169,7 @@ const RowTable = ({
               handleChange={handleChange}
             />
           ) : item?.editComponent === "select" && !modeEdit ? (
-            <span>{item?.data}</span>
+            <span className="truncate">{item?.data}</span>
           ) : item?.editComponent === "input" &&
             item?.type === "time" &&
             modeEdit ? (
@@ -196,31 +196,34 @@ const RowTable = ({
             !modeEdit ? (
             <span>{item?.data.split("T")[0]}</span>
           ) : typeof item === "number" || item === null ? (
-            !readOnly &&
-            (!modeEdit ? (
-              <td className="flex w-44 items-center gap-4 justify-center">
-                <PencilIcon
-                  action={() => setModeEdit(true)}
-                  className={"cursor-pointer hover:scale-105"}
-                />
-                <ProfilePicture className={"cursor-pointer hover:scale-105"} />
-              </td>
-            ) : (
-              <td className="flex w-44 items-center gap-4 justify-center">
-                <CheckIcon
-                  className={"cursor-pointer hover:scale-105"}
-                  action={() => {
-                    newTaskAdd ? createTask() : editTask();
-                  }}
-                />
-                <CloseIcon
-                  action={() => setModeEdit(false)}
-                  className={"cursor-pointer hover:scale-105"}
-                />
-              </td>
-            ))
+            !readOnly ? (
+              !modeEdit ? (
+                <td className="flex w-44 items-center gap-4 justify-center">
+                  <PencilIcon
+                    action={() => setModeEdit(true)}
+                    className={"cursor-pointer hover:scale-105"}
+                  />
+                  <ProfilePicture
+                    className={"cursor-pointer hover:scale-105"}
+                  />
+                </td>
+              ) : (
+                <td className="flex w-44 items-center gap-4 justify-center">
+                  <CheckIcon
+                    className={"cursor-pointer hover:scale-105"}
+                    action={() => {
+                      newTaskAdd ? createTask() : editTask();
+                    }}
+                  />
+                  <CloseIcon
+                    action={() => setModeEdit(false)}
+                    className={"cursor-pointer hover:scale-105"}
+                  />
+                </td>
+              )
+            ) : null
           ) : (
-            <span>{item?.data}</span>
+            <span className="truncate ">{item?.data}</span>
           )}
         </td>
       ))}

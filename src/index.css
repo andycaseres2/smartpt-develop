@@ -26,3 +26,9 @@ body {
   background-position: center;
   z-index: -1; /* Para colocar la imagen detrás del contenido del header */
 }
+
+.truncate {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}

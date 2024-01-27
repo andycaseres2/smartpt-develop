@@ -16,6 +16,7 @@ const WorkerPlanning = ({
   tasks,
   setTasks,
   setRealTime,
+  totalTimes,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
@@ -71,7 +72,6 @@ const WorkerPlanning = ({
     "w-32", // Ancho para Columna 10
     "w-64", // Ancho para Columna 11
     "w-44", // Ancho para Columna 12
-    "w-44", // Ancho para Columna 13
   ];
 
   const columnTitles = [
@@ -116,7 +116,7 @@ const WorkerPlanning = ({
                 Total horas programadas:
               </p>
               <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500 ">
-                25 horas
+                {totalTimes} horas
               </span>
             </div>
           )}
@@ -178,7 +178,7 @@ const WorkerPlanning = ({
                     readOnly={false}
                   />
                 </thead>
-                <tbody className="border-b border-gray-300">
+                <tbody className="">
                   {tasks.map((item, index) => (
                     <RowTable
                       key={index}
@@ -210,7 +210,7 @@ const WorkerPlanning = ({
                     readOnly={true}
                   />
                 </thead>
-                <tbody className="border-b border-gray-300">
+                <tbody className="">
                   {tasks.map((item, index) => (
                     <RowTable
                       key={index}

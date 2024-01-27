@@ -12,6 +12,7 @@ const Select = ({
   handleChange,
   key_name,
   zIndez,
+  containerStyle,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -48,14 +49,14 @@ const Select = ({
 
   return (
     <div
-      className="relative inline-block"
+      className={`relative inline-block ${containerStyle}`}
       onBlur={() => setIsOpen(false)}
       tabIndex={0}
     >
       <div
         className={`bg-white py-2 text-[15px] ${
           styleSelect || "px-4"
-        } rounded cursor-pointer font-semibold relative flex items-center justify-between w-[157px] gap-4  ${zIndez} ${
+        } rounded cursor-pointer shadow-3xl h-[40px] font-semibold relative flex items-center justify-between w-[157px] gap-4  ${zIndez} ${
           !initialOption ? "w-[157px] !justify-end" : ""
         }`}
         onClick={toggleDropdown}

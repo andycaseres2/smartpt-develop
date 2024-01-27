@@ -5,13 +5,37 @@ import WorkerPlanning from "./WorkerPlanning";
 import { getData } from "../../services/getData";
 
 const Planning = () => {
-  const userRole = "";
+  const userRole = "admin";
   const [clients, setClients] = useState([]);
   const [activities, setActivities] = useState([]);
   const [processes, setProcesses] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [isNewTask, setIsNewTask] = useState(false);
   const [realTime, setRealTime] = useState(true);
+  const [totalTimes, setTotalTimes] = useState(0);
+
+  useEffect(() => {
+    // Verificar si tuArray tiene al menos un elemento antes de acceder
+    if (tasks && tasks.length > 0) {
+      // Iterar sobre cada objeto dentro de tuArray
+      const estimatedTimes = tasks.map((objeto) => {
+        // Buscar el objeto con key_name "EstimatedTime"
+        const estimatedTimeObject = objeto.find(
+          (propiedad) => propiedad.key_name === "EstimatedTime"
+        );
+
+        // Retornar el valor de "data" si se encontró el objeto
+        return estimatedTimeObject ? estimatedTimeObject.data : null;
+      });
+
+      const total = estimatedTimes.reduce(
+        (acumulador, valorActual) => acumulador + valorActual,
+        0
+      );
+      // Actualizar el estado con los valores obtenidos
+      setTotalTimes(total);
+    }
+  }, [tasks]); // La dependencia es tuArray
 
   useEffect(() => {
     // Leer la  URL base desde el archivo .env
@@ -75,6 +99,9 @@ const Planning = () => {
             tasks={tasks}
             setTasks={setTasks}
             setRealTime={setRealTime}
+            setIsNewTask={setIsNewTask}
+            isNewTask={isNewTask}
+            totalTimes={totalTimes}
           />
         ) : (
           <WorkerPlanning
@@ -86,6 +113,7 @@ const Planning = () => {
             setIsNewTask={setIsNewTask}
             isNewTask={isNewTask}
             setRealTime={setRealTime}
+            totalTimes={totalTimes}
           />
         )}
       </div>
