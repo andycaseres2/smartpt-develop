@@ -83,9 +83,9 @@ const Select = ({
             <div
               key={option.id}
               className="p-2 cursor-pointer hover:bg-gray-100 w-max"
-              onClick={() => handleOptionClick(option.Name, option.id)}
+              onClick={() => handleOptionClick(option.name, option.id)}
             >
-              {option.Name}
+              {option.name}
             </div>
           ))}
         </div>

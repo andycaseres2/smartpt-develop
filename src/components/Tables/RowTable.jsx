@@ -15,6 +15,7 @@ const RowTable = ({
   listItems,
   columnWidths,
   stateRow,
+  setStateRow,
   handleChange,
   readOnly,
   editMode,
@@ -57,11 +58,11 @@ const RowTable = ({
     }
 
     // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
-    body.IdEmployeeAsigned = 1;
-    body.RealEndDate = null;
+    body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+    body.realenddate = null;
 
     // Definir la URL base
-    const baseUrl = "https://central.logotexo.com/smartpr/";
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
 
     // Construir la URL del endpoint para las tareas
     const tasksEndpoint = `${baseUrl}Task`;
@@ -73,6 +74,7 @@ const RowTable = ({
     setModeEdit(false);
     setNewTaskAdd(false);
     setRealTime(true);
+    setStateRow({});
   }
 
   async function editTask() {
@@ -87,11 +89,11 @@ const RowTable = ({
     }
 
     // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
-    body.IdEmployeeAsigned = 1;
-    body.RealEndDate = null;
+    body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+    body.realenddate = null;
 
     // Definir la URL base
-    const baseUrl = "https://central.logotexo.com/smartpr/";
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
 
     // Construir la URL del endpoint para la tarea específica
     const taskEndpoint = await `${baseUrl}Task/${rowId}`;
@@ -130,6 +132,7 @@ const RowTable = ({
               key_name={item?.key_name}
               handleChange={handleChange}
               editStatus={true}
+              modeEdit={modeEdit}
             />
           ) : item?.type === "status" && !modeEdit ? (
             <SelectStatus
@@ -143,6 +146,8 @@ const RowTable = ({
               key_name={item?.key_name}
               handleChange={handleChange}
               editStatus={true}
+              newTaskAdd={newTaskAdd}
+              modeEdit={modeEdit}
             />
           ) : item?.editComponent === "input" &&
             item?.type === "text" &&
@@ -182,7 +187,9 @@ const RowTable = ({
           ) : item?.editComponent === "input" &&
             item?.type === "time" &&
             !modeEdit ? (
-            <span>{`${item?.data} ${item?.data > 1 ? "horas" : "hora"}`}</span>
+            <span>{`${item?.data} ${
+              item?.data > 1 ? "minutos" : "minuto"
+            }`}</span>
           ) : item?.editComponent === "input" &&
             item?.type === "date" &&
             modeEdit ? (

@@ -20,9 +20,10 @@ const AdminPlanning = ({
   setTasks,
   setRealTime,
   totalTimes,
+  totalPages,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
-  const { setOpenNotifications } = stateStore();
+  const { setOpenNotifications, newTaskEmpty } = stateStore();
   const [selectedFrequencyOption, setselectedFrequencyOption] =
     useState("Semanal");
   const [selectedMonthOption, setselectedMonthOption] = useState("Septiembre");
@@ -346,9 +347,9 @@ const AdminPlanning = ({
   };
 
   const [newTaskAdd, setNewTaskAdd] = useState(false);
-  async function addTask(arrayTasks) {
-    const nuevaTarea = arrayTasks[0].map((task, index) =>
-      index === arrayTasks[0].length - 1 ? null : { ...task, data: "" }
+  async function addTask() {
+    const nuevaTarea = newTaskEmpty.map((task, index) =>
+      index === newTaskEmpty.length - 1 ? null : { ...task }
     );
 
     await setTasks((prev) => [nuevaTarea, ...prev]);
@@ -409,7 +410,7 @@ const AdminPlanning = ({
               buttonColor={"bg-primary-red-600"}
               text={"Añadir actividad"}
               icon={<CirclePlus />}
-              action={() => addTask(tasks)}
+              action={() => addTask()}
             />
           </div>
         )}
@@ -446,7 +447,7 @@ const AdminPlanning = ({
         )}
       </div>
 
-      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[660px] p-4 shadow-lg">
+      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[660px] px-4 pt-4 shadow-lg">
         {activeTab === 1 && (
           <div className="flex w-full h-full gap-3">
             <WorkerList
@@ -836,7 +837,7 @@ const AdminPlanning = ({
       </div>
       {activeTab === 4 && (
         <div className="flex justify-end">
-          <Pagination setTasks={setTasks} />
+          <Pagination setTasks={setTasks} totalPages={totalPages} />
         </div>
       )}
     </div>

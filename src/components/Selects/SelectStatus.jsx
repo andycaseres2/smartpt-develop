@@ -11,28 +11,30 @@ const SelectStatus = ({
   styleSelect,
   handleChange,
   key_name,
+  newTaskAdd,
+  modeEdit,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
 
   useEffect(() => {
-    if (initialOption && Array.isArray(options)) {
+    if (initialOption && initialOption !== "") {
       setSelectedOption(initialOption);
       const foundOption = options.find(
         (option) => option.value === initialOption
       );
       if (foundOption) {
         setSelectedOptionId(foundOption.id);
-        if (handleChange) {
+        if (newTaskAdd) {
+          handleChange({ target: { name: key_name, value: 1 } });
+        }
+        if (modeEdit) {
           handleChange({ target: { name: key_name, value: foundOption.id } });
         }
       }
-    } else {
-      setSelectedOptionId(1);
-      setSelectedOption("Pendiente");
     }
-  }, [initialOption, key_name]);
+  }, [initialOption, key_name, newTaskAdd, modeEdit]);
 
   const toggleDropdown = () => {
     if (readOnly) {
@@ -46,6 +48,7 @@ const SelectStatus = ({
     setSelectedOptionId(id);
     setIsOpen(false);
     onSelect(option);
+    selectColors(id);
     if (handleChange) {
       handleChange({ target: { name: key_name, value: id } });
     }

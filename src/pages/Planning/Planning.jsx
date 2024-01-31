@@ -3,49 +3,62 @@ import Header from "../../components/Header/Header";
 import AdminPlanning from "./AdminPlanning";
 import WorkerPlanning from "./WorkerPlanning";
 import { getData } from "../../services/getData";
+import { stateStore } from "../../store/stateStore";
 
 const Planning = () => {
-  const userRole = "admin";
-  const [clients, setClients] = useState([]);
-  const [activities, setActivities] = useState([]);
-  const [processes, setProcesses] = useState([]);
+  const userRole = import.meta.env.VITE_REACT_APP_ROLE;
+  const { setProcesses, setClients, setActivities } = stateStore();
   const [tasks, setTasks] = useState([]);
   const [isNewTask, setIsNewTask] = useState(false);
   const [realTime, setRealTime] = useState(true);
   const [totalTimes, setTotalTimes] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    // Verificar si tuArray tiene al menos un elemento antes de acceder
+    // Verificar si tasks tiene al menos un elemento antes de acceder
     if (tasks && tasks.length > 0) {
-      // Iterar sobre cada objeto dentro de tuArray
-      const estimatedTimes = tasks.map((objeto) => {
-        // Buscar el objeto con key_name "EstimatedTime"
+      // Filtrar elementos que tienen un valor válido para "EstimatedTime"
+      const validTasks = tasks.filter((objeto) => {
         const estimatedTimeObject = objeto.find(
-          (propiedad) => propiedad.key_name === "EstimatedTime"
+          (propiedad) => propiedad.key_name === "estimatedtime"
         );
+        return estimatedTimeObject && estimatedTimeObject.data !== null;
+      });
 
-        // Retornar el valor de "data" si se encontró el objeto
+      // Obtener los valores de "EstimatedTime"
+      const estimatedTimes = validTasks.map((objeto) => {
+        const estimatedTimeObject = objeto.find(
+          (propiedad) => propiedad.key_name === "estimatedtime"
+        );
         return estimatedTimeObject ? estimatedTimeObject.data : null;
       });
 
-      const total = estimatedTimes.reduce(
+      // Filtrar los valores nulos
+      const validEstimatedTimes = estimatedTimes.filter(
+        (valor) => valor !== null
+      );
+
+      // Sumar los valores válidos
+      const total = validEstimatedTimes.reduce(
         (acumulador, valorActual) => acumulador + valorActual,
         0
       );
+
       // Actualizar el estado con los valores obtenidos
       setTotalTimes(total);
     }
-  }, [tasks]); // La dependencia es tuArray
+  }, [tasks]);
 
   useEffect(() => {
     // Leer la  URL base desde el archivo .env
-    const baseUrl = "https://central.logotexo.com/smartpr/";
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
 
     // Definir los endpoints utilizando la URL base
     const clientsEndpoint = `${baseUrl}Customer`;
     const activitiesEndpoint = `${baseUrl}Activity`;
     const processesEndpoint = `${baseUrl}Process`;
     const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=10`;
+    const paginations = `${baseUrl}FormattedTask/Pages`;
 
     // Realizar solicitudes al montar el componente
     const fetchDataOnMount = async () => {
@@ -76,6 +89,14 @@ const Planning = () => {
       } catch (error) {
         console.error("Error fetching processes data:", error);
       }
+
+      try {
+        const paginationsData = await getData(paginations);
+        const totalPages = Math.ceil(paginationsData / 10); // Redondear hacia arriba para asegurarse de que todas las tareas se muestren
+        setTotalPages(totalPages);
+      } catch (error) {
+        console.error("Error fetching paginations data:", error);
+      }
     };
 
     fetchDataOnMount();
@@ -91,29 +112,25 @@ const Planning = () => {
         baseColor="bg-primary-red-600"
       />
       <div className="w-full flex flex-col bg-primary-pink-50 py-4 px-6 h-full">
-        {userRole === "admin" ? (
+        {userRole === "ADMIN" ? (
           <AdminPlanning
-            clients={clients}
-            processes={processes}
-            activities={activities}
             tasks={tasks}
             setTasks={setTasks}
             setRealTime={setRealTime}
             setIsNewTask={setIsNewTask}
             isNewTask={isNewTask}
             totalTimes={totalTimes}
+            totalPages={totalPages}
           />
         ) : (
           <WorkerPlanning
-            clients={clients}
-            processes={processes}
-            activities={activities}
             tasks={tasks}
             setTasks={setTasks}
             setIsNewTask={setIsNewTask}
             isNewTask={isNewTask}
             setRealTime={setRealTime}
             totalTimes={totalTimes}
+            totalPages={totalPages}
           />
         )}
       </div>

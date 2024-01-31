@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ArrowDown from "../../assets/Icons/ArrowDown";
+import { stateStore } from "../../store/stateStore";
 
 const SelectGeneric = ({
   options,
@@ -12,6 +13,8 @@ const SelectGeneric = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+  const { activities, setActivitiesByProcess, activitiesByProcess } =
+    stateStore();
 
   useEffect(() => {
     if (initialOption && Array.isArray(options)) {
@@ -21,9 +24,16 @@ const SelectGeneric = ({
       );
       if (foundOption) {
         handleChange({ target: { name: key_name, value: foundOption.id } });
+        if (key_name === "idprocesses") {
+          const activitiesOptiones = activities.filter(
+            (activity) => activity.idprocess === foundOption.id
+          );
+          setActivitiesByProcess(activitiesOptiones);
+        }
       }
     }
   }, [initialOption, key_name]);
+  console.log("activitiesByProcess", activitiesByProcess);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -32,8 +42,15 @@ const SelectGeneric = ({
   const handleOptionClick = (option, id) => {
     setSelectedOption(option);
     setIsOpen(false);
-    onSelect(option); // Llamar a la función onSelect cuando se selecciona una opción
+    onSelect(option);
     handleChange({ target: { name: key_name, value: id } });
+    if (key_name === "idprocesses") {
+      const activitiesOptiones = activities.filter(
+        (activity) => activity.idprocess === id
+      );
+      console.log("activitiesOptiones", activitiesOptiones);
+      setActivitiesByProcess(activitiesOptiones);
+    }
   };
 
   return (
@@ -64,9 +81,9 @@ const SelectGeneric = ({
             <div
               key={option.id}
               className="p-2 cursor-pointer hover:bg-gray-200"
-              onClick={() => handleOptionClick(option.value, option.id)}
+              onClick={() => handleOptionClick(option.name, option.id)}
             >
-              {option.value}
+              {option.name}
             </div>
           ))}
         </div>

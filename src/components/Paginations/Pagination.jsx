@@ -8,12 +8,11 @@ import { useLocation } from "react-router-dom";
 import { getColor } from "../../utils/getColor";
 import { getData } from "../../services/getData";
 
-const Pagination = ({ setTasks }) => {
+const Pagination = ({ setTasks, totalPages }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const totalPages = 20; // Total de páginas
   const pagesToShow = 5; // Número de páginas a mostrar
 
   const handleClick = (page) => {
@@ -22,7 +21,7 @@ const Pagination = ({ setTasks }) => {
 
   useEffect(() => {
     // Leer la  URL base desde el archivo .env
-    const baseUrl = "https://central.logotexo.com/smartpr/";
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
 
     // Definir los endpoints utilizando la URL base
     const pageEndpoint = `${baseUrl}FormattedTask?page=${currentPage}&size=10`;

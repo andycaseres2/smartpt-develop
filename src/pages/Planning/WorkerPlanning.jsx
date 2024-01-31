@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
 import Select from "../../components/Selects/Select";
 import Tabs from "../../components/Tabs/Tabs";
@@ -10,14 +10,14 @@ import Pagination from "../../components/Paginations/Pagination";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 
 const WorkerPlanning = ({
-  clients,
-  activities,
-  processes,
   tasks,
   setTasks,
   setRealTime,
   totalTimes,
+  totalPages,
+  isNewTask,
 }) => {
+  const { processes, newTaskEmpty, clients, activities } = stateStore();
   const [activeTab, setActiveTab] = useState(1);
   const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
@@ -25,7 +25,29 @@ const WorkerPlanning = ({
   const [initialOptionSelectProcess, setInitialOptionSelectProcess] =
     useState("Proceso");
   const [stateRow, setStateRow] = useState({});
-  const { setOpenNotifications } = stateStore();
+  const { setOpenNotifications, activitiesByProcess } = stateStore();
+
+  console.log("state", stateRow);
+  console.log("tasks", tasks);
+
+  useEffect(() => {
+    // Actualizar el estado del array de tareas con las opciones actualizadas
+    setTasks((prevTareas) => {
+      if (prevTareas.length > 0 && activitiesByProcess.length > 0) {
+        const nuevoArray = prevTareas[0].map((item) => {
+          if (item?.key_name === "idactivity") {
+            // Actualizar solo el objeto correspondiente a idactivity
+            return { ...item, options: activitiesByProcess };
+          }
+          return item;
+        });
+
+        return [nuevoArray, ...prevTareas.slice(1)];
+      }
+
+      return prevTareas;
+    });
+  }, [activitiesByProcess]);
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
@@ -90,11 +112,10 @@ const WorkerPlanning = ({
     "",
   ];
   const [newTaskAdd, setNewTaskAdd] = useState(false);
-  async function addTask(arrayTasks) {
-    const nuevaTarea = arrayTasks[0].map((task, index) =>
-      index === arrayTasks[0].length - 1 ? null : { ...task, data: "" }
+  async function addTask() {
+    const nuevaTarea = newTaskEmpty.map((task, index) =>
+      index === newTaskEmpty.length - 1 ? null : { ...task }
     );
-
     await setTasks((prev) => [nuevaTarea, ...prev]);
     setNewTaskAdd(true);
   }
@@ -134,7 +155,7 @@ const WorkerPlanning = ({
               buttonColor={"bg-primary-red-600"}
               text={"Añadir actividad"}
               icon={<CirclePlus />}
-              action={() => addTask(tasks)}
+              action={() => addTask()}
             />
           </div>
         ) : (
@@ -166,7 +187,7 @@ const WorkerPlanning = ({
         )}
       </div>
 
-      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[660px]">
+      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[660px] px-4">
         {activeTab === 1 && (
           <div className="overflow-x-auto h-full">
             <div className="min-w-max">
@@ -191,6 +212,8 @@ const WorkerPlanning = ({
                       newTaskAdd={newTaskAdd}
                       setNewTaskAdd={setNewTaskAdd}
                       setRealTime={setRealTime}
+                      isNewTask={isNewTask}
+                      setStateRow={setStateRow}
                     />
                   ))}
                 </tbody>
@@ -230,7 +253,7 @@ const WorkerPlanning = ({
       </div>
       {activeTab === 2 && (
         <div className="flex justify-end">
-          <Pagination setTasks={setTasks} />
+          <Pagination setTasks={setTasks} totalPages={totalPages} />
         </div>
       )}
     </div>

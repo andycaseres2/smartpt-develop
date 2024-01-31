@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 
-const TimeInput = ({ defaultValue, handleChange, key_name, type }) => {
+const TimeInput = ({ defaultValue, handleChange, key_name }) => {
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     if (defaultValue) {
-      setInputValue(formatTime(defaultValue));
+      setInputValue(formatTime24Hours(defaultValue));
       handleChange({
         target: {
           name: key_name,
@@ -15,13 +15,11 @@ const TimeInput = ({ defaultValue, handleChange, key_name, type }) => {
     }
   }, [defaultValue]);
 
-  // Función para formatear el tiempo
-  const formatTime = (time) => {
-    // Asegurarse de que time sea un número
+  // Función para formatear el tiempo en formato de 12 horas
+  const formatTime24Hours = (time) => {
     const parsedTime = parseFloat(time);
 
     if (!isNaN(parsedTime)) {
-      // Formatear el tiempo como "HH:mm"
       const hours = Math.floor(parsedTime);
       const minutes = Math.round((parsedTime - hours) * 60);
 
@@ -31,35 +29,55 @@ const TimeInput = ({ defaultValue, handleChange, key_name, type }) => {
 
       return formattedTime;
     } else {
-      // Devolver el valor original si no se puede parsear como número
       return time;
     }
+  };
+
+  // Generar opciones de horas en formato de 12 horas
+  const generateHourOptions = () => {
+    const options = [];
+    for (let i = 0; i < 24; i++) {
+      for (let j = 0; j < 60; j += 30) {
+        const time = formatTime24Hours(i + j / 60);
+        options.push(time);
+      }
+    }
+    return options;
   };
 
   const handleInputChange = (e) => {
     const newValue = e.target.value;
 
-    // Convertir el formato "20:20" a 20.20
-    const partes = newValue.split(":");
-    const parte1 = parseInt(partes[0], 10);
-    const parte2 = parseInt(partes[1], 10);
-    const nuevoValor = parte1 * 60 + parte2;
-
     setInputValue(newValue);
 
-    handleChange({
-      target: { name: key_name, value: nuevoValor },
-    });
+    // Convertir el formato "8:30" a 8.5
+    const match = newValue.match(/^(\d{1,2}):(\d{2})$/);
+
+    if (match) {
+      const hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+
+      const nuevoValor = hours + minutes / 60;
+
+      handleChange({
+        target: { name: key_name, value: nuevoValor },
+      });
+    }
   };
 
   return (
-    <input
-      className="w-full border-none p-2 bg-gray-100 rounded-md  focus:outline-none"
-      type={type}
+    <select
+      className="w-full border-none p-2 bg-gray-100 rounded-md focus:outline-none max-h-16 overflow-y-auto"
       value={inputValue}
       onChange={handleInputChange}
       name={key_name}
-    />
+    >
+      {generateHourOptions().map((option, index) => (
+        <option key={index} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
   );
 };
 
