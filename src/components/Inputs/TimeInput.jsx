@@ -9,7 +9,7 @@ const TimeInput = ({ defaultValue, handleChange, key_name }) => {
       handleChange({
         target: {
           name: key_name,
-          value: defaultValue,
+          value: defaultValue * 60,
         },
       });
     }
@@ -57,7 +57,7 @@ const TimeInput = ({ defaultValue, handleChange, key_name }) => {
       const hours = parseInt(match[1], 10);
       const minutes = parseInt(match[2], 10);
 
-      const nuevoValor = hours + minutes / 60;
+      const nuevoValor = hours * 60 + minutes;
 
       handleChange({
         target: { name: key_name, value: nuevoValor },

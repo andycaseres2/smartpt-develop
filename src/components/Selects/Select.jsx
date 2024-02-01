@@ -77,7 +77,7 @@ const Select = ({
           </>
         )}
       </div>
-      {isOpen && (
+      {isOpen && !!options.length && (
         <div className="absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-max h-[300px] overflow-y-auto">
           {options.map((option) => (
             <div

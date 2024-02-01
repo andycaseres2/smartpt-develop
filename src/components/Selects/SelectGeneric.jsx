@@ -13,8 +13,7 @@ const SelectGeneric = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
-  const { activities, setActivitiesByProcess, activitiesByProcess } =
-    stateStore();
+  const { activities, setActivitiesByProcess } = stateStore();
 
   useEffect(() => {
     if (initialOption && Array.isArray(options)) {
@@ -33,7 +32,6 @@ const SelectGeneric = ({
       }
     }
   }, [initialOption, key_name]);
-  console.log("activitiesByProcess", activitiesByProcess);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -48,7 +46,6 @@ const SelectGeneric = ({
       const activitiesOptiones = activities.filter(
         (activity) => activity.idprocess === id
       );
-      console.log("activitiesOptiones", activitiesOptiones);
       setActivitiesByProcess(activitiesOptiones);
     }
   };
@@ -75,7 +72,7 @@ const SelectGeneric = ({
           <>{isOpen ? <ArrowDown className="rotate-180" /> : <ArrowDown />}</>
         )}
       </div>
-      {isOpen && !readOnly && (
+      {isOpen && !readOnly && !!options.length && (
         <div className="absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded h-[300px] overflow-y-auto">
           {options.map((option) => (
             <div

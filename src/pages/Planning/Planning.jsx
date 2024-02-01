@@ -4,6 +4,9 @@ import AdminPlanning from "./AdminPlanning";
 import WorkerPlanning from "./WorkerPlanning";
 import { getData } from "../../services/getData";
 import { stateStore } from "../../store/stateStore";
+import Tooltip from "../../components/Tooltips/Tooltip";
+import CircleCheck from "../../assets/Icons/CircleCheck";
+import WarningCircle from "../../assets/Icons/WarningCircle";
 
 const Planning = () => {
   const userRole = import.meta.env.VITE_REACT_APP_ROLE;
@@ -13,6 +16,19 @@ const Planning = () => {
   const [realTime, setRealTime] = useState(true);
   const [totalTimes, setTotalTimes] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [tooltipSuccess, setTooltipSuccess] = useState("");
+  const [tooltipError, setTooltipError] = useState("");
+
+  useEffect(() => {
+    if (tooltipSuccess || tooltipError) {
+      const timer = setTimeout(() => {
+        setTooltipSuccess("");
+        setTooltipError("");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [tooltipSuccess, tooltipError]);
 
   useEffect(() => {
     // Verificar si tasks tiene al menos un elemento antes de acceder
@@ -45,7 +61,7 @@ const Planning = () => {
       );
 
       // Actualizar el estado con los valores obtenidos
-      setTotalTimes(total);
+      setTotalTimes(Math.round(total / 60));
     }
   }, [tasks]);
 
@@ -121,6 +137,8 @@ const Planning = () => {
             isNewTask={isNewTask}
             totalTimes={totalTimes}
             totalPages={totalPages}
+            setTooltipSuccess={setTooltipSuccess}
+            setTooltipError={setTooltipError}
           />
         ) : (
           <WorkerPlanning
@@ -131,9 +149,26 @@ const Planning = () => {
             setRealTime={setRealTime}
             totalTimes={totalTimes}
             totalPages={totalPages}
+            setTooltipSuccess={setTooltipSuccess}
+            setTooltipError={setTooltipError}
           />
         )}
       </div>
+      {tooltipSuccess && (
+        <Tooltip
+          text={tooltipSuccess}
+          icon={<CircleCheck fill={"#60D935"} className={"w-7 h-7"} />}
+          color="bg-primary-green-500"
+        />
+      )}
+
+      {tooltipError && (
+        <Tooltip
+          text={tooltipError}
+          icon={<WarningCircle stroke={"#F70000"} className={"w-7 h-7"} />}
+          color="bg-primary-red-500"
+        />
+      )}
     </div>
   );
 };

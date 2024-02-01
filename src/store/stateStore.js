@@ -123,7 +123,6 @@ export const stateStore = create((set) => {
     },
     activitiesByProcess: [],
     setActivitiesByProcess: (activitiesByProcess) => {
-      console.log("Setting activitiesByProcess:", activitiesByProcess);
       set({ activitiesByProcess });
       set((state) => ({
         ...state,

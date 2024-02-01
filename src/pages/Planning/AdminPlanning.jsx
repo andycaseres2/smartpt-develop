@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Select from "../../components/Selects/Select";
 import Tabs from "../../components/Tabs/Tabs";
 import RowTable from "../../components/Tables/RowTable";
@@ -13,17 +13,23 @@ import ColumnTableAddActivity from "../../components/Tables/ColumnTableAddActivi
 import CirclePlus from "../../assets/Icons/CirclePlus";
 
 const AdminPlanning = ({
-  clients,
-  activities,
-  processes,
   tasks,
   setTasks,
   setRealTime,
   totalTimes,
   totalPages,
+  setTooltipSuccess,
+  setTooltipError,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
-  const { setOpenNotifications, newTaskEmpty } = stateStore();
+  const {
+    setOpenNotifications,
+    newTaskEmpty,
+    activitiesByProcess,
+    clients,
+    activities,
+    processes,
+  } = stateStore();
   const [selectedFrequencyOption, setselectedFrequencyOption] =
     useState("Semanal");
   const [selectedMonthOption, setselectedMonthOption] = useState("Septiembre");
@@ -34,6 +40,25 @@ const AdminPlanning = ({
     useState("Actividad");
   const [initialOptionSelectProcess, setInitialOptionSelectProcess] =
     useState("Proceso");
+
+  useEffect(() => {
+    // Actualizar el estado del array de tareas con las opciones actualizadas
+    setTasks((prevTareas) => {
+      if (prevTareas.length > 0 && activitiesByProcess.length > 0) {
+        const nuevoArray = prevTareas[0].map((item) => {
+          if (item?.key_name === "idactivity") {
+            // Actualizar solo el objeto correspondiente a idactivity
+            return { ...item, options: activitiesByProcess };
+          }
+          return item;
+        });
+
+        return [nuevoArray, ...prevTareas.slice(1)];
+      }
+
+      return prevTareas;
+    });
+  }, [activitiesByProcess]);
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
@@ -798,6 +823,9 @@ const AdminPlanning = ({
                       newTaskAdd={newTaskAdd}
                       setNewTaskAdd={setNewTaskAdd}
                       setRealTime={setRealTime}
+                      setStateRow={setStateRow}
+                      setTooltipSuccess={setTooltipSuccess}
+                      setTooltipError={setTooltipError}
                     />
                   ))}
                 </tbody>

@@ -23,6 +23,8 @@ const RowTable = ({
   setNewTaskAdd,
   index,
   setRealTime,
+  setTooltipSuccess,
+  setTooltipError,
 }) => {
   const [modeEdit, setModeEdit] = useState(editMode ?? false);
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
@@ -49,62 +51,80 @@ const RowTable = ({
   }, [newTaskAdd]);
 
   async function createTask() {
-    // Obtener el objeto stateRow
-    const body = stateRow;
+    try {
+      // Obtener el objeto stateRow
+      const body = stateRow;
 
-    // Eliminar la propiedad 'null' del objeto
-    if ("null" in body) {
-      delete body["null"];
+      // Eliminar la propiedad 'null' del objeto
+      if ("null" in body) {
+        delete body["null"];
+      }
+
+      // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
+      body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+      body.realenddate = null;
+
+      // Definir la URL base
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+      // Construir la URL del endpoint para las tareas
+      const tasksEndpoint = `${baseUrl}Task`;
+
+      // Enviar los datos modificados al servidor utilizando la función postData
+      await postData(tasksEndpoint, body);
+
+      // Restablecer los modos de edición y agregar nueva tarea
+      setModeEdit(false);
+      setNewTaskAdd(false);
+      setRealTime(true);
+      setStateRow({});
+      setTooltipSuccess("Tarea creada con exito");
+    } catch (error) {
+      // Manejar el error aquí
+      console.error("Error al crear la tarea:", error);
+
+      // Puedes definir un estado de error y guardarlo en tu componente si es necesario
+      setTooltipError("Hubo un error al crear la tarea");
     }
-
-    // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
-    body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
-    body.realenddate = null;
-
-    // Definir la URL base
-    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-
-    // Construir la URL del endpoint para las tareas
-    const tasksEndpoint = `${baseUrl}Task`;
-
-    // Enviar los datos modificados al servidor utilizando la función postData
-    await postData(tasksEndpoint, body);
-
-    // Restablecer los modos de edición y agregar nueva tarea
-    setModeEdit(false);
-    setNewTaskAdd(false);
-    setRealTime(true);
-    setStateRow({});
   }
 
   async function editTask() {
-    // Obtener el objeto stateRow
-    const body = stateRow;
+    try {
+      // Obtener el objeto stateRow
+      const body = stateRow;
 
-    // Convertir la propiedad con clave 'null' a 'ID'
-    if ("null" in body) {
-      delete body["null"];
-    } else if ("id" in body) {
-      delete body["id"];
+      // Convertir la propiedad con clave 'null' a 'ID'
+      if ("null" in body) {
+        delete body["null"];
+      } else if ("id" in body) {
+        delete body["id"];
+      }
+
+      // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
+      body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+      body.realenddate = null;
+
+      // Definir la URL base
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+      // Construir la URL del endpoint para la tarea específica
+      const taskEndpoint = await `${baseUrl}Task/${rowId}`;
+
+      // Enviar los datos modificados al servidor utilizando la función putData (o postData según tu implementación)
+      await putData(taskEndpoint, body);
+
+      // Restablecer los modos de edición y agregar nueva tarea
+      setModeEdit(false);
+      setNewTaskAdd(false);
+      setRealTime(true);
+      setTooltipSuccess("Tarea editada con exito");
+    } catch (error) {
+      // Manejar el error aquí
+      console.error("Error al editar la tarea:", error);
+
+      // Puedes definir un estado de error y guardarlo en tu componente si es necesario
+      setTooltipError("Hubo un error editando la tarea");
     }
-
-    // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
-    body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
-    body.realenddate = null;
-
-    // Definir la URL base
-    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-
-    // Construir la URL del endpoint para la tarea específica
-    const taskEndpoint = await `${baseUrl}Task/${rowId}`;
-
-    // Enviar los datos modificados al servidor utilizando la función putData (o postData según tu implementación)
-    await putData(taskEndpoint, body);
-
-    // Restablecer los modos de edición y agregar nueva tarea
-    setModeEdit(false);
-    setNewTaskAdd(false);
-    setRealTime(true);
   }
 
   const handleSelectOption = (selectedOption, index) => {

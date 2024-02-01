@@ -16,6 +16,8 @@ const WorkerPlanning = ({
   totalTimes,
   totalPages,
   isNewTask,
+  setTooltipSuccess,
+  setTooltipError,
 }) => {
   const { processes, newTaskEmpty, clients, activities } = stateStore();
   const [activeTab, setActiveTab] = useState(1);
@@ -26,9 +28,6 @@ const WorkerPlanning = ({
     useState("Proceso");
   const [stateRow, setStateRow] = useState({});
   const { setOpenNotifications, activitiesByProcess } = stateStore();
-
-  console.log("state", stateRow);
-  console.log("tasks", tasks);
 
   useEffect(() => {
     // Actualizar el estado del array de tareas con las opciones actualizadas
@@ -214,6 +213,8 @@ const WorkerPlanning = ({
                       setRealTime={setRealTime}
                       isNewTask={isNewTask}
                       setStateRow={setStateRow}
+                      setTooltipSuccess={setTooltipSuccess}
+                      setTooltipError={setTooltipError}
                     />
                   ))}
                 </tbody>
