@@ -8,7 +8,7 @@ import { useLocation } from "react-router-dom";
 import { getColor } from "../../utils/getColor";
 import { getData } from "../../services/getData";
 
-const Pagination = ({ setTasks, totalPages }) => {
+const Pagination = ({ setTasks, totalPages, urlBase, setUrlBase }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const location = useLocation();
   const currentPath = location.pathname;
@@ -20,23 +20,27 @@ const Pagination = ({ setTasks, totalPages }) => {
   };
 
   useEffect(() => {
-    // Leer la  URL base desde el archivo .env
-    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+    if (currentPage !== 1) {
+      // Crear una copia del objeto URL
+      const urlObject = new URL(urlBase);
 
-    // Definir los endpoints utilizando la URL base
-    const pageEndpoint = `${baseUrl}FormattedTask?page=${currentPage}&size=10`;
+      // Actualizar el parámetro 'page' con el valor actual de 'currentPage'
+      urlObject.searchParams.set("page", currentPage);
 
-    // Realizar solicitudes al montar el componente
-    const fetchDataOnMount = async () => {
-      try {
-        const pageData = await getData(pageEndpoint);
-        setTasks(pageData);
-      } catch (error) {
-        console.error("Error fetching clients data:", error);
-      }
-    };
+      // Obtener la nueva URL actualizada
+      const newUrl = urlObject.toString();
+      const fetchDataOnMount = async () => {
+        try {
+          const pageData = await getData(newUrl);
+          setTasks(pageData);
+          setUrlBase(newUrl);
+        } catch (error) {
+          console.error("Error fetching clients data:", error);
+        }
+      };
 
-    fetchDataOnMount(); // Llamar a la función al montar el componente
+      fetchDataOnMount(); // Llamar a la función al montar el componente
+    }
   }, [currentPage]);
 
   const goToPrev = () => {

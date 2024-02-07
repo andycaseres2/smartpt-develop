@@ -2,15 +2,71 @@ import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Calendar from "../../assets/Icons/Calendar";
+import { getData } from "../../services/getData";
 
-const InputDate = ({ text, position, styleInput }) => {
+const InputDate = ({
+  text,
+  position,
+  styleInput,
+  urlBase,
+  setTasks,
+  setUrlBase,
+  newFilter,
+  key_name,
+  handleChange,
+  fieldReset,
+}) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef(null);
 
+  useEffect(() => {
+    if (fieldReset) {
+      setSelectedDate(null);
+    }
+  }, [fieldReset]);
+
+  const handleDate = async (date, filter) => {
+    setSelectedDate(date);
+    const formattedDate = date.toISOString();
+    if (handleChange) {
+      handleChange({
+        target: { name: key_name, value: formattedDate },
+      });
+    } else {
+      const urlObject = new URL(urlBase);
+
+      // Verificar si ya existe el parámetro en la URL
+      if (urlObject.searchParams.has(filter)) {
+        // Reemplazar el valor existente
+        urlObject.searchParams.set(filter, formattedDate);
+      } else {
+        // Agregar el nuevo parámetro
+        urlObject.searchParams.append(filter, formattedDate);
+      }
+
+      const newUrl = urlObject.toString();
+
+      try {
+        const tasksData = await getData(newUrl);
+
+        // Actualizar el estado con la nueva URL
+        setUrlBase(newUrl);
+
+        // Actualizar el estado de los datos
+        setTasks(tasksData);
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+    }
+
+    setCalendarOpen(false);
+  };
+
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setCalendarOpen(false);
+    handleDate(date, newFilter);
   };
 
   const handleClickOutside = (event) => {

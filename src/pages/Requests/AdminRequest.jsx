@@ -5,16 +5,70 @@ import SelectGeneric from "../../components/Selects/SelectGeneric";
 import Pagination from "../../components/Paginations/Pagination";
 import InputDate from "../../components/Inputs/InputDate";
 import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
-import InputTime from "../../components/Inputs/InputTime";
 import Select from "../../components/Selects/Select";
 import RowTableRequest from "../../components/Tables/RowTableRequest";
 import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
 import CirclePlus from "../../assets/Icons/CirclePlus";
+import { postData } from "../../services/postData";
+import TimeInput from "../../components/Inputs/TimeInput";
 
-const AdminRequest = () => {
+const AdminRequest = ({
+  setTooltipSuccess,
+  setTooltipError,
+  requests,
+  setRequests,
+  totalPages,
+}) => {
   const [activeTab, setActiveTab] = useState(1);
-  const { setOpenNotifications } = stateStore();
+  const {
+    setOpenNotifications,
+    clients,
+    activities,
+    processes,
+    employees,
+    designFormats,
+    designPieces,
+  } = stateStore();
   const [stateRow, setStateRow] = useState({});
+  const [fieldReset, setFieldReset] = useState(false);
+  const [updateActivities, setUpdateActivities] = useState([]);
+  const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
+  const [initialOptionFormat, setInitialOptionFormat] = useState("Formato");
+  const [initialOptionPeace, setInitialOptionPeace] = useState("Pieza");
+  const [initialOptionEmployee, setInitialOptionEmployee] =
+    useState("Responsable");
+  const [urlBase, setUrlBase] = useState(`
+    ${
+      import.meta.env.VITE_REACT_APP_URL_BASE
+    }FormattedDesignRequest?page=1&size=10&viewAdmin=true`);
+
+  async function createRequest() {
+    try {
+      // Definir la URL base
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+      // Construir la URL del endpoint para las tareas
+      const tasksEndpoint = `${baseUrl}DesignRequest`;
+      // Enviar los datos modificados al servidor utilizando la función postData
+      await postData(tasksEndpoint, stateRow);
+      setStateRow({});
+      setTooltipSuccess("Registro creada con exito");
+      setFieldReset(true);
+    } catch (error) {
+      // Manejar el error aquí
+      console.error("Error al crear la tarea:", error);
+
+      // Puedes definir un estado de error y guardarlo en tu componente si es necesario
+      setTooltipError("Hubo un error al crear el registro");
+    }
+  }
+
+  const handleSelectProcess = (id) => {
+    const filterActivities = activities.filter(
+      (activity) => activity.idprocess === id
+    );
+    setUpdateActivities(filterActivities);
+  };
 
   const handleChange = (e) => {
     setStateRow((prevState) => {
@@ -30,7 +84,7 @@ const AdminRequest = () => {
   };
 
   const tabs = [
-    { id: 1, label: "Registrar solicitud" },
+    { id: 1, label: "Registrar solicituddd" },
     { id: 2, label: "Solicitudes" },
     { id: 3, label: "Consolidado" },
   ];
@@ -67,53 +121,6 @@ const AdminRequest = () => {
     "w-10", // Ancho para Columna 13
   ];
 
-  const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
-  const [initialOptionSelectResponsible, setInitialOptionSelectResponsible] =
-    useState("Responsable");
-  const [initialOptionSelectFormat, setInitialOptionSelectFormat] =
-    useState("Formato");
-  const [initialOptionSelectPart, setInitialOptionSelectPart] =
-    useState("Pieza");
-
-  const options = [
-    { id: 1, value: "SmartPR" },
-    { id: 2, value: "MTC" },
-    { id: 3, value: "Ford" },
-    { id: 4, value: "Toyota" },
-  ];
-
-  const optionsResponsible = [
-    { id: 1, value: "Juan" },
-    { id: 2, value: "Camilo" },
-    { id: 3, value: "Sebas" },
-    { id: 4, value: "Jose" },
-  ];
-
-  const optionsFormat = [
-    { id: 1, value: "Video" },
-    { id: 2, value: "Grafica" },
-    { id: 3, value: "Ambos" },
-  ];
-
-  const optionsPart = [
-    { id: 1, value: "Video corto" },
-    { id: 2, value: "Piezas graficas" },
-    { id: 3, value: "Video largo(+1min)" },
-  ];
-  const handleSelect = (selectedOption) => {
-    setInitialOptionSelect(selectedOption);
-  };
-  const handleSelectResponsible = (selectedOption) => {
-    setInitialOptionSelectResponsible(selectedOption);
-  };
-
-  const handleSelectFormat = (selectedOption) => {
-    setInitialOptionSelectFormat(selectedOption);
-  };
-
-  const handleSelectPart = (selectedOption) => {
-    setInitialOptionSelectPart(selectedOption);
-  };
   const listItems = [
     {
       data: "Ford",
@@ -221,18 +228,24 @@ const AdminRequest = () => {
         {activeTab === 2 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={options}
-              onSelect={handleSelect}
-              initialOption={initialOptionSelect}
-              readOnly={false}
-              editStatus={true}
+              options={clients}
+              setTasks={setRequests}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <Select
-              options={optionsResponsible}
-              onSelect={handleSelectResponsible}
-              initialOption={initialOptionSelectResponsible}
-              readOnly={false}
-              editStatus={true}
+              options={employees}
+              setTasks={setRequests}
+              newFilter={"IdEmployee"}
+              initialOption={initialOptionEmployee}
+              setInitialOption={setInitialOptionEmployee}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
           </div>
         )}
@@ -240,34 +253,51 @@ const AdminRequest = () => {
         {activeTab === 3 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={options}
-              onSelect={handleSelect}
-              initialOption={initialOptionSelect}
-              readOnly={false}
-              editStatus={true}
+              options={clients}
+              setTasks={setRequests}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <Select
-              options={optionsFormat}
-              onSelect={handleSelectFormat}
-              initialOption={initialOptionSelectFormat}
-              readOnly={false}
-              editStatus={true}
+              options={designFormats}
+              setTasks={setRequests}
+              newFilter={"iddesignformat"}
+              initialOption={initialOptionFormat}
+              setInitialOption={setInitialOptionFormat}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <Select
-              options={optionsPart}
-              onSelect={handleSelectPart}
-              initialOption={initialOptionSelectPart}
-              readOnly={false}
-              editStatus={true}
-              widthContainer={"w-[170px]"}
+              options={designPieces}
+              setTasks={setRequests}
+              newFilter={"iddesignpiece"}
+              initialOption={initialOptionPeace}
+              setInitialOption={setInitialOptionPeace}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
-            <InputDate text={"Fecha inicio"} />
+            <InputDate
+              text={"Fecha inicio"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setRequests={setRequests}
+              newFilter={"startDate"}
+            />
             <Select
-              options={optionsResponsible}
-              onSelect={handleSelectResponsible}
-              initialOption={initialOptionSelectResponsible}
-              readOnly={false}
-              editStatus={true}
+              options={employees}
+              setTasks={setRequests}
+              newFilter={"IdEmployee"}
+              initialOption={initialOptionEmployee}
+              setInitialOption={setInitialOptionEmployee}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
           </div>
         )}
@@ -282,62 +312,68 @@ const AdminRequest = () => {
                   <div className="flex flex-col gap-2">
                     <h2>Cliente</h2>
                     <SelectGeneric
-                      options={[]}
+                      options={clients}
                       initialOption={""}
-                      key_name=""
-                      handleChange={() => {}}
+                      key_name="idcustomer"
+                      handleChange={handleChange}
                       styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
                     <h2>Formato</h2>
                     <SelectGeneric
-                      options={[]}
+                      options={designFormats}
                       initialOption={""}
-                      key_name=""
-                      handleChange={() => {}}
+                      key_name="iddesignformat"
+                      handleChange={handleChange}
                       styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
                     <h2>Pieza</h2>
                     <SelectGeneric
-                      options={[]}
+                      options={designPieces}
                       initialOption={""}
-                      key_name=""
-                      handleChange={() => {}}
+                      key_name="iddesignpiece"
+                      handleChange={handleChange}
                       styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
                     <h2>Proceso</h2>
                     <SelectGeneric
-                      options={[]}
+                      options={processes}
                       initialOption={""}
                       key_name=""
-                      handleChange={() => {}}
+                      handleSelect={handleSelectProcess}
                       styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
                     <h2>Actividad</h2>
                     <SelectGeneric
-                      options={[]}
+                      options={updateActivities || activities}
                       initialOption={""}
-                      key_name=""
-                      handleChange={() => {}}
+                      key_name="idactivity"
+                      handleChange={handleChange}
                       styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
                     />
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   <h2>Responsable</h2>
                   <SelectGeneric
-                    options={[]}
+                    options={employees}
                     initialOption={""}
-                    key_name=""
-                    handleChange={() => {}}
+                    key_name="idemployeeasigned"
+                    handleChange={handleChange}
                     styleSelect={"w-[157px]"}
+                    fieldReset={fieldReset}
                   />
                 </div>
               </div>
@@ -350,6 +386,15 @@ const AdminRequest = () => {
                     cols="30"
                     rows="10"
                     className="w-full rounded-md p-2 shadow-3xl h-[120px] focus:outline-none"
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: "description",
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    value={fieldReset ? "" : stateRow.description}
                   ></textarea>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -360,30 +405,44 @@ const AdminRequest = () => {
                     cols="30"
                     rows="10"
                     className="w-full rounded-md p-2 shadow-3xl h-[120px] focus:outline-none"
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: "requirements",
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    value={fieldReset ? "" : stateRow.requirements}
                   ></textarea>
                 </div>
               </div>
               <div className="w-1/2 flex gap-8 px-6 py-8 justify-start">
                 <div className="w-max flex flex-col gap-3">
                   <span>Fecha entrega</span>
-                  <InputDate position={"absolute top-11 -right-20"} />
-                </div>
-                <div className="w-max flex flex-col gap-3">
-                  <span>Hora estimada </span>
-                  <InputTime
-                    handleChange={() => {}}
-                    defaultValue={""}
-                    key_name={""}
-                    type={"time"}
+                  <InputDate
+                    handleChange={handleChange}
+                    key_name={"deliverydate"}
+                    position={"absolute top-11 -right-20"}
+                    fieldReset={fieldReset}
                   />
                 </div>
                 <div className="w-max flex flex-col gap-3">
-                  <span>Hora realal</span>
-                  <InputTime
-                    handleChange={() => {}}
-                    defaultValue={""}
-                    key_name={""}
+                  <span>Hora estimada </span>
+                  <TimeInput
+                    handleChange={handleChange}
+                    key_name={"estimatedtime"}
                     type={"time"}
+                    fieldReset={fieldReset}
+                  />
+                </div>
+                <div className="w-max flex flex-col gap-3">
+                  <span>Hora real</span>
+                  <TimeInput
+                    handleChange={handleChange}
+                    key_name={"realtime"}
+                    type={"time"}
+                    fieldReset={fieldReset}
                   />
                 </div>
               </div>
@@ -396,13 +455,22 @@ const AdminRequest = () => {
                     cols="30"
                     rows="10"
                     className="w-full rounded-md p-2 shadow-3xl h-[100px] focus:outline-none"
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: "observations",
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    value={fieldReset ? "" : stateRow.observations}
                   ></textarea>
                 </div>
               </div>
               <div className="flex justify-end py-8 px-6">
                 <ButtonWithIcon
                   text="Registrar solicitud"
-                  onClick={() => {}}
+                  action={createRequest}
                   icon={<CirclePlus />}
                 />
               </div>
@@ -423,14 +491,17 @@ const AdminRequest = () => {
                     />
                   </thead>
                   <tbody className="border-b border-gray-300">
-                    <RowTableRequest
-                      listItems={listItems}
-                      columnWidths={columnWidths}
-                      stateRow={stateRow}
-                      handleChange={handleChange}
-                      readOnly={false}
-                      editStatus={false}
-                    />
+                    {requests?.map((item, index) => (
+                      <RowTableRequest
+                        key={index}
+                        listItems={item}
+                        columnWidths={columnWidths}
+                        stateRow={stateRow}
+                        handleChange={handleChange}
+                        readOnly={false}
+                        editStatus={true}
+                      />
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -531,7 +602,12 @@ const AdminRequest = () => {
       </div>
       {activeTab === 3 && (
         <div className="flex justify-end">
-          <Pagination />
+          <Pagination
+            setRequests={setRequests}
+            totalPages={totalPages}
+            urlBase={urlBase}
+            setUrlBase={setUrlBase}
+          />
         </div>
       )}
     </div>

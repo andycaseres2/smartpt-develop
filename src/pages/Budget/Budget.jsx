@@ -1,7 +1,28 @@
 import Header from "../../components/Header/Header";
 import BudgetContent from "./BudgetContent";
+import { getData } from "../../services/getData";
+import { stateStore } from "../../store/stateStore";
+import { useEffect, useState } from "react";
 
 const Budget = () => {
+  const { setClients } = stateStore();
+  const [realTime, setRealTime] = useState(true);
+
+  useEffect(() => {
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+    const clientsEndpoint = `${baseUrl}Customer`;
+    const fetchDataOnMount = async () => {
+      try {
+        const clientsData = await getData(clientsEndpoint);
+        setClients(clientsData);
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+    };
+    fetchDataOnMount();
+    setRealTime(false);
+  }, [realTime]);
+  
   return (
     <div className="flex flex-col w-full h-screen">
       <Header

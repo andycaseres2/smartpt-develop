@@ -14,11 +14,14 @@ import ExportIcon from "../../assets/Icons/ExportIcon";
 import Modal from "../../components/Modals/Modal";
 import BudgetModalContent from "./BudgetModalContent";
 import CirclePlus from "../../assets/Icons/CirclePlus";
+import { getData } from "../../services/getData";
+import { useEffect } from "react";
 
 const BudgetContent = () => {
   const [activeTab, setActiveTab] = useState(1);
-  const { setOpenNotifications } = stateStore();
+  const { setOpenNotifications, clients } = stateStore();
   const [stateRow, setStateRow] = useState({});
+  const [realTime, setRealTime] = useState(true);
   const [isOpenModal, setIsOpenModal] = useState(false);
 
   const handleOpenModal = () => {
@@ -66,7 +69,7 @@ const BudgetContent = () => {
     "w-[350px]", // Ancho para Columna 6
   ];
 
-  const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
+  const [initialOptionSelect, setInitialOptionSelect] = useState("Seleccione...");
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
     useState("Aprobado");
 
@@ -193,9 +196,9 @@ const BudgetContent = () => {
         {activeTab === 2 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={options}
+              options={clients}
               onSelect={handleSelect}
-              initialOption={initialOptionSelect}
+              initialOption={"Cliente"}
               readOnly={false}
               editStatus={true}
             />
@@ -231,11 +234,10 @@ const BudgetContent = () => {
                   <div className="flex flex-col gap-2">
                     <h2>Cliente</h2>
                     <SelectGeneric
-                      options={[]}
-                      initialOption={""}
+                      options={clients}
+                      initialOption={initialOptionSelect}
                       key_name=""
                       handleChange={() => {}}
-                      styleSelect={"w-[157px]"}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -262,20 +264,18 @@ const BudgetContent = () => {
                     <h2>Proceso</h2>
                     <SelectGeneric
                       options={[]}
-                      initialOption={""}
+                      initialOption={initialOptionSelect}
                       key_name=""
                       handleChange={() => {}}
-                      styleSelect={"w-[157px]"}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
                     <h2>Actividad</h2>
                     <SelectGeneric
                       options={[]}
-                      initialOption={""}
+                      initialOption={initialOptionSelect}
                       key_name=""
                       handleChange={() => {}}
-                      styleSelect={"w-[157px]"}
                     />
                   </div>
                 </div>

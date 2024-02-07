@@ -25,6 +25,7 @@ const RowTable = ({
   setRealTime,
   setTooltipSuccess,
   setTooltipError,
+  cancelAddTask,
 }) => {
   const [modeEdit, setModeEdit] = useState(editMode ?? false);
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
@@ -131,6 +132,11 @@ const RowTable = ({
     const newOptions = [...initialOptionSelectOption];
     newOptions[index] = selectedOption;
     setInitialOptionSelectOption(newOptions);
+  };
+
+  const handleCancel = () => {
+    cancelAddTask();
+    setModeEdit(false);
   };
 
   return (
@@ -243,7 +249,7 @@ const RowTable = ({
                     }}
                   />
                   <CloseIcon
-                    action={() => setModeEdit(false)}
+                    action={handleCancel}
                     className={"cursor-pointer hover:scale-105"}
                   />
                 </td>

@@ -11,6 +11,7 @@ import Pagination from "../../components/Paginations/Pagination";
 import { stateStore } from "../../store/stateStore";
 import ColumnTableAddActivity from "../../components/Tables/ColumnTableAddActivity";
 import CirclePlus from "../../assets/Icons/CirclePlus";
+import { getData } from "../../services/getData";
 
 const AdminPlanning = ({
   tasks,
@@ -35,11 +36,30 @@ const AdminPlanning = ({
   const [selectedMonthOption, setselectedMonthOption] = useState("Septiembre");
   const [selectedUserId, setSelectedUserId] = useState(1);
   const [stateRow, setStateRow] = useState({});
-  const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
+  const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
     useState("Actividad");
   const [initialOptionSelectProcess, setInitialOptionSelectProcess] =
     useState("Proceso");
+  const [updateActivities, setUpdateActivities] = useState([]);
+  const [urlBase, setUrlBase] = useState(`
+    ${
+      import.meta.env.VITE_REACT_APP_URL_BASE
+    }FormattedTask?page=1&size=10&viewAdmin=true`);
+
+  useEffect(() => {
+    if (activeTab === 4) {
+      setUrlBase((prev) => `${prev}&consolidated=true`);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    setUpdateActivities(activities);
+  }, [activities]);
+
+  useEffect(() => {
+    setInitialOptionSelectActivity("Actividad");
+  }, [initialOptionSelectProcess]);
 
   useEffect(() => {
     // Actualizar el estado del array de tareas con las opciones actualizadas
@@ -60,8 +80,31 @@ const AdminPlanning = ({
     });
   }, [activitiesByProcess]);
 
-  const handleTabClick = (tab) => {
+  const handleTabClick = async (tab) => {
     setActiveTab(tab);
+    if (tab === 4) {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&viewAdmin=true`;
+      try {
+        const tasksData = await getData(tasksEndpoint);
+        setTasks(tasksData);
+        setInitialOptionClient("Clientes");
+        setInitialOptionSelectActivity("Actividad");
+        setInitialOptionSelectProcess("Proceso");
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+    } else if (tab === 3) {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=10&viewAdmin=true`;
+      try {
+        const tasksData = await getData(tasksEndpoint);
+        setTasks(tasksData);
+        setInitialOptionClient("Clientes");
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+    }
   };
 
   const tabs = [
@@ -350,6 +393,13 @@ const AdminPlanning = ({
     "",
   ];
 
+  const handleSelectProcess = (id) => {
+    const filterActivities = activities.filter(
+      (activity) => activity.idprocess === id
+    );
+    setUpdateActivities(filterActivities);
+  };
+
   const handleChange = (e) => {
     setStateRow((prevState) => {
       return {
@@ -357,18 +407,6 @@ const AdminPlanning = ({
         [e.target.name]: e.target.value,
       };
     });
-  };
-
-  const handleSelect = (selectedOption) => {
-    setInitialOptionSelect(selectedOption);
-  };
-
-  const handleSelectProcess = (selectedOption) => {
-    setInitialOptionSelectProcess(selectedOption);
-  };
-
-  const handleSelectActivity = (selectedOption) => {
-    setInitialOptionSelectActivity(selectedOption);
   };
 
   const [newTaskAdd, setNewTaskAdd] = useState(false);
@@ -379,6 +417,12 @@ const AdminPlanning = ({
 
     await setTasks((prev) => [nuevaTarea, ...prev]);
     setNewTaskAdd(true);
+  }
+
+  function cancelAddTask() {
+    // Implementa la lógica para eliminar la tarea recién creada
+    setTasks((prev) => prev.slice(1));
+    setNewTaskAdd(false);
   }
 
   return (
@@ -426,10 +470,13 @@ const AdminPlanning = ({
           <div className="flex gap-3 items-center mb-2">
             <Select
               options={clients}
-              onSelect={handleSelect}
-              initialOption={initialOptionSelect}
-              readOnly={false}
-              editStatus={true}
+              setTasks={setTasks}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <ButtonWithIcon
               buttonColor={"bg-primary-red-600"}
@@ -444,30 +491,46 @@ const AdminPlanning = ({
           <div className="flex gap-2 items-center mb-2 w-full justify-end">
             <Select
               options={clients}
-              onSelect={handleSelect}
-              initialOption={initialOptionSelect}
-              readOnly={false}
-              editStatus={true}
-              styleSelect={"!w-[130px] !justify-center px-3"}
+              setTasks={setTasks}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <Select
-              options={activities}
-              onSelect={handleSelectActivity}
+              options={updateActivities || activities}
+              setTasks={setTasks}
+              newFilter={"IdActivity"}
               initialOption={initialOptionSelectActivity}
-              readOnly={false}
-              editStatus={true}
-              styleSelect={"!w-[130px] !justify-center px-3"}
+              setInitialOption={setInitialOptionSelectActivity}
+              consolided={true}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <Select
               options={processes}
-              onSelect={handleSelectProcess}
+              setTasks={setTasks}
               initialOption={initialOptionSelectProcess}
-              readOnly={false}
-              editStatus={true}
-              styleSelect={"!w-[130px] !justify-center px-3"}
+              setInitialOption={setInitialOptionSelectProcess}
+              handleSelect={handleSelectProcess}
             />
-            <InputDate text={"Fecha inicio"} />
-            <InputDate text={"Fecha fin"} />
+            <InputDate
+              text={"Fecha inicio"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setTasks={setTasks}
+              newFilter={"startDate"}
+            />
+            <InputDate
+              text={"Fecha fin"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setTasks={setTasks}
+              newFilter={"endDate"}
+            />
           </div>
         )}
       </div>
@@ -826,6 +889,7 @@ const AdminPlanning = ({
                       setStateRow={setStateRow}
                       setTooltipSuccess={setTooltipSuccess}
                       setTooltipError={setTooltipError}
+                      cancelAddTask={cancelAddTask}
                     />
                   ))}
                 </tbody>
@@ -865,7 +929,12 @@ const AdminPlanning = ({
       </div>
       {activeTab === 4 && (
         <div className="flex justify-end">
-          <Pagination setTasks={setTasks} totalPages={totalPages} />
+          <Pagination
+            setTasks={setTasks}
+            totalPages={totalPages}
+            urlBase={urlBase}
+            setUrlBase={setUrlBase}
+          />
         </div>
       )}
     </div>

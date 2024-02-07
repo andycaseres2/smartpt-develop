@@ -5,16 +5,65 @@ import SelectGeneric from "../../components/Selects/SelectGeneric";
 import Pagination from "../../components/Paginations/Pagination";
 import InputDate from "../../components/Inputs/InputDate";
 import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
-import InputTime from "../../components/Inputs/InputTime";
 import Select from "../../components/Selects/Select";
 import RowTableRequest from "../../components/Tables/RowTableRequest";
 import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
 import CirclePlus from "../../assets/Icons/CirclePlus";
+import { postData } from "../../services/postData";
+import TimeInput from "../../components/Inputs/TimeInput";
 
-const RequestDataContent = () => {
+const RequestDataContent = ({
+  setTooltipError,
+  setTooltipSuccess,
+  setRequests,
+  requests,
+  totalPages,
+}) => {
   const [activeTab, setActiveTab] = useState(1);
-  const { setOpenNotifications } = stateStore();
+  const {
+    setOpenNotifications,
+    clients,
+    processes,
+    employees,
+    activities,
+    servicesType,
+  } = stateStore();
   const [stateRow, setStateRow] = useState({});
+  const [fieldReset, setFieldReset] = useState(false);
+  const [updateActivities, setUpdateActivities] = useState([]);
+  const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
+  const [urlBase, setUrlBase] = useState(`
+    ${
+      import.meta.env.VITE_REACT_APP_URL_BASE
+    }FormattedDataUniverseRequest?page=1&size=10`);
+
+  const handleSelectProcess = (id) => {
+    const filterActivities = activities.filter(
+      (activity) => activity.idprocess === id
+    );
+    setUpdateActivities(filterActivities);
+  };
+
+  async function createRequest() {
+    try {
+      // Definir la URL base
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+      // Construir la URL del endpoint para las tareas
+      const tasksEndpoint = `${baseUrl}DataUniverseRequest`;
+      // Enviar los datos modificados al servidor utilizando la función postData
+      await postData(tasksEndpoint, stateRow);
+      setStateRow({});
+      setTooltipSuccess("Registro creada con exito");
+      setFieldReset(true);
+    } catch (error) {
+      // Manejar el error aquí
+      console.error("Error al crear la tarea:", error);
+
+      // Puedes definir un estado de error y guardarlo en tu componente si es necesario
+      setTooltipError("Hubo un error al crear el registro");
+    }
+  }
 
   const handleChange = (e) => {
     setStateRow((prevState) => {
@@ -63,19 +112,6 @@ const RequestDataContent = () => {
     "w-44", // Ancho para Columna 12
     "w-10", // Ancho para Columna 13
   ];
-
-  const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
-
-  const options = [
-    { id: 1, value: "SmartPR" },
-    { id: 2, value: "MTC" },
-    { id: 3, value: "Ford" },
-    { id: 4, value: "Toyota" },
-  ];
-
-  const handleSelect = (selectedOption) => {
-    setInitialOptionSelect(selectedOption);
-  };
 
   const listItems = [
     {
@@ -178,11 +214,14 @@ const RequestDataContent = () => {
         {activeTab === 2 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={options}
-              onSelect={handleSelect}
-              initialOption={initialOptionSelect}
-              readOnly={false}
-              editStatus={true}
+              options={clients}
+              setTasks={setRequests}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
           </div>
         )}
@@ -190,11 +229,14 @@ const RequestDataContent = () => {
         {activeTab === 3 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={options}
-              onSelect={handleSelect}
-              initialOption={initialOptionSelect}
-              readOnly={false}
-              editStatus={true}
+              options={clients}
+              setTasks={setRequests}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <InputDate text={"Diciembre"} />
           </div>
@@ -206,57 +248,64 @@ const RequestDataContent = () => {
           <div className="overflow-x-auto h-full">
             <div className="w-full">
               <div className="w-full flex px-6 py-5">
-                <div className="w-full flex gap-7">
-                  <div className="flex flex-col gap-2">
-                    <h2>Cliente</h2>
-                    <SelectGeneric
-                      options={[]}
-                      initialOption={""}
-                      key_name=""
-                      handleChange={() => {}}
-                      styleSelect={"w-[157px]"}
-                    />
+                <div className="w-full flex px-6 py-5">
+                  <div className="w-full flex gap-7">
+                    <div className="flex flex-col gap-2">
+                      <h2>Cliente</h2>
+                      <SelectGeneric
+                        options={clients}
+                        initialOption={""}
+                        key_name="idcustomer"
+                        handleChange={handleChange}
+                        styleSelect={"w-[157px]"}
+                        fieldReset={fieldReset}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <h2>Tipo de servicio</h2>
+                      <SelectGeneric
+                        options={servicesType}
+                        initialOption={""}
+                        key_name="idservicetype"
+                        handleChange={handleChange}
+                        styleSelect={"w-[157px]"}
+                        fieldReset={fieldReset}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <h2>Proceso</h2>
+                      <SelectGeneric
+                        options={processes}
+                        initialOption={""}
+                        key_name=""
+                        handleSelect={handleSelectProcess}
+                        styleSelect={"w-[157px]"}
+                        fieldReset={fieldReset}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <h2>Actividad</h2>
+                      <SelectGeneric
+                        options={updateActivities || activities}
+                        initialOption={""}
+                        key_name="idactivity"
+                        handleChange={handleChange}
+                        styleSelect={"w-[157px]"}
+                        fieldReset={fieldReset}
+                      />
+                    </div>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <h2>Tipo de servicio</h2>
+                    <h2>Responsable</h2>
                     <SelectGeneric
-                      options={[]}
+                      options={employees}
                       initialOption={""}
-                      key_name=""
-                      handleChange={() => {}}
+                      key_name="idemployeeasigned"
+                      handleChange={handleChange}
                       styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
                     />
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <h2>Proceso</h2>
-                    <SelectGeneric
-                      options={[]}
-                      initialOption={""}
-                      key_name=""
-                      handleChange={() => {}}
-                      styleSelect={"w-[157px]"}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <h2>Actividad </h2>
-                    <SelectGeneric
-                      options={[]}
-                      initialOption={""}
-                      key_name=""
-                      handleChange={() => {}}
-                      styleSelect={"w-[157px]"}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <h2>Responsable</h2>
-                  <SelectGeneric
-                    options={[]}
-                    initialOption={""}
-                    key_name=""
-                    handleChange={() => {}}
-                    styleSelect={"w-[157px]"}
-                  />
                 </div>
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
@@ -276,35 +325,49 @@ const RequestDataContent = () => {
                 </div>
                 <div className="flex flex-col gap-3">
                   <textarea
-                    name="descripcion_pieza"
-                    id="descripcion_pieza"
+                    name="specifications"
+                    id="specifications"
                     cols="30"
                     rows="10"
                     className="w-full rounded-md p-2 shadow-3xl h-[245px] focus:outline-none"
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: "specifications",
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    value={fieldReset ? "" : stateRow.specifications}
                   ></textarea>
                 </div>
               </div>
               <div className="w-1/2 flex gap-8 px-6 py-8 justify-start">
                 <div className="w-max flex flex-col gap-3">
                   <span>Fecha entrega</span>
-                  <InputDate position={"absolute top-11 -right-20"} />
-                </div>
-                <div className="w-max flex flex-col gap-3">
-                  <span>Hora estimada </span>
-                  <InputTime
-                    handleChange={() => {}}
-                    defaultValue={""}
-                    key_name={""}
-                    type={"time"}
+                  <InputDate
+                    handleChange={handleChange}
+                    key_name={"deliverydate"}
+                    position={"absolute top-11 -right-20"}
+                    fieldReset={fieldReset}
                   />
                 </div>
                 <div className="w-max flex flex-col gap-3">
-                  <span>Hora realal</span>
-                  <InputTime
-                    handleChange={() => {}}
-                    defaultValue={""}
-                    key_name={""}
+                  <span>Hora estimada </span>
+                  <TimeInput
+                    handleChange={handleChange}
+                    key_name={"estimatedtime"}
                     type={"time"}
+                    fieldReset={fieldReset}
+                  />
+                </div>
+                <div className="w-max flex flex-col gap-3">
+                  <span>Hora real</span>
+                  <TimeInput
+                    handleChange={handleChange}
+                    key_name={"realtime"}
+                    type={"time"}
+                    fieldReset={fieldReset}
                   />
                 </div>
               </div>
@@ -341,7 +404,7 @@ const RequestDataContent = () => {
               <div className="flex justify-end py-8 px-6">
                 <ButtonWithIcon
                   text="Registrar solicitud"
-                  onClick={() => {}}
+                  action={createRequest}
                   icon={<CirclePlus />}
                 />
               </div>
@@ -362,21 +425,23 @@ const RequestDataContent = () => {
                     />
                   </thead>
                   <tbody className="border-b border-gray-300">
-                    <RowTableRequest
-                      listItems={listItems}
-                      columnWidths={columnWidths}
-                      stateRow={stateRow}
-                      handleChange={handleChange}
-                      readOnly={false}
-                      editStatus={false}
-                    />
+                    {requests?.map((item, index) => (
+                      <RowTableRequest
+                        key={index}
+                        listItems={item}
+                        columnWidths={columnWidths}
+                        stateRow={stateRow}
+                        handleChange={handleChange}
+                        readOnly={false}
+                        editStatus={true}
+                      />
+                    ))}
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
         )}
-
         {activeTab === 3 && (
           <div className="w-full h-full flex flex-col gap-6">
             <div className="w-full h-full flex flex-col">
@@ -431,7 +496,12 @@ const RequestDataContent = () => {
       </div>
       {activeTab === 3 && (
         <div className="flex justify-end">
-          <Pagination />
+          <Pagination
+            setRequests={setRequests}
+            totalPages={totalPages}
+            urlBase={urlBase}
+            setUrlBase={setUrlBase}
+          />
         </div>
       )}
     </div>

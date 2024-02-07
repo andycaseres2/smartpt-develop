@@ -10,10 +10,18 @@ const SelectGeneric = ({
   key_name,
   handleChange,
   readOnly,
+  handleSelect,
+  fieldReset,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const { activities, setActivitiesByProcess } = stateStore();
+
+  useEffect(() => {
+    if (fieldReset) {
+      setSelectedOption(null);
+    }
+  }, [fieldReset]);
 
   useEffect(() => {
     if (initialOption && Array.isArray(options)) {
@@ -39,15 +47,23 @@ const SelectGeneric = ({
 
   const handleOptionClick = (option, id) => {
     setSelectedOption(option);
+    if (handleSelect) {
+      handleSelect(id);
+    }
     setIsOpen(false);
-    onSelect(option);
-    handleChange({ target: { name: key_name, value: id } });
+    if (onSelect) {
+      onSelect(option);
+    }
+    if (handleChange) {
+      handleChange({ target: { name: key_name, value: id } });
+    }
     if (key_name === "idprocesses") {
       const activitiesOptiones = activities.filter(
         (activity) => activity.idprocess === id
       );
       setActivitiesByProcess(activitiesOptiones);
     }
+    toggleDropdown;
   };
 
   return (
@@ -57,7 +73,7 @@ const SelectGeneric = ({
       tabIndex={0}
     >
       <div
-        className={`py-2 ${styleSelect || "px-4"} rounded ${
+        className={`py-2 px-2 ${styleSelect || "px-4"} rounded ${
           !readOnly ? "cursor-pointer" : ""
         } font-semibold relative flex items-center  gap-4 bg-white shadow-3xl h-[40px] ${
           !initialOption ? "justify-end pr-2" : "justify-between"
@@ -78,9 +94,11 @@ const SelectGeneric = ({
             <div
               key={option.id}
               className="p-2 cursor-pointer hover:bg-gray-200"
-              onClick={() => handleOptionClick(option.name, option.id)}
+              onClick={() =>
+                handleOptionClick(option.name || option.fullname, option.id)
+              }
             >
-              {option.name}
+              {option.name || option.fullname}
             </div>
           ))}
         </div>

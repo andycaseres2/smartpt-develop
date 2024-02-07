@@ -8,6 +8,7 @@ import InputDate from "../../components/Inputs/InputDate";
 import { stateStore } from "../../store/stateStore";
 import Pagination from "../../components/Paginations/Pagination";
 import CirclePlus from "../../assets/Icons/CirclePlus";
+import { getData } from "../../services/getData";
 
 const WorkerPlanning = ({
   tasks,
@@ -21,13 +22,30 @@ const WorkerPlanning = ({
 }) => {
   const { processes, newTaskEmpty, clients, activities } = stateStore();
   const [activeTab, setActiveTab] = useState(1);
-  const [initialOptionSelect, setInitialOptionSelect] = useState("Cliente");
+  const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
     useState("Actividad");
   const [initialOptionSelectProcess, setInitialOptionSelectProcess] =
     useState("Proceso");
   const [stateRow, setStateRow] = useState({});
   const { setOpenNotifications, activitiesByProcess } = stateStore();
+  const [updateActivities, setUpdateActivities] = useState([]);
+  const [urlBase, setUrlBase] = useState(`
+    ${import.meta.env.VITE_REACT_APP_URL_BASE}FormattedTask?page=1&size=10`);
+
+  useEffect(() => {
+    setUpdateActivities(activities);
+  }, [activities]);
+
+  useEffect(() => {
+    if (activeTab === 2) {
+      setUrlBase((prev) => `${prev}&consolidated=true`);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    setInitialOptionSelectActivity("Actividad");
+  }, [initialOptionSelectProcess]);
 
   useEffect(() => {
     // Actualizar el estado del array de tareas con las opciones actualizadas
@@ -48,8 +66,31 @@ const WorkerPlanning = ({
     });
   }, [activitiesByProcess]);
 
-  const handleTabClick = (tab) => {
+  const handleTabClick = async (tab) => {
     setActiveTab(tab);
+    if (tab === 2) {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
+      try {
+        const tasksData = await getData(tasksEndpoint);
+        setTasks(tasksData);
+        setInitialOptionClient("Clientes");
+        setInitialOptionSelectActivity("Actividad");
+        setInitialOptionSelectProcess("Proceso");
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+    } else {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=10`;
+      try {
+        const tasksData = await getData(tasksEndpoint);
+        setTasks(tasksData);
+        setInitialOptionClient("Clientes");
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+    }
   };
 
   const tabs = [
@@ -57,16 +98,11 @@ const WorkerPlanning = ({
     { id: 2, label: "Consolidado" },
   ];
 
-  const handleSelect = (selectedOption) => {
-    setInitialOptionSelect(selectedOption);
-  };
-
-  const handleSelectProcess = (selectedOption) => {
-    setInitialOptionSelectProcess(selectedOption);
-  };
-
-  const handleSelectActivity = (selectedOption) => {
-    setInitialOptionSelectActivity(selectedOption);
+  const handleSelectProcess = (id) => {
+    const filterActivities = activities.filter(
+      (activity) => activity.idprocess === id
+    );
+    setUpdateActivities(filterActivities);
   };
 
   const handleChange = (e) => {
@@ -77,8 +113,6 @@ const WorkerPlanning = ({
       };
     });
   };
-
-  0;
 
   const columnWidths = [
     "w-44", // Ancho para Columna 1
@@ -119,6 +153,12 @@ const WorkerPlanning = ({
     setNewTaskAdd(true);
   }
 
+  function cancelAddTask() {
+    // Implementa la lógica para eliminar la tarea recién creada
+    setTasks((prev) => prev.slice(1));
+    setNewTaskAdd(false);
+  }
+
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
       <div className="w-full flex justify-between z-[2]">
@@ -145,10 +185,13 @@ const WorkerPlanning = ({
           <div className="flex gap-3 items-center mb-2">
             <Select
               options={clients}
-              onSelect={handleSelect}
-              initialOption={initialOptionSelect}
-              readOnly={false}
-              editStatus={true}
+              setTasks={setTasks}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <ButtonWithIcon
               buttonColor={"bg-primary-red-600"}
@@ -161,27 +204,46 @@ const WorkerPlanning = ({
           <div className="flex gap-3 items-center mb-2">
             <Select
               options={clients}
-              onSelect={handleSelect}
-              initialOption={initialOptionSelect}
-              readOnly={false}
-              editStatus={true}
+              setTasks={setTasks}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <Select
-              options={activities}
-              onSelect={handleSelectActivity}
+              options={updateActivities || activities}
+              setTasks={setTasks}
+              newFilter={"IdActivity"}
               initialOption={initialOptionSelectActivity}
-              readOnly={false}
-              editStatus={true}
+              setInitialOption={setInitialOptionSelectActivity}
+              consolided={true}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
             />
             <Select
               options={processes}
-              onSelect={handleSelectProcess}
+              setTasks={setTasks}
               initialOption={initialOptionSelectProcess}
-              readOnly={false}
-              editStatus={true}
+              setInitialOption={setInitialOptionSelectProcess}
+              handleSelect={handleSelectProcess}
             />
-            <InputDate text={"Fecha inicio"} />
-            <InputDate text={"Fecha fin"} />
+            <InputDate
+              text={"Fecha inicio"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setTasks={setTasks}
+              newFilter={"startDate"}
+            />
+            <InputDate
+              text={"Fecha fin"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setTasks={setTasks}
+              newFilter={"endDate"}
+            />
           </div>
         )}
       </div>
@@ -199,7 +261,7 @@ const WorkerPlanning = ({
                   />
                 </thead>
                 <tbody className="">
-                  {tasks.map((item, index) => (
+                  {tasks?.map((item, index) => (
                     <RowTable
                       key={index}
                       index={index}
@@ -215,6 +277,7 @@ const WorkerPlanning = ({
                       setStateRow={setStateRow}
                       setTooltipSuccess={setTooltipSuccess}
                       setTooltipError={setTooltipError}
+                      cancelAddTask={cancelAddTask}
                     />
                   ))}
                 </tbody>
@@ -235,7 +298,7 @@ const WorkerPlanning = ({
                   />
                 </thead>
                 <tbody className="">
-                  {tasks.map((item, index) => (
+                  {tasks?.map((item, index) => (
                     <RowTable
                       key={index}
                       listItems={item}
@@ -254,7 +317,12 @@ const WorkerPlanning = ({
       </div>
       {activeTab === 2 && (
         <div className="flex justify-end">
-          <Pagination setTasks={setTasks} totalPages={totalPages} />
+          <Pagination
+            setTasks={setTasks}
+            totalPages={totalPages}
+            urlBase={urlBase}
+            setUrlBase={setUrlBase}
+          />
         </div>
       )}
     </div>

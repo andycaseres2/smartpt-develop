@@ -132,6 +132,43 @@ export const stateStore = create((set) => {
     activities: [],
     setActivities: (activities) => {
       set({ activities });
+      set((state) => ({
+        ...state,
+        newTaskEmpty: createNewTaskEmpty(state, activities),
+      }));
+    },
+    employees: [],
+    setEmployees: (employees) => {
+      set({ employees });
+      set((state) => ({
+        ...state,
+        newTaskEmpty: createNewTaskEmpty(state, employees),
+      }));
+    },
+    designFormats: [],
+    setDesignFormats: (designFormats) => {
+      set({ designFormats });
+      set((state) => ({
+        ...state,
+        newTaskEmpty: createNewTaskEmpty(state, designFormats),
+      }));
+    },
+    designPieces: [],
+    setDesignPieces: (designPieces) => {
+      set({ designPieces });
+      set((state) => ({
+        ...state,
+        newTaskEmpty: createNewTaskEmpty(state, designPieces),
+      }));
+    },
+
+    servicesType: [],
+    setServicesType: (servicesType) => {
+      set({ servicesType });
+      set((state) => ({
+        ...state,
+        newTaskEmpty: createNewTaskEmpty(state, servicesType),
+      }));
     },
     newTaskEmpty: [],
   };
