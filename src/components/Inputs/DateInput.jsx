@@ -4,7 +4,7 @@ const DateInput = ({ defaultValue, handleChange, key_name }) => {
   const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
-    setSelectedDate(defaultValue.split("T")[0]);
+    setSelectedDate(defaultValue?.split("T")[0]);
     if (defaultValue) {
       handleChange({
         target: { name: key_name, value: defaultValue },

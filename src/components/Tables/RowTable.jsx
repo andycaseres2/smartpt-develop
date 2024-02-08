@@ -10,6 +10,7 @@ import SelectGeneric from "../Selects/SelectGeneric";
 import SelectStatus from "../Selects/SelectStatus";
 import { postData } from "../../services/postData";
 import { putData } from "../../services/putData";
+import ModalConfirmation from "../Modals/ModalConfirmation";
 
 const RowTable = ({
   listItems,
@@ -33,6 +34,7 @@ const RowTable = ({
   const [initialOptionSelectOption, setInitialOptionSelectOption] =
     useState("");
   const [rowId, setRowId] = useState(null);
+  const [openModalCancel, setOpenModalCancel] = useState(false);
 
   const handleSelectStatus = (selectedOption, index) => {
     const newOptions = [...initialOptionSelectStatus];
@@ -54,32 +56,52 @@ const RowTable = ({
   async function createTask() {
     try {
       // Obtener el objeto stateRow
-      const body = stateRow;
+      let body = { ...stateRow };
 
-      // Eliminar la propiedad 'null' del objeto
-      if ("null" in body) {
-        delete body["null"];
+      // Verificar si las propiedades requeridas existen en el objeto body
+      if (
+        body.idcustomer &&
+        body.name &&
+        body.startdate &&
+        body.idactivity &&
+        body.estimatedtime
+      ) {
+        // Eliminar la propiedad 'null' del objeto
+        if ("null" in body) {
+          delete body["null"];
+        }
+
+        // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
+        body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+
+        // Verificar si realenddate está vacía o es null, y establecerla con la fecha actual si es necesario
+        if (!body.realenddate) {
+          body.realenddate = new Date().toISOString(); // Esto establecerá la fecha y hora actuales
+        }
+
+        // Definir la URL base
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+        // Construir la URL del endpoint para las tareas
+        const tasksEndpoint = `${baseUrl}Task`;
+
+        // Enviar los datos modificados al servidor utilizando la función postData
+        await postData(tasksEndpoint, body);
+
+        // Restablecer los modos de edición y agregar nueva tarea
+        setModeEdit(false);
+        setNewTaskAdd(false);
+        setRealTime(true);
+        setStateRow({});
+        setTooltipSuccess("Tarea creada con éxito");
+      } else {
+        console.error(
+          "No se pueden crear la tarea. Faltan propiedades requeridas en el objeto body."
+        );
+        setTooltipError(
+          "No se pueden crear la tarea. Faltan propiedades requeridas."
+        );
       }
-
-      // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
-      body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
-      body.realenddate = null;
-
-      // Definir la URL base
-      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-
-      // Construir la URL del endpoint para las tareas
-      const tasksEndpoint = `${baseUrl}Task`;
-
-      // Enviar los datos modificados al servidor utilizando la función postData
-      await postData(tasksEndpoint, body);
-
-      // Restablecer los modos de edición y agregar nueva tarea
-      setModeEdit(false);
-      setNewTaskAdd(false);
-      setRealTime(true);
-      setStateRow({});
-      setTooltipSuccess("Tarea creada con exito");
     } catch (error) {
       // Manejar el error aquí
       console.error("Error al crear la tarea:", error);
@@ -89,6 +111,7 @@ const RowTable = ({
     }
   }
 
+  console.log("stateRow", stateRow);
   async function editTask() {
     try {
       // Obtener el objeto stateRow
@@ -137,6 +160,12 @@ const RowTable = ({
   const handleCancel = () => {
     cancelAddTask();
     setModeEdit(false);
+    setOpenModalCancel(false);
+  };
+
+  const handleCancelEdit = () => {
+    setModeEdit(false);
+    setOpenModalCancel(false);
   };
 
   return (
@@ -213,9 +242,13 @@ const RowTable = ({
           ) : item?.editComponent === "input" &&
             item?.type === "time" &&
             !modeEdit ? (
-            <span>{`${item?.data} ${
-              item?.data > 1 ? "minutos" : "minuto"
-            }`}</span>
+            <>
+              {item.data && (
+                <span>{`${item?.data} ${
+                  item?.data > 1 ? "minutos" : "minuto"
+                }`}</span>
+              )}
+            </>
           ) : item?.editComponent === "input" &&
             item?.type === "date" &&
             modeEdit ? (
@@ -227,7 +260,7 @@ const RowTable = ({
           ) : item?.editComponent === "input" &&
             item?.type === "date" &&
             !modeEdit ? (
-            <span>{item?.data.split("T")[0]}</span>
+            <span>{item?.data?.split("T")[0]}</span>
           ) : typeof item === "number" || item === null ? (
             !readOnly ? (
               !modeEdit ? (
@@ -249,7 +282,7 @@ const RowTable = ({
                     }}
                   />
                   <CloseIcon
-                    action={handleCancel}
+                    action={() => setOpenModalCancel(true)}
                     className={"cursor-pointer hover:scale-105"}
                   />
                 </td>
@@ -260,6 +293,13 @@ const RowTable = ({
           )}
         </td>
       ))}
+
+      {openModalCancel && (
+        <ModalConfirmation
+          onClose={() => setOpenModalCancel(false)}
+          handleCancel={newTaskAdd ? handleCancel : handleCancelEdit}
+        />
+      )}
     </tr>
   );
 };

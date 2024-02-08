@@ -21,6 +21,7 @@ const AdminPlanning = ({
   totalPages,
   setTooltipSuccess,
   setTooltipError,
+  columnTitlesActivity,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const {
@@ -375,22 +376,6 @@ const AdminPlanning = ({
       ],
       key_name: "estado",
     },
-  ];
-
-  const columnTitlesActivity = [
-    "Cliente",
-    "Tarea",
-    "Fecha inicio",
-    "Fecha estimada ",
-    "Estado",
-    "Comentarios",
-    "Proceso",
-    "Actividad",
-    "Hora estimada",
-    "Hora real",
-    "Documentos asociados",
-    "Fecha fin",
-    "",
   ];
 
   const handleSelectProcess = (id) => {

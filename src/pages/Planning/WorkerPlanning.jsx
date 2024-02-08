@@ -19,6 +19,7 @@ const WorkerPlanning = ({
   isNewTask,
   setTooltipSuccess,
   setTooltipError,
+  columnTitles,
 }) => {
   const { processes, newTaskEmpty, clients, activities } = stateStore();
   const [activeTab, setActiveTab] = useState(1);
@@ -129,21 +130,6 @@ const WorkerPlanning = ({
     "w-44", // Ancho para Columna 12
   ];
 
-  const columnTitles = [
-    "Cliente",
-    "Tarea",
-    "Fecha inicio",
-    "Fecha estimada ",
-    "Estado",
-    "Comentarios",
-    "Proceso",
-    "Actividad",
-    "Hora estimada",
-    "Hora real",
-    "Documentos asociados",
-    "Fecha fin",
-    "",
-  ];
   const [newTaskAdd, setNewTaskAdd] = useState(false);
   async function addTask() {
     const nuevaTarea = newTaskEmpty.map((task, index) =>

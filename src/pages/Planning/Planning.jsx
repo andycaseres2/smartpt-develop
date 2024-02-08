@@ -119,6 +119,22 @@ const Planning = () => {
     setRealTime(false);
   }, [isNewTask, realTime]);
 
+  const columnTitles = [
+    "Cliente",
+    "Tarea",
+    "Fecha inicio",
+    "Fecha entrega",
+    "Estado",
+    "Comentarios",
+    "Proceso",
+    "Actividad",
+    "Hora estimada",
+    "Hora real",
+    "Documentos asociados",
+    "Fecha fin",
+    "",
+  ];
+
   return (
     <div className="flex flex-col w-full h-screen">
       <Header
@@ -139,6 +155,7 @@ const Planning = () => {
             totalPages={totalPages}
             setTooltipSuccess={setTooltipSuccess}
             setTooltipError={setTooltipError}
+            columnTitlesActivity={columnTitles}
           />
         ) : (
           <WorkerPlanning
@@ -151,6 +168,7 @@ const Planning = () => {
             totalPages={totalPages}
             setTooltipSuccess={setTooltipSuccess}
             setTooltipError={setTooltipError}
+            columnTitles={columnTitles}
           />
         )}
       </div>
