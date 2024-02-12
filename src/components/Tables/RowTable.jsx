@@ -11,6 +11,7 @@ import SelectStatus from "../Selects/SelectStatus";
 import { postData } from "../../services/postData";
 import { putData } from "../../services/putData";
 import ModalConfirmation from "../Modals/ModalConfirmation";
+import { stateStore } from "../../store/stateStore";
 
 const RowTable = ({
   listItems,
@@ -28,6 +29,7 @@ const RowTable = ({
   setTooltipError,
   cancelAddTask,
 }) => {
+  const { clients, activities } = stateStore();
   const [modeEdit, setModeEdit] = useState(editMode ?? false);
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
     useState("");
@@ -35,6 +37,32 @@ const RowTable = ({
     useState("");
   const [rowId, setRowId] = useState(null);
   const [openModalCancel, setOpenModalCancel] = useState(false);
+  const [isUpdateStatus, setIsUpdateStatus] = useState(false);
+
+  useEffect(() => {
+    if (isUpdateStatus && !modeEdit) {
+      const newStateRow = listItems.reduce((accumulator, currentItem) => {
+        let value;
+        if (currentItem.key_name === "idcustomer") {
+          const customer = clients.find(
+            (customer) => customer.name === currentItem.data
+          );
+          value = customer ? customer.id : ""; // Si se encuentra el cliente, se toma su id, de lo contrario se asigna una cadena vacía
+        } else if (currentItem.key_name === "idactivity") {
+          const activity = activities.find(
+            (activity) => activity.name === currentItem.data
+          );
+          value = activity ? activity.id : ""; // Si se encuentra la actividad, se toma su id, de lo contrario se asigna una cadena vacía
+        } else {
+          value = currentItem.data; // Para otros casos, se mantiene el mismo valor data
+        }
+        accumulator[currentItem.key_name] = value;
+        return accumulator;
+      }, {});
+      setStateRow(newStateRow);
+      setIsUpdateStatus(false);
+    }
+  }, [isUpdateStatus]);
 
   const handleSelectStatus = (selectedOption, index) => {
     const newOptions = [...initialOptionSelectStatus];
@@ -111,7 +139,6 @@ const RowTable = ({
     }
   }
 
-  console.log("stateRow", stateRow);
   async function editTask() {
     try {
       // Obtener el objeto stateRow
@@ -188,6 +215,13 @@ const RowTable = ({
               handleChange={handleChange}
               editStatus={true}
               modeEdit={modeEdit}
+              newTaskAdd={newTaskAdd}
+              stateRow={stateRow}
+              setRealTime={setRealTime}
+              setTooltipError={setTooltipError}
+              setTooltipSuccess={setTooltipSuccess}
+              rowId={rowId}
+              setIsUpdateStatus={setIsUpdateStatus}
             />
           ) : item?.type === "status" && !modeEdit ? (
             <SelectStatus
@@ -203,6 +237,12 @@ const RowTable = ({
               editStatus={true}
               newTaskAdd={newTaskAdd}
               modeEdit={modeEdit}
+              stateRow={stateRow}
+              setRealTime={setRealTime}
+              setTooltipError={setTooltipError}
+              setTooltipSuccess={setTooltipSuccess}
+              rowId={rowId}
+              setIsUpdateStatus={setIsUpdateStatus}
             />
           ) : item?.editComponent === "input" &&
             item?.type === "text" &&
@@ -218,6 +258,26 @@ const RowTable = ({
             item?.type === "text" &&
             !modeEdit ? (
             <span>{item?.data}</span>
+          ) : item?.editComponent === "input" &&
+            item?.type === "link" &&
+            modeEdit ? (
+            <Input
+              type={item?.type}
+              value={stateRow[item?.key_name]}
+              key_name={item?.key_name}
+              handleChange={handleChange}
+              initialValue={item?.data}
+            />
+          ) : item?.editComponent === "input" &&
+            item?.type === "link" &&
+            !modeEdit ? (
+            <a
+              className="text-blue-500 overflow-hidden whitespace-nowrap overflow-ellipsis"
+              href={item?.data}
+              target="__blank"
+            >
+              {item?.data}
+            </a>
           ) : item?.editComponent === "select" && modeEdit ? (
             <SelectGeneric
               options={item?.options}
@@ -232,6 +292,8 @@ const RowTable = ({
             <span className="truncate">{item?.data}</span>
           ) : item?.editComponent === "input" &&
             item?.type === "time" &&
+            (item.key_name !== "realtimespent" ||
+              (item.key_name === "realtimespent" && !newTaskAdd)) &&
             modeEdit ? (
             <TimeInput
               handleChange={handleChange}
@@ -243,15 +305,19 @@ const RowTable = ({
             item?.type === "time" &&
             !modeEdit ? (
             <>
-              {item.data && (
+              {item.data > 0 ? (
                 <span>{`${item?.data} ${
                   item?.data > 1 ? "minutos" : "minuto"
                 }`}</span>
+              ) : (
+                ""
               )}
             </>
           ) : item?.editComponent === "input" &&
             item?.type === "date" &&
-            modeEdit ? (
+            modeEdit &&
+            (item?.key_name !== "startdate" ||
+              (item?.key_name === "startdate" && newTaskAdd)) ? (
             <DateInput
               handleChange={handleChange}
               defaultValue={item?.data}

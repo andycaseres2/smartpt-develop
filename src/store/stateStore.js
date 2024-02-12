@@ -88,7 +88,13 @@ const createNewTaskEmpty = (state, dynamicOptions) => [
     options: [],
     key_name: "realtimespent",
   },
-  { data: "" },
+  {
+    data: "",
+    editComponent: "input",
+    key_name: "attachments",
+    options: [],
+    type: "link",
+  },
   {
     data: "",
     editComponent: "input",

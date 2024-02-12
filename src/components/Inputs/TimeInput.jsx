@@ -11,11 +11,19 @@ const TimeInput = ({ defaultValue, handleChange, key_name, fieldReset }) => {
 
   useEffect(() => {
     if (defaultValue) {
-      setInputValue(formatTime24Hours(defaultValue));
+      // Convertir los minutos a horas y minutos
+      const hours = Math.floor(defaultValue / 60);
+      const minutes = defaultValue % 60;
+
+      // Formatear en formato de 12 horas
+      const formattedTime = formatTime24Hours(hours + minutes / 60);
+
+      setInputValue(formattedTime);
+
       handleChange({
         target: {
           name: key_name,
-          value: defaultValue * 60,
+          value: defaultValue, // Mantener el valor en minutos
         },
       });
     }
@@ -43,7 +51,7 @@ const TimeInput = ({ defaultValue, handleChange, key_name, fieldReset }) => {
   const generateHourOptions = () => {
     const options = [];
     for (let i = 0; i < 24; i++) {
-      for (let j = 0; j < 60; j += 30) {
+      for (let j = 0; j < 60; j += 15) {
         const time = formatTime24Hours(i + j / 60);
         options.push(time);
       }

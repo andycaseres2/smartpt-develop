@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ArrowDown from "../../assets/Icons/ArrowDown";
+import { putData } from "../../services/putData";
 
 const SelectStatus = ({
   options,
@@ -13,10 +14,49 @@ const SelectStatus = ({
   key_name,
   newTaskAdd,
   modeEdit,
+  stateRow,
+  setRealTime,
+  setTooltipSuccess,
+  setTooltipError,
+  rowId,
+  setIsUpdateStatus,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
+
+  async function editTask(id) {
+    try {
+      // Clonar el estado actual para no mutarlo directamente
+      const updatedStateRow = { ...stateRow };
+
+      // Agregar la propiedad 'state' con el valor recibido al objeto
+      updatedStateRow.state = id;
+
+      // Agregar la lógica para id igual a 3 o 4
+      if (id === 3 || id === 4) {
+        updatedStateRow.realenddate =
+          new Date().toISOString().split("T")[0] + "T00:00:00";
+      }
+
+      // Definir la URL base
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+      // Construir la URL del endpoint para la tarea específica
+      const taskEndpoint = `${baseUrl}Task/${rowId}`;
+
+      // Enviar los datos modificados al servidor utilizando la función putData (o postData según tu implementación)
+      await putData(taskEndpoint, updatedStateRow);
+      setRealTime(true);
+      setTooltipSuccess("Tarea editada con éxito");
+    } catch (error) {
+      // Manejar el error aquí
+      console.error("Error al editar la tarea:", error);
+
+      // Puedes definir un estado de error y guardarlo en tu componente si es necesario
+      setTooltipError("Hubo un error editando la tarea");
+    }
+  }
 
   useEffect(() => {
     if (initialOption && initialOption !== "") {
@@ -41,10 +81,12 @@ const SelectStatus = ({
       return;
     }
     setIsOpen(!isOpen);
+    setIsUpdateStatus(true);
   };
 
   const handleOptionClick = (option, id) => {
     setSelectedOption(option);
+    editTask(id);
     setSelectedOptionId(id);
     setIsOpen(false);
     onSelect(option);
@@ -94,7 +136,7 @@ const SelectStatus = ({
           </>
         )}
       </div>
-      {isOpen && (
+      {isOpen && !newTaskAdd && (
         <div className="absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-full">
           {options.map((option) => (
             <div

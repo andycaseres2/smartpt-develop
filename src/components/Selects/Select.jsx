@@ -17,7 +17,6 @@ const Select = ({
   urlBase,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };

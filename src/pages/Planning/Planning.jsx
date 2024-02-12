@@ -18,6 +18,8 @@ const Planning = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [tooltipSuccess, setTooltipSuccess] = useState("");
   const [tooltipError, setTooltipError] = useState("");
+  const [taskFullyLoaded, setTaskFullyLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (tooltipSuccess || tooltipError) {
@@ -66,52 +68,38 @@ const Planning = () => {
   }, [tasks]);
 
   useEffect(() => {
-    // Leer la  URL base desde el archivo .env
-    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+    setLoading(true); // Activar indicador de carga
 
-    // Definir los endpoints utilizando la URL base
-    const clientsEndpoint = `${baseUrl}Customer`;
-    const activitiesEndpoint = `${baseUrl}Activity`;
-    const processesEndpoint = `${baseUrl}Process`;
-    const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=10`;
-    const paginations = `${baseUrl}FormattedTask/Pages`;
-
-    // Realizar solicitudes al montar el componente
     const fetchDataOnMount = async () => {
       try {
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+        const clientsEndpoint = `${baseUrl}Customer`;
+        const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+        const activitiesEndpoint = `${baseUrl}Activity`;
+        const processesEndpoint = `${baseUrl}Process`;
+        const paginationsEndpoint = `${baseUrl}FormattedTask/Pages`;
+
         const clientsData = await getData(clientsEndpoint);
         setClients(clientsData);
-      } catch (error) {
-        console.error("Error fetching clients data:", error);
-      }
 
-      try {
         const tasksData = await getData(tasksEndpoint);
         setTasks(tasksData);
-      } catch (error) {
-        console.error("Error fetching tasks data:", error);
-      }
+        setTaskFullyLoaded(true);
 
-      try {
         const activitiesData = await getData(activitiesEndpoint);
         setActivities(activitiesData);
-      } catch (error) {
-        console.error("Error fetching activities data:", error);
-      }
 
-      try {
         const processesData = await getData(processesEndpoint);
         setProcesses(processesData);
-      } catch (error) {
-        console.error("Error fetching processes data:", error);
-      }
 
-      try {
-        const paginationsData = await getData(paginations);
-        const totalPages = Math.ceil(paginationsData / 10); // Redondear hacia arriba para asegurarse de que todas las tareas se muestren
+        const paginationsData = await getData(paginationsEndpoint);
+        const totalPages = Math.ceil(paginationsData / 10);
         setTotalPages(totalPages);
       } catch (error) {
-        console.error("Error fetching paginations data:", error);
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Desactivar indicador de carga, ya sea éxito o error
       }
     };
 
@@ -156,6 +144,9 @@ const Planning = () => {
             setTooltipSuccess={setTooltipSuccess}
             setTooltipError={setTooltipError}
             columnTitlesActivity={columnTitles}
+            taskFullyLoaded={taskFullyLoaded}
+            setLoading={setLoading}
+            loading={loading}
           />
         ) : (
           <WorkerPlanning
@@ -169,6 +160,9 @@ const Planning = () => {
             setTooltipSuccess={setTooltipSuccess}
             setTooltipError={setTooltipError}
             columnTitles={columnTitles}
+            taskFullyLoaded={taskFullyLoaded}
+            setLoading={setLoading}
+            loading={loading}
           />
         )}
       </div>

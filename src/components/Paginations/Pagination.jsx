@@ -8,7 +8,13 @@ import { useLocation } from "react-router-dom";
 import { getColor } from "../../utils/getColor";
 import { getData } from "../../services/getData";
 
-const Pagination = ({ setTasks, totalPages, urlBase, setUrlBase }) => {
+const Pagination = ({
+  setTasks,
+  totalPages,
+  urlBase,
+  setUrlBase,
+  setLoading,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const location = useLocation();
   const currentPath = location.pathname;
@@ -20,28 +26,31 @@ const Pagination = ({ setTasks, totalPages, urlBase, setUrlBase }) => {
   };
 
   useEffect(() => {
-    if (currentPage !== 1) {
-      // Crear una copia del objeto URL
-      const urlObject = new URL(urlBase);
+    setLoading(true); // Activar indicador de carga
 
-      // Actualizar el parámetro 'page' con el valor actual de 'currentPage'
-      urlObject.searchParams.set("page", currentPage);
+    // Crear una copia del objeto URL
+    const urlObject = new URL(urlBase);
 
-      // Obtener la nueva URL actualizada
-      const newUrl = urlObject.toString();
-      const fetchDataOnMount = async () => {
-        try {
-          const pageData = await getData(newUrl);
-          setTasks(pageData);
-          setUrlBase(newUrl);
-        } catch (error) {
-          console.error("Error fetching clients data:", error);
-        }
-      };
+    // Actualizar el parámetro 'page' con el valor actual de 'currentPage'
+    urlObject.searchParams.set("page", currentPage);
 
-      fetchDataOnMount(); // Llamar a la función al montar el componente
-    }
-  }, [currentPage]);
+    // Obtener la nueva URL actualizada
+    const newUrl = urlObject.toString();
+
+    const fetchDataOnMount = async () => {
+      try {
+        const pageData = await getData(newUrl);
+        setTasks(pageData);
+        setUrlBase(newUrl);
+      } catch (error) {
+        console.error("Error fetching tasks data:", error);
+      } finally {
+        setLoading(false); // Desactivar indicador de carga, ya sea éxito o error
+      }
+    };
+
+    fetchDataOnMount(); // Llamar a la función al montar el componente
+  }, [currentPage, urlBase]);
 
   const goToPrev = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));

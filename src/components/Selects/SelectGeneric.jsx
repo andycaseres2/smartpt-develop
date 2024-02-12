@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ArrowDown from "../../assets/Icons/ArrowDown";
 import { stateStore } from "../../store/stateStore";
 
@@ -15,7 +15,11 @@ const SelectGeneric = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { activities, setActivitiesByProcess } = stateStore();
+  const selectRef = useRef(null);
+  const inputRef = useRef(null); // Referencia al campo de búsqueda
 
   useEffect(() => {
     if (fieldReset) {
@@ -41,6 +45,12 @@ const SelectGeneric = ({
     }
   }, [initialOption, key_name]);
 
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus(); // Enfocar el campo de búsqueda cuando se abre el select
+    }
+  }, [isOpen]);
+
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
@@ -63,15 +73,37 @@ const SelectGeneric = ({
       );
       setActivitiesByProcess(activitiesOptiones);
     }
-    toggleDropdown;
+    toggleDropdown();
   };
 
+  const filteredOptions = options.filter((option) => {
+    const lowercaseSearchTerm = searchTerm?.toLowerCase();
+    return (
+      option?.name?.toLowerCase().includes(lowercaseSearchTerm) ||
+      option?.fullname?.toLowerCase().includes(lowercaseSearchTerm) ||
+      option?.value?.toString().toLowerCase().includes(lowercaseSearchTerm)
+    );
+  });
+
+  const handleClickOutside = (event) => {
+    if (
+      selectRef.current &&
+      !selectRef.current.contains(event.target) &&
+      !isSearchFocused
+    ) {
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div
-      className="relative inline-block w-full"
-      onBlur={() => setIsOpen(false)}
-      tabIndex={0}
-    >
+    <div ref={selectRef} className="relative inline-block w-full">
       <div
         className={`py-2 px-2 ${styleSelect || "px-4"} rounded ${
           !readOnly ? "cursor-pointer" : ""
@@ -83,22 +115,37 @@ const SelectGeneric = ({
         <span className="overflow-hidden whitespace-nowrap overflow-ellipsis w-full">
           {selectedOption}
         </span>
-
         {!readOnly && (
           <>{isOpen ? <ArrowDown className="rotate-180" /> : <ArrowDown />}</>
         )}
       </div>
       {isOpen && !readOnly && !!options.length && (
-        <div className="absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded h-[300px] overflow-y-auto">
-          {options.map((option) => (
+        <div
+          className="absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded h-[300px] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Search..."
+            className="p-2 border-b w-full focus:outline-none"
+            value={searchTerm}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {filteredOptions.map((option) => (
             <div
               key={option.id}
               className="p-2 cursor-pointer hover:bg-gray-200"
               onClick={() =>
-                handleOptionClick(option.name || option.fullname, option.id)
+                handleOptionClick(
+                  option.name || option.fullname || option.value,
+                  option.id
+                )
               }
             >
-              {option.name || option.fullname}
+              {option.name || option.fullname || option.value}
             </div>
           ))}
         </div>
@@ -106,5 +153,4 @@ const SelectGeneric = ({
     </div>
   );
 };
-
 export default SelectGeneric;

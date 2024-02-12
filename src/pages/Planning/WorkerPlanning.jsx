@@ -9,6 +9,9 @@ import { stateStore } from "../../store/stateStore";
 import Pagination from "../../components/Paginations/Pagination";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 import { getData } from "../../services/getData";
+import TotalTimes from "../../components/Texts/TotalTimes";
+import CleanIcon from "../../assets/Icons/CleanIcon";
+import Spinner from "../../components/Spinners/Spinner";
 
 const WorkerPlanning = ({
   tasks,
@@ -20,6 +23,9 @@ const WorkerPlanning = ({
   setTooltipSuccess,
   setTooltipError,
   columnTitles,
+  taskFullyLoaded,
+  loading,
+  setLoading,
 }) => {
   const { processes, newTaskEmpty, clients, activities } = stateStore();
   const [activeTab, setActiveTab] = useState(1);
@@ -33,16 +39,12 @@ const WorkerPlanning = ({
   const [updateActivities, setUpdateActivities] = useState([]);
   const [urlBase, setUrlBase] = useState(`
     ${import.meta.env.VITE_REACT_APP_URL_BASE}FormattedTask?page=1&size=10`);
+  const [fieldReset, setFieldReset] = useState(false);
+  const [newTaskAdd, setNewTaskAdd] = useState(false);
 
   useEffect(() => {
     setUpdateActivities(activities);
   }, [activities]);
-
-  useEffect(() => {
-    if (activeTab === 2) {
-      setUrlBase((prev) => `${prev}&consolidated=true`);
-    }
-  }, [activeTab]);
 
   useEffect(() => {
     setInitialOptionSelectActivity("Actividad");
@@ -67,30 +69,66 @@ const WorkerPlanning = ({
     });
   }, [activitiesByProcess]);
 
+  const getDataValues = (arr) => {
+    const result = [];
+    arr.forEach((innerArray) => {
+      innerArray.forEach((obj) => {
+        if (obj?.key_name === "idcustomer") {
+          result.push(obj.data);
+        }
+      });
+    });
+    return result;
+  };
+
+  const dataList = getDataValues(tasks);
+
+  // Usar un objeto para llevar un registro de los elementos únicos
+  const uniqueMap = {};
+  const newClients = [];
+  dataList.forEach((value) => {
+    const found = clients.find((client) => client?.name === value);
+    if (found && !uniqueMap[found.id]) {
+      uniqueMap[found.id] = true; // Registrar el id como único
+      newClients.push(found);
+    }
+  });
+
   const handleTabClick = async (tab) => {
     setActiveTab(tab);
-    if (tab === 2) {
+    setLoading(true); // Activar indicador de carga
+
+    try {
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-      const tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
-      try {
-        const tasksData = await getData(tasksEndpoint);
-        setTasks(tasksData);
-        setInitialOptionClient("Clientes");
-        setInitialOptionSelectActivity("Actividad");
-        setInitialOptionSelectProcess("Proceso");
-      } catch (error) {
-        console.error("Error fetching clients data:", error);
+      let tasksEndpoint = "";
+      let initialOptions = {};
+
+      if (tab === 2) {
+        tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
+        initialOptions = {
+          client: "Clientes",
+          activity: "Actividad",
+          process: "Proceso",
+        };
+      } else if (tab === 1) {
+        tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+        initialOptions = {
+          client: "Clientes",
+        };
       }
-    } else {
-      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-      const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=10`;
-      try {
-        const tasksData = await getData(tasksEndpoint);
-        setTasks(tasksData);
-        setInitialOptionClient("Clientes");
-      } catch (error) {
-        console.error("Error fetching clients data:", error);
-      }
+
+      setUrlBase(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint);
+      setTasks(tasksData);
+      setInitialOptionClient(initialOptions.client);
+      if (initialOptions.activity)
+        setInitialOptionSelectActivity(initialOptions.activity);
+      if (initialOptions.process)
+        setInitialOptionSelectProcess(initialOptions.process);
+    } catch (error) {
+      console.error("Error al obtener datos de las tareas:", error);
+    } finally {
+      setLoading(false); // Desactivar indicador de carga, ya sea éxito o error
     }
   };
 
@@ -130,13 +168,14 @@ const WorkerPlanning = ({
     "w-44", // Ancho para Columna 12
   ];
 
-  const [newTaskAdd, setNewTaskAdd] = useState(false);
   async function addTask() {
-    const nuevaTarea = newTaskEmpty.map((task, index) =>
-      index === newTaskEmpty.length - 1 ? null : { ...task }
-    );
-    await setTasks((prev) => [nuevaTarea, ...prev]);
-    setNewTaskAdd(true);
+    if (taskFullyLoaded) {
+      const nuevaTarea = newTaskEmpty.map((task, index) =>
+        index === newTaskEmpty.length - 1 ? null : { ...task }
+      );
+      await setTasks((prev) => [nuevaTarea, ...prev]);
+      setNewTaskAdd(true);
+    }
   }
 
   function cancelAddTask() {
@@ -144,6 +183,22 @@ const WorkerPlanning = ({
     setTasks((prev) => prev.slice(1));
     setNewTaskAdd(false);
   }
+
+  const handleCleanFilters = async () => {
+    setFieldReset(true);
+    setInitialOptionClient("Clientes");
+    setInitialOptionSelectActivity("Actividad");
+    setInitialOptionSelectProcess("Proceso");
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+    const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=10`;
+    try {
+      const tasksData = await getData(tasksEndpoint);
+      setTasks(tasksData);
+    } catch (error) {
+      console.error("Error fetching clients data:", error);
+    }
+    setFieldReset(false);
+  };
 
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
@@ -156,21 +211,12 @@ const WorkerPlanning = ({
               handleTabClick={handleTabClick}
             />
           </div>
-          {activeTab === 1 && (
-            <div className="flex gap-2 items-center ml-5 h-full ">
-              <p className="font-base font-semibold">
-                Total horas programadas:
-              </p>
-              <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500 ">
-                {totalTimes} horas
-              </span>
-            </div>
-          )}
+          {activeTab === 1 && <TotalTimes totalTimes={totalTimes} />}
         </div>
         {activeTab === 1 ? (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={clients}
+              options={newClients}
               setTasks={setTasks}
               newFilter={"IdCustomer"}
               initialOption={initialOptionClient}
@@ -185,11 +231,16 @@ const WorkerPlanning = ({
               icon={<CirclePlus />}
               action={() => addTask()}
             />
+            <ButtonWithIcon
+              text={"Limpiar filtros"}
+              icon={<CleanIcon />}
+              action={handleCleanFilters}
+            />
           </div>
         ) : (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={clients}
+              options={newClients}
               setTasks={setTasks}
               newFilter={"IdCustomer"}
               initialOption={initialOptionClient}
@@ -222,6 +273,7 @@ const WorkerPlanning = ({
               setUrlBase={setUrlBase}
               setTasks={setTasks}
               newFilter={"startDate"}
+              fieldReset={fieldReset}
             />
             <InputDate
               text={"Fecha fin"}
@@ -229,6 +281,12 @@ const WorkerPlanning = ({
               setUrlBase={setUrlBase}
               setTasks={setTasks}
               newFilter={"endDate"}
+              fieldReset={fieldReset}
+            />
+            <ButtonWithIcon
+              text={"Limpiar filtros"}
+              icon={<CleanIcon />}
+              action={handleCleanFilters}
             />
           </div>
         )}
@@ -246,26 +304,34 @@ const WorkerPlanning = ({
                     readOnly={false}
                   />
                 </thead>
-                <tbody className="">
-                  {tasks?.map((item, index) => (
-                    <RowTable
-                      key={index}
-                      index={index}
-                      listItems={item}
-                      columnWidths={columnWidths}
-                      stateRow={stateRow}
-                      handleChange={handleChange}
-                      editStatus={true}
-                      newTaskAdd={newTaskAdd}
-                      setNewTaskAdd={setNewTaskAdd}
-                      setRealTime={setRealTime}
-                      isNewTask={isNewTask}
-                      setStateRow={setStateRow}
-                      setTooltipSuccess={setTooltipSuccess}
-                      setTooltipError={setTooltipError}
-                      cancelAddTask={cancelAddTask}
-                    />
-                  ))}
+                <tbody className="w-full h-full">
+                  {loading ? (
+                    <div className="w-full h-[600px] flex top-[200px] relative left-[600px]">
+                      <Spinner design={"!h-[60px] !w-[60px]"} />
+                    </div>
+                  ) : (
+                    <>
+                      {tasks?.map((item, index) => (
+                        <RowTable
+                          key={index}
+                          index={index}
+                          listItems={item}
+                          columnWidths={columnWidths}
+                          stateRow={stateRow}
+                          setStateRow={setStateRow}
+                          handleChange={handleChange}
+                          editStatus={true}
+                          newTaskAdd={newTaskAdd}
+                          setNewTaskAdd={setNewTaskAdd}
+                          setRealTime={setRealTime}
+                          isNewTask={isNewTask}
+                          setTooltipSuccess={setTooltipSuccess}
+                          setTooltipError={setTooltipError}
+                          cancelAddTask={cancelAddTask}
+                        />
+                      ))}
+                    </>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -283,18 +349,27 @@ const WorkerPlanning = ({
                     readOnly={true}
                   />
                 </thead>
-                <tbody className="">
-                  {tasks?.map((item, index) => (
-                    <RowTable
-                      key={index}
-                      listItems={item}
-                      columnWidths={columnWidths}
-                      stateRow={stateRow}
-                      handleChange={handleChange}
-                      readOnly={true}
-                      newTaskAdd={newTaskAdd}
-                    />
-                  ))}
+                <tbody className="w-full h-full">
+                  {loading ? (
+                    <div className="w-full h-[600px] flex top-[200px] relative left-[600px]">
+                      <Spinner design={"!h-[60px] !w-[60px]"} />
+                    </div>
+                  ) : (
+                    <>
+                      {tasks?.map((item, index) => (
+                        <RowTable
+                          key={index}
+                          listItems={item}
+                          columnWidths={columnWidths}
+                          stateRow={stateRow}
+                          handleChange={handleChange}
+                          readOnly={true}
+                          newTaskAdd={newTaskAdd}
+                          setStateRow={setStateRow}
+                        />
+                      ))}
+                    </>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -308,6 +383,8 @@ const WorkerPlanning = ({
             totalPages={totalPages}
             urlBase={urlBase}
             setUrlBase={setUrlBase}
+            setLoading={setLoading}
+            loading={loading}
           />
         </div>
       )}
