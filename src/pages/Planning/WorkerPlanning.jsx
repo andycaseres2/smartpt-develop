@@ -12,12 +12,12 @@ import { getData } from "../../services/getData";
 import TotalTimes from "../../components/Texts/TotalTimes";
 import CleanIcon from "../../assets/Icons/CleanIcon";
 import Spinner from "../../components/Spinners/Spinner";
+import SelectState from "../../components/Selects/SelectState";
 
 const WorkerPlanning = ({
   tasks,
   setTasks,
   setRealTime,
-  totalTimes,
   totalPages,
   isNewTask,
   setTooltipSuccess,
@@ -27,9 +27,17 @@ const WorkerPlanning = ({
   loading,
   setLoading,
 }) => {
-  const { processes, newTaskEmpty, clients, activities } = stateStore();
+  const {
+    processes,
+    newTaskEmpty,
+    clients,
+    activities,
+    setCancelEdit,
+    statusModeEdit,
+  } = stateStore();
   const [activeTab, setActiveTab] = useState(1);
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
+  const [initialOptionState, setInitialOptionState] = useState("Estados");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
     useState("Actividad");
   const [initialOptionSelectProcess, setInitialOptionSelectProcess] =
@@ -41,7 +49,42 @@ const WorkerPlanning = ({
     ${import.meta.env.VITE_REACT_APP_URL_BASE}FormattedTask?page=1&size=10`);
   const [fieldReset, setFieldReset] = useState(false);
   const [newTaskAdd, setNewTaskAdd] = useState(false);
+  const [totalTimes, setTotalTimes] = useState(0);
 
+  useEffect(() => {
+    // Verificar si tasks tiene al menos un elemento antes de acceder
+    if (tasks && tasks.length > 0 && activeTab === 3) {
+      // Filtrar elementos que tienen un valor válido para "EstimatedTime"
+      const validTasks = tasks.filter((objeto) => {
+        const estimatedTimeObject = objeto.find(
+          (propiedad) => propiedad.key_name === "estimatedtime"
+        );
+        return estimatedTimeObject && estimatedTimeObject.data !== null;
+      });
+
+      // Obtener los valores de "EstimatedTime"
+      const estimatedTimes = validTasks.map((objeto) => {
+        const estimatedTimeObject = objeto.find(
+          (propiedad) => propiedad.key_name === "estimatedtime"
+        );
+        return estimatedTimeObject ? estimatedTimeObject.data : null;
+      });
+
+      // Filtrar los valores nulos
+      const validEstimatedTimes = estimatedTimes.filter(
+        (valor) => valor !== null
+      );
+
+      // Sumar los valores válidos
+      const total = validEstimatedTimes.reduce(
+        (acumulador, valorActual) => acumulador + valorActual,
+        0
+      );
+
+      // Actualizar el estado con los valores obtenidos
+      setTotalTimes(Math.round(total / 60));
+    }
+  }, [tasks]);
   useEffect(() => {
     setUpdateActivities(activities);
   }, [activities]);
@@ -94,10 +137,33 @@ const WorkerPlanning = ({
     }
   });
 
+  const filterState = [
+    {
+      id: 0,
+      value: "Todos",
+    },
+    {
+      id: 1,
+      value: "Pendiente",
+    },
+    {
+      id: 2,
+      value: "En proceso",
+    },
+    {
+      id: 3,
+      value: "Finalizada",
+    },
+    {
+      id: 4,
+      value: "No ejecutada",
+    },
+  ];
+
   const handleTabClick = async (tab) => {
     setActiveTab(tab);
     setLoading(true); // Activar indicador de carga
-
+    setCancelEdit(true);
     try {
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
       let tasksEndpoint = "";
@@ -110,11 +176,13 @@ const WorkerPlanning = ({
           activity: "Actividad",
           process: "Proceso",
         };
+        setCancelEdit(true);
       } else if (tab === 1) {
         tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
         initialOptions = {
           client: "Clientes",
         };
+        setCancelEdit(true);
       }
 
       setUrlBase(tasksEndpoint);
@@ -128,7 +196,8 @@ const WorkerPlanning = ({
     } catch (error) {
       console.error("Error al obtener datos de las tareas:", error);
     } finally {
-      setLoading(false); // Desactivar indicador de carga, ya sea éxito o error
+      setLoading(false);
+      setCancelEdit(true);
     }
   };
 
@@ -179,7 +248,6 @@ const WorkerPlanning = ({
   }
 
   function cancelAddTask() {
-    // Implementa la lógica para eliminar la tarea recién creada
     setTasks((prev) => prev.slice(1));
     setNewTaskAdd(false);
   }
@@ -189,8 +257,15 @@ const WorkerPlanning = ({
     setInitialOptionClient("Clientes");
     setInitialOptionSelectActivity("Actividad");
     setInitialOptionSelectProcess("Proceso");
+    setInitialOptionState("Estados");
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-    const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=10`;
+    let tasksEndpoint = "";
+    if (activeTab === 1) {
+      tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+    } else {
+      tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
+    }
+    setUrlBase(tasksEndpoint);
     try {
       const tasksData = await getData(tasksEndpoint);
       setTasks(tasksData);
@@ -229,7 +304,7 @@ const WorkerPlanning = ({
               buttonColor={"bg-primary-red-600"}
               text={"Añadir actividad"}
               icon={<CirclePlus />}
-              action={() => addTask()}
+              action={() => !statusModeEdit && !loading && addTask()}
             />
             <ButtonWithIcon
               text={"Limpiar filtros"}
@@ -238,7 +313,7 @@ const WorkerPlanning = ({
             />
           </div>
         ) : (
-          <div className="flex gap-3 items-center mb-2">
+          <div className="flex flex-wrap justify-end gap-3 items-center mb-2">
             <Select
               options={newClients}
               setTasks={setTasks}
@@ -267,6 +342,16 @@ const WorkerPlanning = ({
               setInitialOption={setInitialOptionSelectProcess}
               handleSelect={handleSelectProcess}
             />
+            <SelectState
+              options={filterState}
+              setTasks={setTasks}
+              newFilter={"state"}
+              initialOption={initialOptionState}
+              setInitialOption={setInitialOptionState}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
             <InputDate
               text={"Fecha inicio"}
               urlBase={urlBase}
@@ -292,7 +377,11 @@ const WorkerPlanning = ({
         )}
       </div>
 
-      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[660px] px-4">
+      <div
+        className={`bg-white rounded-bl-md rounded-r-md overflow-auto ${
+          activeTab === 1 ? "h-[550px] overflow-y-auto" : "h-full"
+        }} px-4`}
+      >
         {activeTab === 1 && (
           <div className="overflow-x-auto h-full">
             <div className="min-w-max">
@@ -328,6 +417,8 @@ const WorkerPlanning = ({
                           setTooltipSuccess={setTooltipSuccess}
                           setTooltipError={setTooltipError}
                           cancelAddTask={cancelAddTask}
+                          endpoint={"Task"}
+                          section="planning"
                         />
                       ))}
                     </>
@@ -365,6 +456,7 @@ const WorkerPlanning = ({
                           handleChange={handleChange}
                           readOnly={true}
                           newTaskAdd={newTaskAdd}
+                          setNewTaskAdd={setNewTaskAdd}
                           setStateRow={setStateRow}
                         />
                       ))}

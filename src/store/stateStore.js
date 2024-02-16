@@ -100,7 +100,7 @@ const createNewTaskEmpty = (state, dynamicOptions) => [
     editComponent: "input",
     type: "date",
     options: [],
-    key_name: "estimateddate",
+    key_name: "realenddate",
   },
   null,
 ];
@@ -146,10 +146,6 @@ export const stateStore = create((set) => {
     employees: [],
     setEmployees: (employees) => {
       set({ employees });
-      set((state) => ({
-        ...state,
-        newTaskEmpty: createNewTaskEmpty(state, employees),
-      }));
     },
     designFormats: [],
     setDesignFormats: (designFormats) => {
@@ -177,5 +173,15 @@ export const stateStore = create((set) => {
       }));
     },
     newTaskEmpty: [],
+
+    cancelEdit: false,
+    setCancelEdit: (cancelEdit) => {
+      set({ cancelEdit });
+    },
+
+    statusModeEdit: false,
+    setStatusModeEdit: (statusModeEdit) => {
+      set({ statusModeEdit });
+    },
   };
 });

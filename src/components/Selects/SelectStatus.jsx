@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ArrowDown from "../../assets/Icons/ArrowDown";
 import { putData } from "../../services/putData";
+import ModalConfirmation from "../Modals/ModalConfirmation";
 
 const SelectStatus = ({
   options,
@@ -24,39 +25,55 @@ const SelectStatus = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
 
   async function editTask(id) {
-    try {
-      // Clonar el estado actual para no mutarlo directamente
-      const updatedStateRow = { ...stateRow };
+    if (!modeEdit) {
+      try {
+        // Clonar el estado actual para no mutarlo directamente
+        const updatedStateRow = { ...stateRow };
 
-      // Agregar la propiedad 'state' con el valor recibido al objeto
-      updatedStateRow.state = id;
+        // Agregar la propiedad 'state' con el valor recibido al objeto
+        updatedStateRow.state = id;
 
-      // Agregar la lógica para id igual a 3 o 4
-      if (id === 3 || id === 4) {
-        updatedStateRow.realenddate =
-          new Date().toISOString().split("T")[0] + "T00:00:00";
+        // Agregar la lógica para id igual a 3 o 4
+        if (id === 3 || id === 4) {
+          updatedStateRow.realenddate =
+            new Date().toISOString().split("T")[0] + "T00:00:00";
+        }
+
+        // Definir la URL base
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+        // Construir la URL del endpoint para la tarea específica
+        const taskEndpoint = `${baseUrl}Task/${rowId}`;
+
+        // Enviar los datos modificados al servidor utilizando la función putData (o postData según tu implementación)
+        if ((id === 3 || id === 4) && updatedStateRow.realtimespent !== null) {
+          await putData(taskEndpoint, updatedStateRow);
+          setRealTime(true);
+          setTooltipSuccess("Tarea editada con éxito");
+        } else if (id !== 3 && id !== 4) {
+          await putData(taskEndpoint, updatedStateRow);
+          setRealTime(true);
+          setTooltipSuccess("Tarea editada con éxito");
+        } else {
+          setTooltipError("Hubo un error editando la tarea");
+        }
+      } catch (error) {
+        // Manejar el error aquí
+        console.error("Error al editar la tarea:", error);
+
+        // Puedes definir un estado de error y guardarlo en tu componente si es necesario
+        setTooltipError("Hubo un error editando la tarea");
       }
-
-      // Definir la URL base
-      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-
-      // Construir la URL del endpoint para la tarea específica
-      const taskEndpoint = `${baseUrl}Task/${rowId}`;
-
-      // Enviar los datos modificados al servidor utilizando la función putData (o postData según tu implementación)
-      await putData(taskEndpoint, updatedStateRow);
-      setRealTime(true);
-      setTooltipSuccess("Tarea editada con éxito");
-    } catch (error) {
-      // Manejar el error aquí
-      console.error("Error al editar la tarea:", error);
-
-      // Puedes definir un estado de error y guardarlo en tu componente si es necesario
-      setTooltipError("Hubo un error editando la tarea");
     }
   }
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setRealTime(true);
+  };
 
   useEffect(() => {
     if (initialOption && initialOption !== "") {
@@ -86,8 +103,10 @@ const SelectStatus = ({
 
   const handleOptionClick = (option, id) => {
     setSelectedOption(option);
-    editTask(id);
     setSelectedOptionId(id);
+    if (!modeEdit) {
+      setOpenModal(true);
+    }
     setIsOpen(false);
     onSelect(option);
     selectColors(id);
@@ -137,7 +156,7 @@ const SelectStatus = ({
         )}
       </div>
       {isOpen && !newTaskAdd && (
-        <div className="absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-full">
+        <div className="absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg !z-50 w-full">
           {options.map((option) => (
             <div
               key={option.id}
@@ -148,6 +167,13 @@ const SelectStatus = ({
             </div>
           ))}
         </div>
+      )}
+
+      {openModal && (
+        <ModalConfirmation
+          onClose={handleCloseModal}
+          handleCancel={() => editTask(selectedOptionId)}
+        />
       )}
     </div>
   );

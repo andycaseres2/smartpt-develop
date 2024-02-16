@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Tabs from "../../components/Tabs/Tabs";
 import { stateStore } from "../../store/stateStore";
 import SelectGeneric from "../../components/Selects/SelectGeneric";
@@ -11,13 +11,17 @@ import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 import { postData } from "../../services/postData";
 import TimeInput from "../../components/Inputs/TimeInput";
+import RowTable from "../../components/Tables/RowTable";
 
 const AdminRequest = ({
-  setTooltipSuccess,
-  setTooltipError,
   requests,
   setRequests,
   totalPages,
+  setTooltipSuccess,
+  setTooltipError,
+  loading,
+  setLoading,
+  setRealTime,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const {
@@ -41,16 +45,27 @@ const AdminRequest = ({
     ${
       import.meta.env.VITE_REACT_APP_URL_BASE
     }FormattedDesignRequest?page=1&size=10&viewAdmin=true`);
+  const [processRequest, setProcessRequest] = useState([]);
+
+  useEffect(() => {
+    const filteredArray = processes.filter(
+      (process) => process.id === 2 || process.id === 14
+    );
+    setProcessRequest(filteredArray);
+  }, [processes]);
 
   async function createRequest() {
     try {
+      const body = stateRow;
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
 
       // Construir la URL del endpoint para las tareas
       const tasksEndpoint = `${baseUrl}DesignRequest`;
       // Enviar los datos modificados al servidor utilizando la función postData
-      await postData(tasksEndpoint, stateRow);
+      body.realtime = null;
+      body.idemployeeassigned = null;
+      await postData(tasksEndpoint, body);
       setStateRow({});
       setTooltipSuccess("Registro creada con exito");
       setFieldReset(true);
@@ -60,8 +75,14 @@ const AdminRequest = ({
 
       // Puedes definir un estado de error y guardarlo en tu componente si es necesario
       setTooltipError("Hubo un error al crear el registro");
+    } finally {
+      setRealTime(true);
     }
   }
+
+  useEffect(() => {
+    setUpdateActivities(activities);
+  }, [activities]);
 
   const handleSelectProcess = (id) => {
     const filterActivities = activities.filter(
@@ -84,7 +105,7 @@ const AdminRequest = ({
   };
 
   const tabs = [
-    { id: 1, label: "Registrar solicituddd" },
+    { id: 1, label: "Registrar solicitud" },
     { id: 2, label: "Solicitudes" },
     { id: 3, label: "Consolidado" },
   ];
@@ -345,7 +366,7 @@ const AdminRequest = ({
                   <div className="flex flex-col gap-2">
                     <h2>Proceso</h2>
                     <SelectGeneric
-                      options={processes}
+                      options={processRequest}
                       initialOption={""}
                       key_name=""
                       handleSelect={handleSelectProcess}
@@ -364,17 +385,6 @@ const AdminRequest = ({
                       fieldReset={fieldReset}
                     />
                   </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <h2>Responsable</h2>
-                  <SelectGeneric
-                    options={employees}
-                    initialOption={""}
-                    key_name="idemployeeasigned"
-                    handleChange={handleChange}
-                    styleSelect={"w-[157px]"}
-                    fieldReset={fieldReset}
-                  />
                 </div>
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
@@ -438,12 +448,12 @@ const AdminRequest = ({
                 </div>
                 <div className="w-max flex flex-col gap-3">
                   <span>Hora real</span>
-                  <TimeInput
+                  {/* <TimeInput
                     handleChange={handleChange}
                     key_name={"realtime"}
                     type={"time"}
                     fieldReset={fieldReset}
-                  />
+                  /> */}
                 </div>
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
@@ -492,7 +502,7 @@ const AdminRequest = ({
                   </thead>
                   <tbody className="border-b border-gray-300">
                     {requests?.map((item, index) => (
-                      <RowTableRequest
+                      <RowTable
                         key={index}
                         listItems={item}
                         columnWidths={columnWidths}
@@ -500,6 +510,12 @@ const AdminRequest = ({
                         handleChange={handleChange}
                         readOnly={false}
                         editStatus={true}
+                        setStateRow={setStateRow}
+                        endpoint={"DesignRequest"}
+                        setTooltipSuccess={setTooltipSuccess}
+                        setTooltipError={setTooltipError}
+                        section={"requests"}
+                        setRealTime={setRealTime}
                       />
                     ))}
                   </tbody>
@@ -543,14 +559,19 @@ const AdminRequest = ({
                           />
                         </thead>
                         <tbody className="border-b border-gray-300">
-                          <RowTableRequest
-                            listItems={listItems}
-                            columnWidths={columnWidths}
-                            stateRow={stateRow}
-                            handleChange={handleChange}
-                            readOnly={true}
-                            editStatus={false}
-                          />
+                          {requests?.map((item, index) => (
+                            <RowTable
+                              key={index}
+                              listItems={item}
+                              columnWidths={columnWidths}
+                              stateRow={stateRow}
+                              handleChange={handleChange}
+                              readOnly={true}
+                              editStatus={false}
+                              setStateRow={setStateRow}
+                              setRealTime={setRealTime}
+                            />
+                          ))}
                         </tbody>
                       </table>
                     </div>
@@ -607,6 +628,7 @@ const AdminRequest = ({
             totalPages={totalPages}
             urlBase={urlBase}
             setUrlBase={setUrlBase}
+            setLoading={setLoading}
           />
         </div>
       )}

@@ -28,6 +28,12 @@ const Pagination = ({
   useEffect(() => {
     setLoading(true); // Activar indicador de carga
 
+    // Verificar si la urlBase es una URL válida
+    if (!urlBase.startsWith("http://") && !urlBase.startsWith("https://")) {
+      console.error("urlBase no es una URL válida:", urlBase);
+      return;
+    }
+
     // Crear una copia del objeto URL
     const urlObject = new URL(urlBase);
 
@@ -43,7 +49,12 @@ const Pagination = ({
         setTasks(pageData);
         setUrlBase(newUrl);
       } catch (error) {
-        console.error("Error fetching tasks data:", error);
+        console.error(
+          "Error fetching tasks data for URL:",
+          newUrl,
+          "Error:",
+          error
+        );
       } finally {
         setLoading(false); // Desactivar indicador de carga, ya sea éxito o error
       }

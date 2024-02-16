@@ -4,7 +4,7 @@ const ColumnTableAddActivity = ({
   readOnly,
 }) => {
   return (
-    <tr className="justify-start flex w-full gap-5 py-2 border-b border-gray-200 px-2">
+    <tr className="justify-start flex w-full gap-6 py-2 border-b border-gray-200 px-2">
       {columnTitlesActivity
         .slice(0, readOnly ? -1 : columnTitlesActivity.length)
         .map((title, index) => (

@@ -121,7 +121,9 @@ const SelectGeneric = ({
       </div>
       {isOpen && !readOnly && !!options.length && (
         <div
-          className="absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded h-[300px] overflow-y-auto"
+          className={`w-max absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded ${
+            options.length > 6 ? "h-[300px]" : "h-max"
+          } overflow-y-auto`}
           onClick={(e) => e.stopPropagation()}
         >
           <input
@@ -137,7 +139,7 @@ const SelectGeneric = ({
           {filteredOptions.map((option) => (
             <div
               key={option.id}
-              className="p-2 cursor-pointer hover:bg-gray-200"
+              className="p-2 cursor-pointer hover:bg-gray-200 w-max"
               onClick={() =>
                 handleOptionClick(
                   option.name || option.fullname || option.value,

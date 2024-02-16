@@ -23,6 +23,7 @@ const Requests = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [tooltipSuccess, setTooltipSuccess] = useState("");
   const [tooltipError, setTooltipError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (tooltipSuccess || tooltipError) {
@@ -121,6 +122,8 @@ const Requests = () => {
             totalPages={totalPages}
             setTooltipSuccess={setTooltipSuccess}
             setTooltipError={setTooltipError}
+            loading={loading}
+            setLoading={setLoading}
           />
         ) : (
           <WorkerRequest
@@ -130,6 +133,8 @@ const Requests = () => {
             totalPages={totalPages}
             setTooltipSuccess={setTooltipSuccess}
             setTooltipError={setTooltipError}
+            loading={loading}
+            setLoading={setLoading}
           />
         )}
       </div>

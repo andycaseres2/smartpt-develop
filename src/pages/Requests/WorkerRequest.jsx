@@ -6,11 +6,13 @@ import Pagination from "../../components/Paginations/Pagination";
 import InputDate from "../../components/Inputs/InputDate";
 import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
 import Select from "../../components/Selects/Select";
-import RowTableRequest from "../../components/Tables/RowTableRequest";
-import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 import TimeInput from "../../components/Inputs/TimeInput";
 import { postData } from "../../services/postData";
+import RowTable from "../../components/Tables/RowTable";
+import ColumnTable from "../../components/Tables/ColumnTable";
+import { getData } from "../../services/getData";
+import CleanIcon from "../../assets/Icons/CleanIcon";
 
 const WorkerRequest = ({
   requests,
@@ -18,6 +20,9 @@ const WorkerRequest = ({
   totalPages,
   setTooltipSuccess,
   setTooltipError,
+  loading,
+  setLoading,
+  setRealTime,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const {
@@ -25,9 +30,9 @@ const WorkerRequest = ({
     clients,
     activities,
     processes,
-    employees,
     designFormats,
     designPieces,
+    setCancelEdit,
   } = stateStore();
   const [stateRow, setStateRow] = useState({});
   const [updateActivities, setUpdateActivities] = useState([]);
@@ -39,12 +44,36 @@ const WorkerRequest = ({
       import.meta.env.VITE_REACT_APP_URL_BASE
     }FormattedDesignRequest?page=1&size=10`);
   const [fieldReset, setFieldReset] = useState(false);
+  const [processRequest, setProcessRequest] = useState([]);
+
+  const handleCleanFilters = async () => {
+    setFieldReset(true);
+    setInitialOptionClient("Clientes");
+    setInitialOptionFormat("Formato");
+    setInitialOptionPeace("Pieza");
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+    let tasksEndpoint = "";
+    if (activeTab === 2) {
+      tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100`;
+    } else if (activeTab === 3) {
+      tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10`;
+    }
+    setUrlBase(tasksEndpoint);
+    try {
+      const tasksData = await getData(tasksEndpoint);
+      setRequests(tasksData);
+    } catch (error) {
+      console.error("Error fetching clients data:", error);
+    }
+    setFieldReset(false);
+  };
 
   useEffect(() => {
-    if (activeTab === 3) {
-      setUrlBase((prev) => `${prev}&consolidated=true`);
-    }
-  }, [activeTab]);
+    const filteredArray = processes.filter(
+      (process) => process.id === 2 || process.id === 14
+    );
+    setProcessRequest(filteredArray);
+  }, [processes]);
 
   useEffect(() => {
     setUpdateActivities(activities);
@@ -68,13 +97,16 @@ const WorkerRequest = ({
 
   async function createRequest() {
     try {
+      const body = stateRow;
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
 
       // Construir la URL del endpoint para las tareas
       const tasksEndpoint = `${baseUrl}DesignRequest`;
       // Enviar los datos modificados al servidor utilizando la función postData
-      await postData(tasksEndpoint, stateRow);
+      body.realtime = null;
+      body.idemployeeassigned = null;
+      await postData(tasksEndpoint, body);
       setStateRow({});
       setTooltipSuccess("Registro creada con exito");
       setFieldReset(true);
@@ -87,8 +119,39 @@ const WorkerRequest = ({
     }
   }
 
-  const handleTabClick = (tab) => {
+  const handleTabClick = async (tab) => {
     setActiveTab(tab);
+    setLoading(true); // Activar indicador de carga
+    setCancelEdit(true);
+    try {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      let tasksEndpoint = "";
+      let initialOptions = {};
+
+      if (tab === 3) {
+        tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10`;
+        initialOptions = {
+          client: "Clientes",
+        };
+        setCancelEdit(true);
+      } else if (tab === 2) {
+        tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100`;
+        initialOptions = {
+          client: "Clientes",
+        };
+        setCancelEdit(true);
+      }
+
+      setUrlBase(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint);
+      setRequests(tasksData);
+      setInitialOptionClient(initialOptions.client);
+    } catch (error) {
+      console.error("Error al obtener datos de las tareas:", error);
+    } finally {
+      setLoading(false);
+      setCancelEdit(true);
+    }
   };
 
   const tabs = [
@@ -153,6 +216,11 @@ const WorkerRequest = ({
               urlBase={urlBase}
               setUrlBase={setUrlBase}
             />
+            <ButtonWithIcon
+              text={"Limpiar filtros"}
+              icon={<CleanIcon />}
+              action={handleCleanFilters}
+            />
           </div>
         )}
 
@@ -194,6 +262,12 @@ const WorkerRequest = ({
               setUrlBase={setUrlBase}
               setRequests={setRequests}
               newFilter={"startDate"}
+              fieldReset={fieldReset}
+            />
+            <ButtonWithIcon
+              text={"Limpiar filtros"}
+              icon={<CleanIcon />}
+              action={handleCleanFilters}
             />
           </div>
         )}
@@ -241,7 +315,7 @@ const WorkerRequest = ({
                   <div className="flex flex-col gap-2">
                     <h2>Proceso</h2>
                     <SelectGeneric
-                      options={processes}
+                      options={processRequest}
                       initialOption={""}
                       key_name=""
                       handleSelect={handleSelectProcess}
@@ -260,17 +334,6 @@ const WorkerRequest = ({
                       fieldReset={fieldReset}
                     />
                   </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <h2>Responsable</h2>
-                  <SelectGeneric
-                    options={employees}
-                    initialOption={""}
-                    key_name="idemployeeasigned"
-                    handleChange={handleChange}
-                    styleSelect={"w-[157px]"}
-                    fieldReset={fieldReset}
-                  />
                 </div>
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
@@ -334,12 +397,12 @@ const WorkerRequest = ({
                 </div>
                 <div className="w-max flex flex-col gap-3">
                   <span>Hora real</span>
-                  <TimeInput
+                  {/* <TimeInput
                     handleChange={handleChange}
                     key_name={"realtime"}
                     type={"time"}
                     fieldReset={fieldReset}
-                  />
+                  /> */}
                 </div>
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
@@ -380,7 +443,7 @@ const WorkerRequest = ({
               <div className="w-full p-3">
                 <table className="min-w-full">
                   <thead>
-                    <ColumnTableRequest
+                    <ColumnTable
                       columnTitlesActivity={columnTitles}
                       columnWidths={columnWidths}
                       readOnly={false}
@@ -388,7 +451,7 @@ const WorkerRequest = ({
                   </thead>
                   <tbody className="border-b border-gray-300">
                     {requests?.map((item, index) => (
-                      <RowTableRequest
+                      <RowTable
                         key={index}
                         listItems={item}
                         columnWidths={columnWidths}
@@ -396,6 +459,12 @@ const WorkerRequest = ({
                         handleChange={handleChange}
                         readOnly={false}
                         editStatus={true}
+                        setStateRow={setStateRow}
+                        endpoint={"DesignRequest"}
+                        setTooltipSuccess={setTooltipSuccess}
+                        setTooltipError={setTooltipError}
+                        section={"requests"}
+                        setRealTime={setRealTime}
                       />
                     ))}
                   </tbody>
@@ -411,7 +480,7 @@ const WorkerRequest = ({
               <div className="w-full p-3">
                 <table className="min-w-full">
                   <thead>
-                    <ColumnTableRequest
+                    <ColumnTable
                       columnTitlesActivity={columnTitles}
                       columnWidths={columnWidths}
                       readOnly={false}
@@ -419,7 +488,7 @@ const WorkerRequest = ({
                   </thead>
                   <tbody className="border-b border-gray-300">
                     {requests?.map((item, index) => (
-                      <RowTableRequest
+                      <RowTable
                         key={index}
                         listItems={item}
                         columnWidths={columnWidths}
@@ -427,6 +496,8 @@ const WorkerRequest = ({
                         handleChange={handleChange}
                         readOnly={true}
                         editStatus={false}
+                        setStateRow={setStateRow}
+                        setRealTime={setRealTime}
                       />
                     ))}
                   </tbody>
@@ -443,6 +514,7 @@ const WorkerRequest = ({
             totalPages={totalPages}
             urlBase={urlBase}
             setUrlBase={setUrlBase}
+            setLoading={setLoading}
           />
         </div>
       )}

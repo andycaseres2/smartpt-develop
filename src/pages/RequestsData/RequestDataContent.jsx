@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Tabs from "../../components/Tabs/Tabs";
 import { stateStore } from "../../store/stateStore";
 import SelectGeneric from "../../components/Selects/SelectGeneric";
@@ -11,31 +11,87 @@ import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 import { postData } from "../../services/postData";
 import TimeInput from "../../components/Inputs/TimeInput";
+import RowTable from "../../components/Tables/RowTable";
+import { getData } from "../../services/getData";
+import CleanIcon from "../../assets/Icons/CleanIcon";
+import SelectState from "../../components/Selects/SelectState";
 
 const RequestDataContent = ({
-  setTooltipError,
-  setTooltipSuccess,
-  setRequests,
   requests,
+  setRequests,
   totalPages,
+  setTooltipSuccess,
+  setTooltipError,
+  loading,
+  setLoading,
+  setRealTime,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const {
     setOpenNotifications,
     clients,
     processes,
-    employees,
     activities,
     servicesType,
+    setCancelEdit,
   } = stateStore();
   const [stateRow, setStateRow] = useState({});
   const [fieldReset, setFieldReset] = useState(false);
   const [updateActivities, setUpdateActivities] = useState([]);
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
+  const [initialOptionState, setInitialOptionState] = useState("Estados");
   const [urlBase, setUrlBase] = useState(`
     ${
       import.meta.env.VITE_REACT_APP_URL_BASE
     }FormattedDataUniverseRequest?page=1&size=10`);
+
+  const handleCleanFilters = async () => {
+    setFieldReset(true);
+    setInitialOptionClient("Clientes");
+    setInitialOptionState("Estados");
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+    let tasksEndpoint = "";
+    if (activeTab === 2) {
+      tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100`;
+    } else if (activeTab === 3) {
+      tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10`;
+    }
+    setUrlBase(tasksEndpoint);
+    try {
+      const tasksData = await getData(tasksEndpoint);
+      setRequests(tasksData);
+    } catch (error) {
+      console.error("Error fetching clients data:", error);
+    }
+    setFieldReset(false);
+  };
+
+  const filterState = [
+    {
+      id: 0,
+      value: "Todos",
+    },
+    {
+      id: 1,
+      value: "Pendiente",
+    },
+    {
+      id: 2,
+      value: "En proceso",
+    },
+    {
+      id: 3,
+      value: "Finalizada",
+    },
+    {
+      id: 4,
+      value: "No ejecutada",
+    },
+  ];
+
+  useEffect(() => {
+    setUpdateActivities(activities);
+  }, [activities]);
 
   const handleSelectProcess = (id) => {
     const filterActivities = activities.filter(
@@ -62,6 +118,9 @@ const RequestDataContent = ({
 
       // Puedes definir un estado de error y guardarlo en tu componente si es necesario
       setTooltipError("Hubo un error al crear el registro");
+    } finally {
+      setRealTime(true);
+      setStateRow({});
     }
   }
 
@@ -74,8 +133,39 @@ const RequestDataContent = ({
     });
   };
 
-  const handleTabClick = (tab) => {
+  const handleTabClick = async (tab) => {
     setActiveTab(tab);
+    setLoading(true); // Activar indicador de carga
+    setCancelEdit(true);
+    try {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      let tasksEndpoint = "";
+      let initialOptions = {};
+
+      if (tab === 3) {
+        tasksEndpoint = `${baseUrl}FormattedDataUniverseRequest?consolidated=true&page=1&size=10`;
+        initialOptions = {
+          client: "Clientes",
+        };
+        setCancelEdit(true);
+      } else if (tab === 2) {
+        tasksEndpoint = `${baseUrl}FormattedDataUniverseRequest?page=1&size=100`;
+        initialOptions = {
+          client: "Clientes",
+        };
+        setCancelEdit(true);
+      }
+
+      setUrlBase(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint);
+      setRequests(tasksData);
+      setInitialOptionClient(initialOptions.client);
+    } catch (error) {
+      console.error("Error al obtener datos de las tareas:", error);
+    } finally {
+      setLoading(false);
+      setCancelEdit(true);
+    }
   };
 
   const tabs = [
@@ -113,92 +203,6 @@ const RequestDataContent = ({
     "w-10", // Ancho para Columna 13
   ];
 
-  const listItems = [
-    {
-      data: "Ford",
-      editComponent: "select",
-      options: [
-        { id: 1, value: "SmartPR" },
-        { id: 2, value: "MTC" },
-        { id: 3, value: "Ford" },
-        { id: 4, value: "Toyota" },
-      ],
-      key_name: "cliente",
-    },
-    {
-      data: "Tipo de servicio",
-      editComponent: "select",
-      options: [
-        { id: 1, value: "Video" },
-        { id: 2, value: "Grafica" },
-        { id: 3, value: "Ambos" },
-      ],
-      key_name: "tipo_de_servicio",
-    },
-    {
-      data: "Proceso",
-      editComponent: "input",
-      type: "text",
-      key_name: "Proceso",
-    },
-    {
-      data: "Actividad",
-      editComponent: "input",
-      type: "text",
-      key_name: "actividad",
-    },
-    {
-      data: "Especificaciones",
-      editComponent: "input",
-      type: "text",
-      key_name: "especificaciones",
-    },
-    {
-      data: "2024-01-26",
-      editComponent: "input",
-      type: "date",
-      key_name: " ",
-    },
-    {
-      data: "German",
-      editComponent: "select",
-      options: [
-        { id: 1, value: "German" },
-        { id: 2, value: "Sebas" },
-      ],
-      key_name: " ",
-    },
-    {
-      data: "04:00",
-      editComponent: "input",
-      type: "time",
-      key_name: "hora_estimada",
-    },
-    {
-      data: "05:00",
-      editComponent: "input",
-      type: "time",
-      key_name: "hora_reales",
-    },
-    {
-      data: "En proceso",
-      editComponent: "status",
-      options: [
-        { id: 1, value: "Pendiente" },
-        { id: 2, value: "Finalizado" },
-        { id: 3, value: "En ejecucion" },
-        { id: 4, value: "En proceso" },
-      ],
-      key_name: "estado",
-    },
-    {
-      data: "Animación",
-      editComponent: "input",
-      type: "text",
-      key_name: "observaciones",
-    },
-  ];
-
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
       <div className="w-full flex justify-between z-[2]">
@@ -223,6 +227,11 @@ const RequestDataContent = ({
               urlBase={urlBase}
               setUrlBase={setUrlBase}
             />
+            <ButtonWithIcon
+              text={"Limpiar filtros"}
+              icon={<CleanIcon />}
+              action={handleCleanFilters}
+            />
           </div>
         )}
 
@@ -238,7 +247,29 @@ const RequestDataContent = ({
               urlBase={urlBase}
               setUrlBase={setUrlBase}
             />
-            <InputDate text={"Diciembre"} />
+            <SelectState
+              options={filterState}
+              setTasks={setRequests}
+              newFilter={"state"}
+              initialOption={initialOptionState}
+              setInitialOption={setInitialOptionState}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
+            <InputDate
+              text={"Fecha"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setRequests={setRequests}
+              newFilter={"startDate"}
+              fieldReset={fieldReset}
+            />
+            <ButtonWithIcon
+              text={"Limpiar filtros"}
+              icon={<CleanIcon />}
+              action={handleCleanFilters}
+            />
           </div>
         )}
       </div>
@@ -248,7 +279,7 @@ const RequestDataContent = ({
           <div className="overflow-x-auto h-full">
             <div className="w-full">
               <div className="w-full flex px-6 py-5">
-                <div className="w-full flex px-6 py-5">
+                <div className="w-full flex py-5">
                   <div className="w-full flex gap-7">
                     <div className="flex flex-col gap-2">
                       <h2>Cliente</h2>
@@ -295,17 +326,6 @@ const RequestDataContent = ({
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <h2>Responsable</h2>
-                    <SelectGeneric
-                      options={employees}
-                      initialOption={""}
-                      key_name="idemployeeasigned"
-                      handleChange={handleChange}
-                      styleSelect={"w-[157px]"}
-                      fieldReset={fieldReset}
-                    />
-                  </div>
                 </div>
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
@@ -330,15 +350,17 @@ const RequestDataContent = ({
                     cols="30"
                     rows="10"
                     className="w-full rounded-md p-2 shadow-3xl h-[245px] focus:outline-none"
-                    onChange={(e) =>
+                    onChange={(e) => {
                       handleChange({
                         target: {
                           name: "specifications",
                           value: e.target.value,
                         },
-                      })
-                    }
-                    value={fieldReset ? "" : stateRow.specifications}
+                      });
+                      setFieldReset(false);
+                      console.log(e.target.value);
+                    }}
+                    value={fieldReset ? "" : stateRow["specifications"]}
                   ></textarea>
                 </div>
               </div>
@@ -363,12 +385,12 @@ const RequestDataContent = ({
                 </div>
                 <div className="w-max flex flex-col gap-3">
                   <span>Hora real</span>
-                  <TimeInput
+                  {/* <TimeInput
                     handleChange={handleChange}
                     key_name={"realtime"}
                     type={"time"}
                     fieldReset={fieldReset}
-                  />
+                  /> */}
                 </div>
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
@@ -426,7 +448,7 @@ const RequestDataContent = ({
                   </thead>
                   <tbody className="border-b border-gray-300">
                     {requests?.map((item, index) => (
-                      <RowTableRequest
+                      <RowTable
                         key={index}
                         listItems={item}
                         columnWidths={columnWidths}
@@ -434,6 +456,12 @@ const RequestDataContent = ({
                         handleChange={handleChange}
                         readOnly={false}
                         editStatus={true}
+                        setStateRow={setStateRow}
+                        endpoint={"DataUniverseRequest"}
+                        setTooltipSuccess={setTooltipSuccess}
+                        setTooltipError={setTooltipError}
+                        section={"requestsData"}
+                        setRealTime={setRealTime}
                       />
                     ))}
                   </tbody>
@@ -451,7 +479,7 @@ const RequestDataContent = ({
                     SmartPR
                   </p>
                   <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500">
-                    140 horas
+                    0 horas
                   </span>
                 </div>
                 <div className="flex gap-2 items-center">
@@ -459,7 +487,7 @@ const RequestDataContent = ({
                     Horas totales:
                   </p>
                   <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-blue-500">
-                    504 horas
+                    0 horas
                   </span>
                 </div>
               </div>
@@ -476,14 +504,19 @@ const RequestDataContent = ({
                           />
                         </thead>
                         <tbody className="border-b border-gray-300">
-                          <RowTableRequest
-                            listItems={listItems}
-                            columnWidths={columnWidths}
-                            stateRow={stateRow}
-                            handleChange={handleChange}
-                            readOnly={true}
-                            editStatus={false}
-                          />
+                          {requests?.map((item, index) => (
+                            <RowTable
+                              key={index}
+                              listItems={item}
+                              columnWidths={columnWidths}
+                              stateRow={stateRow}
+                              handleChange={handleChange}
+                              readOnly={true}
+                              editStatus={false}
+                              setStateRow={setStateRow}
+                              setRealTime={setRealTime}
+                            />
+                          ))}
                         </tbody>
                       </table>
                     </div>
@@ -501,6 +534,7 @@ const RequestDataContent = ({
             totalPages={totalPages}
             urlBase={urlBase}
             setUrlBase={setUrlBase}
+            setLoading={setLoading}
           />
         </div>
       )}

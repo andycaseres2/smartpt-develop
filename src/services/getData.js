@@ -1,14 +1,17 @@
-// Función para realizar solicitudes GET
-export const getData = async (endpoint) => {
+// Función para realizar solicitudes GET// Función para realizar solicitudes POST
+export const getData = async (url) => {
   try {
-    const response = await fetch(endpoint);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error(`Error fetching data from ${endpoint}:`, error);
+    console.error("Error posting data:", error);
     throw error;
   }
 };

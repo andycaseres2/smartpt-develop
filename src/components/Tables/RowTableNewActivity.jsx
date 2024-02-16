@@ -4,19 +4,17 @@ import { formatTime } from "../../utils/formatTime";
 import DateInput from "../Inputs/DateInput";
 import Input from "../Inputs/Input";
 import TimeInput from "../Inputs/TimeInput";
-import Select from "../Selects/Select";
 import SelectGeneric from "../Selects/SelectGeneric";
 import DeleteIcon from "../../assets/Icons/DeleteIcon";
 import CheckIcon from "../../assets/Icons/CheckIcon";
 import CloseIcon from "../../assets/Icons/CloseIcon";
+import SelectStatus from "../Selects/SelectStatus";
 
 const RowTableNewActivity = ({
   listItems,
   columnWidths,
   stateRow,
   handleChange,
-  readOnly,
-  editStatus,
   editMode,
   showButtonsEdit,
 }) => {
@@ -39,37 +37,37 @@ const RowTableNewActivity = ({
   };
   return (
     <div className="flex justify-between w-full">
-      <tr className="justify-start flex gap-5 py-1 px-2 w-max">
+      <tr className="justify-start flex gap-6 py-1 px-2 w-max">
         {listItems?.map((item, index) => (
           <td
             key={index}
             className={`${columnWidths[index]} flex items-center justify-start`}
           >
             {item.editComponent === "status" && modeEdit ? (
-              <Select
+              <SelectStatus
                 options={item.options}
                 onSelect={(selectedOption) =>
                   handleSelectStatus(selectedOption, index)
                 }
                 initialOption={item.data}
                 colorArrow={"white"}
-                readOnly={readOnly}
+                readOnly={true}
                 key_name={item.key_name}
                 handleChange={handleChange}
-                editStatus={editStatus}
+                editStatus={true}
               />
             ) : item.editComponent === "status" && !modeEdit ? (
-              <Select
+              <SelectStatus
                 options={item.options}
                 onSelect={(selectedOption) =>
                   handleSelectStatus(selectedOption, index)
                 }
                 initialOption={item.data}
                 colorArrow={"white"}
-                readOnly={readOnly}
+                readOnly={true}
                 key_name={item.key_name}
                 handleChange={handleChange}
-                editStatus={editStatus}
+                editStatus={true}
               />
             ) : item.editComponent === "input" &&
               item.type === "text" &&
@@ -113,11 +111,7 @@ const RowTableNewActivity = ({
             ) : item.editComponent === "input" &&
               item.type === "date" &&
               modeEdit ? (
-              <DateInput
-                handleChange={handleChange}
-                defaultValue={item.data}
-                key_name={item.key_name}
-              />
+              <DateInput handleChange={handleChange} key_name={item.key_name} />
             ) : item.editComponent === "input" &&
               item.type === "date" &&
               !modeEdit ? (

@@ -10,11 +10,11 @@ import WarningCircle from "../../assets/Icons/WarningCircle";
 
 const Planning = () => {
   const userRole = import.meta.env.VITE_REACT_APP_ROLE;
-  const { setProcesses, setClients, setActivities } = stateStore();
+  const { setProcesses, setClients, setActivities, setEmployees } =
+    stateStore();
   const [tasks, setTasks] = useState([]);
   const [isNewTask, setIsNewTask] = useState(false);
   const [realTime, setRealTime] = useState(true);
-  const [totalTimes, setTotalTimes] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [tooltipSuccess, setTooltipSuccess] = useState("");
   const [tooltipError, setTooltipError] = useState("");
@@ -33,41 +33,6 @@ const Planning = () => {
   }, [tooltipSuccess, tooltipError]);
 
   useEffect(() => {
-    // Verificar si tasks tiene al menos un elemento antes de acceder
-    if (tasks && tasks.length > 0) {
-      // Filtrar elementos que tienen un valor válido para "EstimatedTime"
-      const validTasks = tasks.filter((objeto) => {
-        const estimatedTimeObject = objeto.find(
-          (propiedad) => propiedad.key_name === "estimatedtime"
-        );
-        return estimatedTimeObject && estimatedTimeObject.data !== null;
-      });
-
-      // Obtener los valores de "EstimatedTime"
-      const estimatedTimes = validTasks.map((objeto) => {
-        const estimatedTimeObject = objeto.find(
-          (propiedad) => propiedad.key_name === "estimatedtime"
-        );
-        return estimatedTimeObject ? estimatedTimeObject.data : null;
-      });
-
-      // Filtrar los valores nulos
-      const validEstimatedTimes = estimatedTimes.filter(
-        (valor) => valor !== null
-      );
-
-      // Sumar los valores válidos
-      const total = validEstimatedTimes.reduce(
-        (acumulador, valorActual) => acumulador + valorActual,
-        0
-      );
-
-      // Actualizar el estado con los valores obtenidos
-      setTotalTimes(Math.round(total / 60));
-    }
-  }, [tasks]);
-
-  useEffect(() => {
     setLoading(true); // Activar indicador de carga
 
     const fetchDataOnMount = async () => {
@@ -79,6 +44,10 @@ const Planning = () => {
         const activitiesEndpoint = `${baseUrl}Activity`;
         const processesEndpoint = `${baseUrl}Process`;
         const paginationsEndpoint = `${baseUrl}FormattedTask/Pages`;
+        const employeesEndpoint = `${baseUrl}Employee`;
+
+        const employeesData = await getData(employeesEndpoint);
+        setEmployees(employeesData);
 
         const clientsData = await getData(clientsEndpoint);
         setClients(clientsData);
@@ -131,19 +100,19 @@ const Planning = () => {
         userName="Kenet Sebastián Segura Murillo"
         baseColor="bg-primary-red-600"
       />
-      <div className="w-full flex flex-col bg-primary-pink-50 py-4 px-6 h-full">
+      <div className="w-full flex flex-col bg-primary-pink-50 py-4 px-6 h-full overflow-auto">
         {userRole === "ADMIN" ? (
           <AdminPlanning
             tasks={tasks}
             setTasks={setTasks}
             setRealTime={setRealTime}
+            realTime={realTime}
             setIsNewTask={setIsNewTask}
             isNewTask={isNewTask}
-            totalTimes={totalTimes}
             totalPages={totalPages}
             setTooltipSuccess={setTooltipSuccess}
             setTooltipError={setTooltipError}
-            columnTitlesActivity={columnTitles}
+            columnTitles={columnTitles}
             taskFullyLoaded={taskFullyLoaded}
             setLoading={setLoading}
             loading={loading}
@@ -155,7 +124,6 @@ const Planning = () => {
             setIsNewTask={setIsNewTask}
             isNewTask={isNewTask}
             setRealTime={setRealTime}
-            totalTimes={totalTimes}
             totalPages={totalPages}
             setTooltipSuccess={setTooltipSuccess}
             setTooltipError={setTooltipError}

@@ -4,6 +4,9 @@ import { getData } from "../../services/getData";
 import { stateStore } from "../../store/stateStore";
 import { useEffect } from "react";
 import { useState } from "react";
+import CircleCheck from "../../assets/Icons/CircleCheck";
+import WarningCircle from "../../assets/Icons/WarningCircle";
+import Tooltip from "../../components/Tooltips/Tooltip";
 
 const RequestsData = () => {
   const {
@@ -18,6 +21,7 @@ const RequestsData = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [tooltipSuccess, setTooltipSuccess] = useState("");
   const [tooltipError, setTooltipError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
@@ -105,11 +109,32 @@ const RequestsData = () => {
       />
       <div className="w-full flex flex-col bg-primary-lightblue-50 py-4 px-6 h-full">
         <RequestDataContent
+          setRealTime={setRealTime}
           requests={requests}
           setRequests={setRequests}
           totalPages={totalPages}
+          setTooltipSuccess={setTooltipSuccess}
+          setTooltipError={setTooltipError}
+          loading={loading}
+          setLoading={setLoading}
         />
       </div>
+
+      {tooltipSuccess && (
+        <Tooltip
+          text={tooltipSuccess}
+          icon={<CircleCheck fill={"#60D935"} className={"w-7 h-7"} />}
+          color="bg-primary-green-500"
+        />
+      )}
+
+      {tooltipError && (
+        <Tooltip
+          text={tooltipError}
+          icon={<WarningCircle stroke={"#F70000"} className={"w-7 h-7"} />}
+          color="bg-primary-red-500"
+        />
+      )}
     </div>
   );
 };

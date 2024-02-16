@@ -15,16 +15,18 @@ import { getData } from "../../services/getData";
 import TotalTimes from "../../components/Texts/TotalTimes";
 import CleanIcon from "../../assets/Icons/CleanIcon";
 import Spinner from "../../components/Spinners/Spinner";
+import SelectState from "../../components/Selects/SelectState";
+import { postData } from "../../services/postData";
 
 const AdminPlanning = ({
   tasks,
   setTasks,
   setRealTime,
-  totalTimes,
+  realTime,
   totalPages,
   setTooltipSuccess,
   setTooltipError,
-  columnTitlesActivity,
+  columnTitles,
   taskFullyLoaded,
   loading,
   setLoading,
@@ -37,11 +39,14 @@ const AdminPlanning = ({
     clients,
     activities,
     processes,
+    setCancelEdit,
+    employees,
+    statusModeEdit,
   } = stateStore();
   const [selectedFrequencyOption, setselectedFrequencyOption] =
     useState("Semanal");
   const [selectedMonthOption, setselectedMonthOption] = useState("Septiembre");
-  const [selectedUserId, setSelectedUserId] = useState(1);
+
   const [stateRow, setStateRow] = useState({});
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
@@ -52,6 +57,70 @@ const AdminPlanning = ({
   const [urlBase, setUrlBase] = useState(`
     ${import.meta.env.VITE_REACT_APP_URL_BASE}FormattedTask?page=1&size=10`);
   const [fieldReset, setFieldReset] = useState(false);
+  const [initialOptionState, setInitialOptionState] = useState("Estados");
+  const [taskbyEmployee, setTaskByEmployee] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [totalTimes, setTotalTimes] = useState(0);
+
+  useEffect(() => {
+    setSelectedUserId(employees[0]?.id);
+  }, [employees]);
+
+  useEffect(() => {
+    if (selectedUserId !== null) {
+      setLoading(true); // Activar indicador de carga
+      const fetchDataOnMount = async () => {
+        try {
+          const employeesTaskEndpoint = `${
+            import.meta.env.VITE_REACT_APP_URL_BASE
+          }FormattedTask?page=1&size=10&IdEmployee=${selectedUserId}`;
+
+          const employeesDataTask = await getData(employeesTaskEndpoint);
+
+          // Aplicamos la lógica a cada subarray dentro de employeesDataTask
+          const formatArray = employeesDataTask.map((subarray) => {
+            // Eliminar el elemento con key_name 'comments' antes de formatear
+            const filteredSubarray = subarray.filter(
+              (item) => item.key_name !== "comments"
+            );
+            const firstFive = filteredSubarray.slice(0, 8); // Tomamos los primeros 5 elementos
+            const lastElement = filteredSubarray[filteredSubarray.length - 1]; // Tomamos el último elemento
+            return [...firstFive, lastElement]; // Concatenamos los primeros 5 con el último
+          });
+          setTaskByEmployee(formatArray);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        } finally {
+          setLoading(false); // Desactivar indicador de carga, ya sea éxito o error
+        }
+      };
+
+      fetchDataOnMount();
+    }
+  }, [selectedUserId, realTime]);
+
+  const filterState = [
+    {
+      id: 0,
+      value: "Todos",
+    },
+    {
+      id: 1,
+      value: "Pendiente",
+    },
+    {
+      id: 2,
+      value: "En proceso",
+    },
+    {
+      id: 3,
+      value: "Finalizada",
+    },
+    {
+      id: 4,
+      value: "No ejecutada",
+    },
+  ];
 
   useEffect(() => {
     setUpdateActivities(activities);
@@ -107,25 +176,28 @@ const AdminPlanning = ({
 
   const handleTabClick = async (tab) => {
     setActiveTab(tab);
-    setLoading(true); // Activar indicador de carga
-
+    setLoading(true);
+    setCancelEdit(true);
+    setStateRow({});
     try {
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
       let tasksEndpoint = "";
       let initialOptions = {};
 
       if (tab === 4) {
-        tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&viewAdmin=true`;
+        tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
         initialOptions = {
           client: "Clientes",
           activity: "Actividad",
           process: "Proceso",
         };
+        setCancelEdit(true);
       } else if (tab === 3) {
         tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
         initialOptions = {
           client: "Clientes",
         };
+        setCancelEdit(true);
       }
       setUrlBase(tasksEndpoint);
       const tasksData = await getData(tasksEndpoint);
@@ -138,7 +210,8 @@ const AdminPlanning = ({
     } catch (error) {
       console.error("Error al obtener datos de las tareas:", error);
     } finally {
-      setLoading(false); // Desactivar indicador de carga, ya sea éxito o error
+      setLoading(false);
+      setCancelEdit(true);
     }
   };
 
@@ -176,13 +249,6 @@ const AdminPlanning = ({
   const handleSelectedMonth = (selectedOption) => {
     setselectedMonthOption(selectedOption);
   };
-
-  const userList = [
-    { id: 1, name: "Carlos Gonzales" },
-    { id: 2, name: "Maria Lopez" },
-    { id: 3, name: "Fernando Hernandez" },
-    { id: 4, name: "Luisa Rodriguez" },
-  ];
 
   const handleUserSelection = (clientId) => {
     setSelectedUserId(clientId);
@@ -241,12 +307,15 @@ const AdminPlanning = ({
     "w-44", // Ancho para Columna 12
   ];
 
-  const columnWidthsNewActivity = [
-    "w-[130px]",
-    "w-[250px]",
-    "w-[120px]",
-    "w-[130px]",
-    "w-[165px]",
+  const columnWidthsActivity = [
+    "w-44", // Ancho para Columna 1
+    "w-[400px]", // Ancho para Columna 2
+    "w-44", // Ancho para Columna 3
+    "w-44", // Ancho para Columna 4
+    "w-52", // Ancho para Columna 5
+    "w-52", // Ancho para Columna 6
+    "w-64", // Ancho para Columna 7
+    "w-44", // Ancho para Columna 8
   ];
 
   const columnsAddActivity = [
@@ -255,6 +324,9 @@ const AdminPlanning = ({
     "Fecha inicio",
     "Fecha estimada",
     "Estado",
+    "Proceso",
+    "Actividad",
+    "Hora estimada",
   ];
 
   const listItems = [
@@ -368,17 +440,11 @@ const AdminPlanning = ({
     }
   };
 
-  const currentDate = new Date().toISOString().split("T")[0];
   const listAddActivity = [
     {
       data: "Select",
       editComponent: "select",
-      options: [
-        { id: 1, value: "SmartPR" },
-        { id: 2, value: "MTC" },
-        { id: 3, value: "Ford" },
-        { id: 4, value: "Toyota" },
-      ],
+      options: clients,
       key_name: "cliente",
     },
     {
@@ -388,7 +454,7 @@ const AdminPlanning = ({
       key_name: "tarea",
     },
     {
-      data: currentDate,
+      data: "",
       editComponent: "input",
       type: "date",
       key_name: "fecha_inicio",
@@ -409,6 +475,27 @@ const AdminPlanning = ({
         { id: 4, value: "En proceso" },
       ],
       key_name: "estado",
+    },
+    {
+      data: "",
+      editComponent: "select",
+      type: null,
+      options: processes,
+      key_name: "idprocesses",
+    },
+    {
+      data: "",
+      editComponent: "select",
+      type: null,
+      options: activities,
+      key_name: "idactivity",
+    },
+    {
+      data: 0,
+      editComponent: "input",
+      type: "time",
+      options: [],
+      key_name: "estimatedtime",
     },
   ];
 
@@ -450,8 +537,15 @@ const AdminPlanning = ({
     setInitialOptionClient("Clientes");
     setInitialOptionSelectActivity("Actividad");
     setInitialOptionSelectProcess("Proceso");
+    setInitialOptionState("Estados");
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-    const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=10`;
+    let tasksEndpoint = "";
+    if (activeTab === 3) {
+      tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+    } else if (activeTab === 4) {
+      tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
+    }
+    setUrlBase(tasksEndpoint);
     try {
       const tasksData = await getData(tasksEndpoint);
       setTasks(tasksData);
@@ -461,6 +555,89 @@ const AdminPlanning = ({
 
     setFieldReset(false);
   };
+
+  const handleAsignedTask = async () => {
+    try {
+      // Obtener el objeto stateRow
+      let body = { ...stateRow };
+
+      // Verificar si las propiedades requeridas existen en el objeto body
+
+      // Eliminar la propiedad 'null' del objeto
+      if ("null" in body) {
+        delete body["null"];
+      }
+      // Establecer los demás estados en null
+      const keysToSetNull = [
+        "id",
+        "idcustomer",
+        "idactivity",
+        "comments",
+        "estimatedtime",
+        "realtimespent",
+        "realenddate",
+        "attachments",
+      ];
+
+      keysToSetNull.forEach((key) => {
+        if (!(key in body)) {
+          body[key] = null;
+        }
+      });
+
+      // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
+      body.idemployeeasigned = selectedUserId;
+      body.state = 1;
+
+      // Definir la URL base
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+      // Construir la URL del endpoint para las tareas
+      const tasksEndpoint = `${baseUrl}Task`;
+      await postData(tasksEndpoint, body);
+      setRealTime(true);
+      setStateRow({});
+      setTooltipSuccess("Tarea creada con éxito");
+    } catch (error) {
+      console.error("Error al crear la tarea:", error);
+      setTooltipError("Hubo un error al crear la tarea");
+    }
+  };
+
+  useEffect(() => {
+    // Verificar si tasks tiene al menos un elemento antes de acceder
+    if (tasks && tasks.length > 0 && activeTab === 3) {
+      // Filtrar elementos que tienen un valor válido para "EstimatedTime"
+      const validTasks = tasks.filter((objeto) => {
+        const estimatedTimeObject = objeto.find(
+          (propiedad) => propiedad.key_name === "estimatedtime"
+        );
+        return estimatedTimeObject && estimatedTimeObject.data !== null;
+      });
+
+      // Obtener los valores de "EstimatedTime"
+      const estimatedTimes = validTasks.map((objeto) => {
+        const estimatedTimeObject = objeto.find(
+          (propiedad) => propiedad.key_name === "estimatedtime"
+        );
+        return estimatedTimeObject ? estimatedTimeObject.data : null;
+      });
+
+      // Filtrar los valores nulos
+      const validEstimatedTimes = estimatedTimes.filter(
+        (valor) => valor !== null
+      );
+
+      // Sumar los valores válidos
+      const total = validEstimatedTimes.reduce(
+        (acumulador, valorActual) => acumulador + valorActual,
+        0
+      );
+
+      // Actualizar el estado con los valores obtenidos
+      setTotalTimes(Math.round(total / 60));
+    }
+  }, [tasks]);
 
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
@@ -510,7 +687,7 @@ const AdminPlanning = ({
               buttonColor={"bg-primary-red-600"}
               text={"Añadir actividad"}
               icon={<CirclePlus />}
-              action={() => addTask()}
+              action={() => !statusModeEdit && !loading && addTask()}
             />
             <ButtonWithIcon
               text={"Limpiar filtros"}
@@ -550,6 +727,16 @@ const AdminPlanning = ({
               setInitialOption={setInitialOptionSelectProcess}
               handleSelect={handleSelectProcess}
             />
+            <SelectState
+              options={filterState}
+              setTasks={setTasks}
+              newFilter={"state"}
+              initialOption={initialOptionState}
+              setInitialOption={setInitialOptionState}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
             <InputDate
               text={"Fecha inicio"}
               urlBase={urlBase}
@@ -579,7 +766,7 @@ const AdminPlanning = ({
         {activeTab === 1 && (
           <div className="flex w-full h-full gap-3">
             <WorkerList
-              list={userList}
+              employees={employees}
               onSelect={handleUserSelection}
               selectedId={selectedUserId}
             />
@@ -605,7 +792,7 @@ const AdminPlanning = ({
                     <table className="min-w-full">
                       <thead>
                         <ColumnTable
-                          columnTitlesActivity={columnTitlesActivity}
+                          columnTitlesActivity={columnTitles}
                           columnWidths={columnWidths}
                           readOnly={true}
                         />
@@ -789,10 +976,9 @@ const AdminPlanning = ({
           <div className="overflow-x-auto h-full">
             <div className="flex w-full h-full gap-3">
               <WorkerList
-                list={userList}
+                employees={employees}
                 onSelect={handleUserSelection}
                 selectedId={selectedUserId}
-                showButton={false}
               />
               <div className="w-full flex flex-col overflow-y-auto  rounded-md gap-5">
                 <div
@@ -808,14 +994,14 @@ const AdminPlanning = ({
                     <thead>
                       <ColumnTableAddActivity
                         columnTitlesActivity={columnsAddActivity}
-                        columnWidths={columnWidthsNewActivity}
+                        columnWidths={columnWidthsActivity}
                         readOnly={false}
                       />
                     </thead>
                     <tbody className="border-b border-gray-300">
                       <RowTableNewActivity
                         listItems={listAddActivity}
-                        columnWidths={columnWidthsNewActivity}
+                        columnWidths={columnWidthsActivity}
                         stateRow={stateRow}
                         handleChange={handleChange}
                         readOnly={false}
@@ -831,6 +1017,7 @@ const AdminPlanning = ({
                       text={"Añadir actividad"}
                       disabled={false}
                       icon={<CirclePlus />}
+                      action={() => handleAsignedTask()}
                     />
                   </div>
                 </div>
@@ -839,7 +1026,7 @@ const AdminPlanning = ({
                 >
                   <div className="w-full p-3">
                     <h2 className="text-xl text-primary-red-600 font-semibold">
-                      Asignar actividad nueva
+                      Tareas asignadas semana 4/12/2023 - 8/12/2023
                     </h2>
                   </div>
 
@@ -847,53 +1034,38 @@ const AdminPlanning = ({
                     <thead>
                       <ColumnTableAddActivity
                         columnTitlesActivity={columnsAddActivity}
-                        columnWidths={columnWidthsNewActivity}
+                        columnWidths={columnWidthsActivity}
                         readOnly={false}
                       />
                     </thead>
-                    <tbody className="border-b border-gray-300">
-                      <RowTableNewActivity
-                        listItems={listAddActivity}
-                        columnWidths={columnWidthsNewActivity}
-                        stateRow={stateRow}
-                        handleChange={handleChange}
-                        readOnly={false}
-                        editStatus={true}
-                        showButtonsEdit={true}
-                      />
-                    </tbody>
-                    <tbody className="border-b border-gray-300">
-                      <RowTableNewActivity
-                        listItems={listAddActivity}
-                        columnWidths={columnWidthsNewActivity}
-                        stateRow={stateRow}
-                        handleChange={handleChange}
-                        readOnly={false}
-                        editStatus={true}
-                        showButtonsEdit={true}
-                      />
-                    </tbody>
-                    <tbody className="border-b border-gray-300">
-                      <RowTableNewActivity
-                        listItems={listAddActivity}
-                        columnWidths={columnWidthsNewActivity}
-                        stateRow={stateRow}
-                        handleChange={handleChange}
-                        readOnly={false}
-                        editStatus={true}
-                        showButtonsEdit={true}
-                      />
-                    </tbody>
-                    <tbody className="border-b border-gray-300">
-                      <RowTableNewActivity
-                        listItems={listAddActivity}
-                        columnWidths={columnWidthsNewActivity}
-                        stateRow={stateRow}
-                        handleChange={handleChange}
-                        readOnly={false}
-                        editStatus={true}
-                        showButtonsEdit={true}
-                      />
+                    <tbody className="">
+                      {loading ? (
+                        <div className="w-full h-[600px] flex top-[100px] relative left-[500px]">
+                          <Spinner design={"!h-[50px] !w-[50px]"} />
+                        </div>
+                      ) : (
+                        <>
+                          {taskbyEmployee.map((item, index) => (
+                            <RowTable
+                              key={index}
+                              index={index}
+                              listItems={item}
+                              columnWidths={columnWidthsActivity}
+                              stateRow={stateRow}
+                              handleChange={handleChange}
+                              editStatus={true}
+                              newTaskAdd={newTaskAdd}
+                              setNewTaskAdd={setNewTaskAdd}
+                              setRealTime={setRealTime}
+                              setStateRow={setStateRow}
+                              setTooltipSuccess={setTooltipSuccess}
+                              setTooltipError={setTooltipError}
+                              cancelAddTask={cancelAddTask}
+                              activeTab={activeTab}
+                            />
+                          ))}
+                        </>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -908,7 +1080,7 @@ const AdminPlanning = ({
               <table className="min-w-full">
                 <thead>
                   <ColumnTable
-                    columnTitlesActivity={columnTitlesActivity}
+                    columnTitlesActivity={columnTitles}
                     columnWidths={columnWidths}
                     readOnly={false}
                   />
@@ -952,7 +1124,7 @@ const AdminPlanning = ({
               <table className="min-w-full">
                 <thead>
                   <ColumnTable
-                    columnTitlesActivity={columnTitlesActivity}
+                    columnTitlesActivity={columnTitles}
                     columnWidths={columnWidths}
                     readOnly={true}
                   />
@@ -973,6 +1145,7 @@ const AdminPlanning = ({
                           handleChange={handleChange}
                           readOnly={true}
                           newTaskAdd={newTaskAdd}
+                          setNewTaskAdd={setNewTaskAdd}
                           setStateRow={setStateRow}
                         />
                       ))}

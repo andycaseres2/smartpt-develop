@@ -12,6 +12,9 @@ import { postData } from "../../services/postData";
 import { putData } from "../../services/putData";
 import ModalConfirmation from "../Modals/ModalConfirmation";
 import { stateStore } from "../../store/stateStore";
+import OptionsEmployees from "../Selects/OptionsEmployees";
+import DeleteIcon from "../../assets/Icons/DeleteIcon";
+import { deleteData } from "../../services/deleteData";
 
 const RowTable = ({
   listItems,
@@ -28,8 +31,18 @@ const RowTable = ({
   setTooltipSuccess,
   setTooltipError,
   cancelAddTask,
+  activeTab,
+  endpoint,
+  section,
 }) => {
-  const { clients, activities } = stateStore();
+  const {
+    clients,
+    activities,
+    employees,
+    cancelEdit,
+    setCancelEdit,
+    setStatusModeEdit,
+  } = stateStore();
   const [modeEdit, setModeEdit] = useState(editMode ?? false);
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
     useState("");
@@ -38,6 +51,21 @@ const RowTable = ({
   const [rowId, setRowId] = useState(null);
   const [openModalCancel, setOpenModalCancel] = useState(false);
   const [isUpdateStatus, setIsUpdateStatus] = useState(false);
+  const [showSelectEmployee, setShowSelectEmployee] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [openModalDelete, setOpenModalDelete] = useState(false);
+
+  useEffect(() => {
+    setStatusModeEdit(modeEdit);
+  }, [modeEdit]);
+
+  useEffect(() => {
+    if (cancelEdit) {
+      setModeEdit(false);
+      setNewTaskAdd && setNewTaskAdd(false);
+      setCancelEdit(false);
+    }
+  }, [cancelEdit]);
 
   useEffect(() => {
     if (isUpdateStatus && !modeEdit) {
@@ -79,6 +107,7 @@ const RowTable = ({
     if (newTaskAdd && index === 0) {
       setModeEdit(true);
     }
+    setStateRow({});
   }, [newTaskAdd]);
 
   async function createTask() {
@@ -102,11 +131,6 @@ const RowTable = ({
         // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
         body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
 
-        // Verificar si realenddate está vacía o es null, y establecerla con la fecha actual si es necesario
-        if (!body.realenddate) {
-          body.realenddate = new Date().toISOString(); // Esto establecerá la fecha y hora actuales
-        }
-
         // Definir la URL base
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
 
@@ -118,14 +142,12 @@ const RowTable = ({
 
         // Restablecer los modos de edición y agregar nueva tarea
         setModeEdit(false);
-        setNewTaskAdd(false);
+        setNewTaskAdd && setNewTaskAdd(false);
         setRealTime(true);
         setStateRow({});
         setTooltipSuccess("Tarea creada con éxito");
       } else {
-        console.error(
-          "No se pueden crear la tarea. Faltan propiedades requeridas en el objeto body."
-        );
+        setStateRow({});
         setTooltipError(
           "No se pueden crear la tarea. Faltan propiedades requeridas."
         );
@@ -144,37 +166,75 @@ const RowTable = ({
       // Obtener el objeto stateRow
       const body = stateRow;
 
-      // Convertir la propiedad con clave 'null' a 'ID'
-      if ("null" in body) {
-        delete body["null"];
-      } else if ("id" in body) {
-        delete body["id"];
-      }
-
       // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
       body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
-      body.realenddate = null;
 
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
 
       // Construir la URL del endpoint para la tarea específica
-      const taskEndpoint = await `${baseUrl}Task/${rowId}`;
+      const taskEndpoint = `${baseUrl}${endpoint}/${rowId}`;
 
-      // Enviar los datos modificados al servidor utilizando la función putData (o postData según tu implementación)
-      await putData(taskEndpoint, body);
+      if (section === "planning") {
+        // Convertir la propiedad con clave 'null' a 'ID'
+        if ("null" in body) {
+          delete body["null"];
+        } else if ("id" in body) {
+          delete body["id"];
+        }
+        if (body.state === 3 || body.state === 4) {
+          body.realenddate =
+            new Date().toISOString().split("T")[0] + "T00:00:00";
+        }
 
-      // Restablecer los modos de edición y agregar nueva tarea
-      setModeEdit(false);
-      setNewTaskAdd(false);
-      setRealTime(true);
-      setTooltipSuccess("Tarea editada con exito");
+        if (
+          (body.state === 3 || body.state === 4) &&
+          body.realtimespent !== null
+        ) {
+          await putData(taskEndpoint, body);
+          setRealTime(true);
+          setTooltipSuccess("Tarea editada con éxito");
+          // Restablecer los modos de edición y agregar nueva tarea
+          setModeEdit(false);
+          setNewTaskAdd && setNewTaskAdd(false);
+          setRealTime(true);
+          setTooltipSuccess("Tarea editada con exito");
+          setStateRow({});
+        } else if (body.state !== 3 && body.state !== 4) {
+          await putData(taskEndpoint, body);
+          setRealTime(true);
+          setTooltipSuccess("Tarea editada con éxito");
+          // Restablecer los modos de edición y agregar nueva tarea
+          setModeEdit(false);
+          setNewTaskAdd && setNewTaskAdd(false);
+          setRealTime(true);
+          setStateRow({});
+        } else {
+          setTooltipError("Hubo un error editando la tarea");
+        }
+      } else {
+        await putData(taskEndpoint, body);
+        setRealTime(true);
+        setTooltipSuccess("Tarea editada con éxito");
+        // Restablecer los modos de edición y agregar nueva tarea
+        setModeEdit(false);
+        setNewTaskAdd && setNewTaskAdd(false);
+        setRealTime(true);
+        setTooltipSuccess("Tarea editada con exito");
+        setStateRow({});
+      }
     } catch (error) {
       // Manejar el error aquí
       console.error("Error al editar la tarea:", error);
 
       // Puedes definir un estado de error y guardarlo en tu componente si es necesario
       setTooltipError("Hubo un error editando la tarea");
+    } finally {
+      setRealTime(true);
+      setModeEdit(false);
+      setOpenModal(false);
+      setNewTaskAdd && setNewTaskAdd(false);
+      setStateRow({});
     }
   }
 
@@ -188,13 +248,58 @@ const RowTable = ({
     cancelAddTask();
     setModeEdit(false);
     setOpenModalCancel(false);
+    setStateRow({});
   };
 
   const handleCancelEdit = () => {
     setModeEdit(false);
     setOpenModalCancel(false);
+    setStateRow({});
   };
 
+  const handleAsignedEmployee = async (id) => {
+    try {
+      const asignedEndpoint = `${
+        import.meta.env.VITE_REACT_APP_URL_BASE
+      }AsignedTask`;
+
+      const body = {
+        idemployeeassigner: 1,
+        idemployeeassigned: id,
+        idtask: rowId,
+        dateassigned: new Date().toISOString(),
+        accepted: null,
+        dateaccepted: null,
+      };
+      await postData(asignedEndpoint, body);
+      setTooltipSuccess("Empleado asignado con exito");
+    } catch (error) {
+      setTooltipError("Error al asignar el empleado");
+      console.error("Error al asignar el empleado:", error);
+    } finally {
+      setShowSelectEmployee(false);
+    }
+  };
+
+  const toogleEmployee = (event) => {
+    setShowSelectEmployee(!showSelectEmployee);
+    event.stopPropagation();
+  };
+
+  const handleDeleteTask = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const tasksEndpoint = `${baseUrl}Task/${rowId}`;
+      await deleteData(tasksEndpoint);
+      setRealTime(true);
+      setTooltipSuccess("Tarea eliminada con exito");
+      setRealTime(true);
+      setStateRow({});
+    } catch (error) {
+      console.error("Error al eliminar la tarea:", error);
+      setTooltipError("Hubo un error al eliminar la tarea");
+    }
+  };
   return (
     <tr className="justify-start flex w-full gap-6 py-1 px-2">
       {listItems?.map((item, index) => (
@@ -292,8 +397,8 @@ const RowTable = ({
             <span className="truncate">{item?.data}</span>
           ) : item?.editComponent === "input" &&
             item?.type === "time" &&
-            (item.key_name !== "realtimespent" ||
-              (item.key_name === "realtimespent" && !newTaskAdd)) &&
+            (item?.key_name !== "realtimespent" ||
+              (item?.key_name === "realtimespent" && !newTaskAdd)) &&
             modeEdit ? (
             <TimeInput
               handleChange={handleChange}
@@ -305,10 +410,12 @@ const RowTable = ({
             item?.type === "time" &&
             !modeEdit ? (
             <>
-              {item.data > 0 ? (
-                <span>{`${item?.data} ${
-                  item?.data > 1 ? "minutos" : "minuto"
-                }`}</span>
+              {item?.data > 0 ? (
+                <span>
+                  {`${Math.floor(item?.data / 60)}:${
+                    item?.data % 60 < 10 ? "0" : ""
+                  }${item?.data % 60} ${item?.data > 1 ? "horas" : "hora"}`}
+                </span>
               ) : (
                 ""
               )}
@@ -317,34 +424,59 @@ const RowTable = ({
             item?.type === "date" &&
             modeEdit &&
             (item?.key_name !== "startdate" ||
-              (item?.key_name === "startdate" && newTaskAdd)) ? (
+              (item?.key_name === "startdate" && newTaskAdd)) &&
+            item?.key_name !== "realenddate" ? (
             <DateInput
               handleChange={handleChange}
               defaultValue={item?.data}
               key_name={item?.key_name}
             />
-          ) : item?.editComponent === "input" &&
-            item?.type === "date" &&
-            !modeEdit ? (
+          ) : (item?.editComponent === "input" &&
+              item?.type === "date" &&
+              item?.key_name !== "realenddate") ||
+            (item?.key_name === "realenddate" && !modeEdit) ? (
             <span>{item?.data?.split("T")[0]}</span>
-          ) : typeof item === "number" || item === null ? (
+          ) : typeof item === "number" ||
+            (item === null && index === listItems.length - 1) ? (
             !readOnly ? (
               !modeEdit ? (
-                <td className="flex w-44 items-center gap-4 justify-center">
+                <td className="flex w-44 items-center gap-4 justify-center relative">
                   <PencilIcon
                     action={() => setModeEdit(true)}
                     className={"cursor-pointer hover:scale-105"}
                   />
-                  <ProfilePicture
-                    className={"cursor-pointer hover:scale-105"}
-                  />
+                  {activeTab === 2 ? (
+                    <DeleteIcon
+                      className={"cursor-pointer hover:scale-105"}
+                      action={() => setOpenModalDelete(true)}
+                      style={{ pointerEvents: "none" }}
+                    />
+                  ) : (
+                    <>
+                      {section === "planning" && (
+                        <ProfilePicture
+                          className={"cursor-pointer hover:scale-105"}
+                          action={toogleEmployee}
+                          style={{ pointerEvents: "none" }}
+                        />
+                      )}
+                    </>
+                  )}
+
+                  {showSelectEmployee && (
+                    <OptionsEmployees
+                      employees={employees}
+                      onSelect={handleAsignedEmployee}
+                      setShowSelectEmployee={setShowSelectEmployee}
+                    />
+                  )}
                 </td>
               ) : (
                 <td className="flex w-44 items-center gap-4 justify-center">
                   <CheckIcon
                     className={"cursor-pointer hover:scale-105"}
                     action={() => {
-                      newTaskAdd ? createTask() : editTask();
+                      newTaskAdd ? createTask() : setOpenModal(true);
                     }}
                   />
                   <CloseIcon
@@ -359,6 +491,20 @@ const RowTable = ({
           )}
         </td>
       ))}
+
+      {openModal && (
+        <ModalConfirmation
+          onClose={() => setOpenModal(false)}
+          handleCancel={!newTaskAdd && editTask}
+        />
+      )}
+
+      {openModalDelete && (
+        <ModalConfirmation
+          onClose={() => setOpenModalDelete(false)}
+          handleCancel={handleDeleteTask}
+        />
+      )}
 
       {openModalCancel && (
         <ModalConfirmation
