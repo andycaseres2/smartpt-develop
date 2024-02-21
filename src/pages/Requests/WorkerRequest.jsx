@@ -23,6 +23,7 @@ const WorkerRequest = ({
   loading,
   setLoading,
   setRealTime,
+  columnWidths,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const {
@@ -44,7 +45,16 @@ const WorkerRequest = ({
       import.meta.env.VITE_REACT_APP_URL_BASE
     }FormattedDesignRequest?page=1&size=10`);
   const [fieldReset, setFieldReset] = useState(false);
-  const [processRequest, setProcessRequest] = useState([]);
+
+  useEffect(() => {
+    if (fieldReset) {
+      const timer = setTimeout(() => {
+        setFieldReset(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [fieldReset]);
 
   const handleCleanFilters = async () => {
     setFieldReset(true);
@@ -67,13 +77,6 @@ const WorkerRequest = ({
     }
     setFieldReset(false);
   };
-
-  useEffect(() => {
-    const filteredArray = processes.filter(
-      (process) => process.id === 2 || process.id === 14
-    );
-    setProcessRequest(filteredArray);
-  }, [processes]);
 
   useEffect(() => {
     setUpdateActivities(activities);
@@ -100,6 +103,13 @@ const WorkerRequest = ({
       const body = stateRow;
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+      const employeesId = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+
+      body.idemployeeasigned = Number(employeesId);
+      if (!body.estimatedtime) {
+        body.estimatedtime = 0;
+      }
 
       // Construir la URL del endpoint para las tareas
       const tasksEndpoint = `${baseUrl}DesignRequest`;
@@ -174,22 +184,6 @@ const WorkerRequest = ({
     "Estado ",
     "Observaciones ",
     "",
-  ];
-
-  const columnWidths = [
-    "w-44", // Ancho para Columna 1
-    "w-44", // Ancho para Columna 2
-    "w-44", // Ancho para Columna 3
-    "w-[350px]", // Ancho para Columna 4
-    "w-[350px]", // Ancho para Columna 5
-    "w-44", // Ancho para Columna 6
-    "w-44", // Ancho para Columna 7
-    "w-44", // Ancho para Columna 8
-    "w-44", // Ancho para Columna 9
-    "w-44", // Ancho para Columna 10
-    "w-44", // Ancho para Columna 11
-    "w-44", // Ancho para Columna 12
-    "w-10", // Ancho para Columna 13
   ];
 
   return (
@@ -315,7 +309,7 @@ const WorkerRequest = ({
                   <div className="flex flex-col gap-2">
                     <h2>Proceso</h2>
                     <SelectGeneric
-                      options={processRequest}
+                      options={processes}
                       initialOption={""}
                       key_name=""
                       handleSelect={handleSelectProcess}
@@ -395,15 +389,15 @@ const WorkerRequest = ({
                     fieldReset={fieldReset}
                   />
                 </div>
-                <div className="w-max flex flex-col gap-3">
+                {/* <div className="w-max flex flex-col gap-3">
                   <span>Hora real</span>
-                  {/* <TimeInput
+                  <TimeInput
                     handleChange={handleChange}
                     key_name={"realtime"}
                     type={"time"}
                     fieldReset={fieldReset}
-                  /> */}
-                </div>
+                  />
+                </div> */}
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
                 <div className="flex flex-col gap-3 ">

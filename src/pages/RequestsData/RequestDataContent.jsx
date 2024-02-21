@@ -15,6 +15,7 @@ import RowTable from "../../components/Tables/RowTable";
 import { getData } from "../../services/getData";
 import CleanIcon from "../../assets/Icons/CleanIcon";
 import SelectState from "../../components/Selects/SelectState";
+import ColumnTable from "../../components/Tables/ColumnTable";
 
 const RequestDataContent = ({
   requests,
@@ -25,6 +26,7 @@ const RequestDataContent = ({
   loading,
   setLoading,
   setRealTime,
+  columnWidths,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const {
@@ -104,11 +106,19 @@ const RequestDataContent = ({
     try {
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const employeesId = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+
+      const body = stateRow;
+
+      body.idemployeeasigned = Number(employeesId);
+      if (!body.estimatedtime) {
+        body.estimatedtime = 0;
+      }
 
       // Construir la URL del endpoint para las tareas
       const tasksEndpoint = `${baseUrl}DataUniverseRequest`;
       // Enviar los datos modificados al servidor utilizando la función postData
-      await postData(tasksEndpoint, stateRow);
+      await postData(tasksEndpoint, body);
       setStateRow({});
       setTooltipSuccess("Registro creada con exito");
       setFieldReset(true);
@@ -186,21 +196,6 @@ const RequestDataContent = ({
     "Horas reales",
     "Estado ",
     "",
-  ];
-  const columnWidths = [
-    "w-44", // Ancho para Columna 1
-    "w-44", // Ancho para Columna 2
-    "w-44", // Ancho para Columna 3
-    "w-[350px]", // Ancho para Columna 4
-    "w-[350px]", // Ancho para Columna 5
-    "w-44", // Ancho para Columna 6
-    "w-44", // Ancho para Columna 7
-    "w-44", // Ancho para Columna 8
-    "w-44", // Ancho para Columna 9
-    "w-44", // Ancho para Columna 10
-    "w-44", // Ancho para Columna 11
-    "w-44", // Ancho para Columna 12
-    "w-10", // Ancho para Columna 13
   ];
 
   return (
@@ -358,7 +353,6 @@ const RequestDataContent = ({
                         },
                       });
                       setFieldReset(false);
-                      console.log(e.target.value);
                     }}
                     value={fieldReset ? "" : stateRow["specifications"]}
                   ></textarea>
@@ -383,15 +377,15 @@ const RequestDataContent = ({
                     fieldReset={fieldReset}
                   />
                 </div>
-                <div className="w-max flex flex-col gap-3">
+                {/* <div className="w-max flex flex-col gap-3">
                   <span>Hora real</span>
-                  {/* <TimeInput
+                  <TimeInput
                     handleChange={handleChange}
                     key_name={"realtime"}
                     type={"time"}
                     fieldReset={fieldReset}
-                  /> */}
-                </div>
+                  />
+                </div> */}
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
                 <div className="flex flex-col gap-3">
@@ -440,7 +434,7 @@ const RequestDataContent = ({
               <div className="w-full p-3">
                 <table className="min-w-full">
                   <thead>
-                    <ColumnTableRequest
+                    <ColumnTable
                       columnTitlesActivity={columnTitles}
                       columnWidths={columnWidths}
                       readOnly={false}

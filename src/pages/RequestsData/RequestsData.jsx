@@ -22,15 +22,17 @@ const RequestsData = () => {
   const [tooltipSuccess, setTooltipSuccess] = useState("");
   const [tooltipError, setTooltipError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentWeek, setCurrentWeek] = useState([]);
 
   useEffect(() => {
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
     const clientsEndpoint = `${baseUrl}Customer`;
     const activitiesEndpoint = `${baseUrl}Activity`;
-    const processesEndpoint = `${baseUrl}Process`;
+    const processesEndpoint = `${baseUrl}Process?indatauniverse=true`;
     const servicesTypesEndpoint = `${baseUrl}ServiceType`;
     const tasksEndpoint = `${baseUrl}FormattedDataUniverseRequest?page=1&size=10`;
     const paginations = `${baseUrl}FormattedDataUniverseRequest/Pages`;
+    const currentWeekEndpoint = `${baseUrl}FormattedDataUniverseRequest/CurrentWeek`;
 
     const fetchDataOnMount = async () => {
       try {
@@ -44,6 +46,13 @@ const RequestsData = () => {
         const paginationsData = await getData(paginations);
         const totalPages = Math.ceil(paginationsData / 10); // Redondear hacia arriba para asegurarse de que todas las tareas se muestren
         setTotalPages(totalPages);
+      } catch (error) {
+        console.error("Error fetching paginations data:", error);
+      }
+
+      try {
+        const currentWeekData = await getData(currentWeekEndpoint);
+        setCurrentWeek(currentWeekData);
       } catch (error) {
         console.error("Error fetching paginations data:", error);
       }
@@ -99,11 +108,24 @@ const RequestsData = () => {
     }
   }, [tooltipSuccess, tooltipError]);
 
+  const columnWidths = [
+    "w-44", // Ancho para Columna 1
+    "w-[400px]", // Ancho para Columna 2
+    "w-44", // Ancho para Columna 3
+    "w-44", // Ancho para Columna 4
+    "w-[400px]", // Ancho para Columna 5
+    "w-44", // Ancho para Columna 6
+    "w-44", // Ancho para Columna 7
+    "w-44", // Ancho para Columna 8
+    "w-32", // Ancho para Columna 9
+    "w-44", // Ancho para Columna 10
+  ];
+
   return (
     <div className="flex flex-col w-full h-screen">
       <Header
         title="Solicitudes data universe"
-        date="4/12/2023 - 8/12/2023"
+        date={currentWeek}
         userName="Kenet Sebastián Segura Murillo"
         textColor={"text-primary-blue-500"}
       />
@@ -117,6 +139,7 @@ const RequestsData = () => {
           setTooltipError={setTooltipError}
           loading={loading}
           setLoading={setLoading}
+          columnWidths={columnWidths}
         />
       </div>
 

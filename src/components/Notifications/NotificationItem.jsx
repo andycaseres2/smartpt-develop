@@ -1,15 +1,21 @@
-const NotificationItem = ({ showInput }) => {
+const NotificationItem = ({
+  showInput,
+  asignner,
+  dateassigned,
+  handleChange,
+}) => {
   return (
     <div className="flex gap-2">
       {showInput && (
         <input
           type="checkbox"
           className="w-7 h-7 accent-primary-red-600 cursor-pointer"
+          onChange={handleChange}
         />
       )}
       <p className="text-black">
-        <strong>Juan Camilo Motta Ospina </strong>
-        te ha asignado una tarea. (4/12/2023 - 4:25pm)
+        <strong className="mr-1">{asignner}</strong>
+        te ha asignado una tarea. ({dateassigned})
       </p>
     </div>
   );

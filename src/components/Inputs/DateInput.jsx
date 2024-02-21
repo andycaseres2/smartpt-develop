@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const DateInput = ({ defaultValue, handleChange, key_name }) => {
+const DateInput = ({ defaultValue, handleChange, key_name, readOnly }) => {
   const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
@@ -10,7 +10,7 @@ const DateInput = ({ defaultValue, handleChange, key_name }) => {
         target: { name: key_name, value: defaultValue },
       });
     }
-  }, [defaultValue, key_name]);
+  }, [defaultValue, key_name, readOnly]);
 
   const handleDateChange = (e) => {
     const newDate = e.target.value;
@@ -26,11 +26,16 @@ const DateInput = ({ defaultValue, handleChange, key_name }) => {
 
   return (
     <input
-      className="w-full border-none p-2 bg-gray-100 rounded-md focus:outline-none"
+      className={
+        readOnly
+          ? "w-full border-none p-2 bg-transparent rounded-md focus:outline-none"
+          : "w-full border-none p-2 bg-gray-100 rounded-md focus:outline-none"
+      }
       type="date"
       value={selectedDate}
       onChange={handleDateChange}
       name={key_name}
+      readOnly={readOnly}
     />
   );
 };

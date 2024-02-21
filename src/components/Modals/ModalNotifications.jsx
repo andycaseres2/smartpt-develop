@@ -2,25 +2,68 @@ import { useState } from "react";
 import Button from "../Buttons/Button";
 import NotificationItem from "../Notifications/NotificationItem";
 import NotificationsTab from "../Tabs/NotificationsTab";
-import NotificationItemBudget from "../Notifications/NotificationItemBudget";
-import { useLocation } from "react-router-dom";
+import { putData } from "../../services/putData";
+// import NotificationItemBudget from "../Notifications/NotificationItemBudget";
+// import { useLocation } from "react-router-dom";
 
-const ModalNotifications = ({ styleContainer }) => {
+const ModalNotifications = ({
+  styleContainer,
+  notification,
+  notificationHistory,
+  employees,
+  setRealTime,
+}) => {
   const [activeTab, setActiveTab] = useState(1);
-  const location = useLocation();
-  const currentPath = location.pathname;
+  // const location = useLocation();
+  // const currentPath = location.pathname;
 
   const tabs = [
     { id: 1, label: "Pendiente" },
     { id: 2, label: "Aceptado" },
   ];
 
+  const getEmployeeFullNameById = (id) => {
+    const employee = employees.find((employee) => employee.id === id);
+    return employee.fullname;
+  };
+
+  function formatDateString(dateString) {
+    const regex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).*/;
+    if (!regex.test(dateString)) {
+      return;
+    }
+
+    const [, year, month, day, hours, minutes] = dateString.match(regex);
+    const formattedDate = `${parseInt(month)}/${parseInt(day)}/${year}`;
+    const formattedHours = (hours % 12 || 12).toString();
+    const formattedMinutes = parseInt(minutes).toString().padStart(2, "0");
+    const ampm = hours < 12 ? "am" : "pm";
+    const formattedTime = `${formattedHours}:${formattedMinutes}${ampm}`;
+
+    return `${formattedDate} - ${formattedTime}`;
+  }
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
 
   const handleClickInsideModal = (e) => {
     e.stopPropagation();
+  };
+
+  const handleAceptTask = async (notification) => {
+    try {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const acceptEndpoint = `${baseUrl}AsignedTask/${notification.idtask}`;
+      const body = notification;
+      body.accepted = true;
+      body.dateaccepted = new Date().toISOString();
+
+      await putData(acceptEndpoint, body);
+    } catch (error) {
+      console.error("Error al aceptar la tarea:", error);
+    } finally {
+      setRealTime(true);
+    }
   };
 
   return (
@@ -42,20 +85,37 @@ const ModalNotifications = ({ styleContainer }) => {
       {activeTab === 1 && (
         <div className="flex flex-col mt-1 p-3 w-full overflow-y-auto overflow-hidden h-[290px]">
           <div className="flex flex-col gap-2">
-            <NotificationItem showInput={true} />
-            <NotificationItem showInput={true} />
-            <NotificationItem showInput={true} />
+            {notification.map((notification) => (
+              <NotificationItem
+                key={notification.idtask}
+                asignner={getEmployeeFullNameById(
+                  notification.idemployeeassigner
+                )}
+                dateassigned={formatDateString(notification.dateassigned)}
+                showInput={true}
+                handleChange={() => handleAceptTask(notification)}
+              />
+            ))}
+            {/* <NotificationItem showInput={true} />
             {currentPath === "/presupuesto" && (
               <NotificationItemBudget showInput={true} />
-            )}
+            )} */}
           </div>
         </div>
       )}
       {activeTab === 2 && (
         <div className="flex flex-col mt-1 p-3 w-full overflow-y-auto overflow-hidden h-[290px]">
           <div className="flex flex-col gap-2">
-            <NotificationItem showInput={false} />
-            <NotificationItem showInput={false} />
+            {notificationHistory.map((notification) => (
+              <NotificationItem
+                key={notification.idtask}
+                asignner={getEmployeeFullNameById(
+                  notification.idemployeeassigner
+                )}
+                dateassigned={formatDateString(notification.dateassigned)}
+                showInput={false}
+              />
+            ))}
           </div>
         </div>
       )}

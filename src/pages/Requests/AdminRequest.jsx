@@ -12,6 +12,9 @@ import CirclePlus from "../../assets/Icons/CirclePlus";
 import { postData } from "../../services/postData";
 import TimeInput from "../../components/Inputs/TimeInput";
 import RowTable from "../../components/Tables/RowTable";
+import ColumnTable from "../../components/Tables/ColumnTable";
+import { getData } from "../../services/getData";
+import CleanIcon from "../../assets/Icons/CleanIcon";
 
 const AdminRequest = ({
   requests,
@@ -22,6 +25,7 @@ const AdminRequest = ({
   loading,
   setLoading,
   setRealTime,
+  columnWidths,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const {
@@ -32,6 +36,7 @@ const AdminRequest = ({
     employees,
     designFormats,
     designPieces,
+    setCancelEdit,
   } = stateStore();
   const [stateRow, setStateRow] = useState({});
   const [fieldReset, setFieldReset] = useState(false);
@@ -45,30 +50,60 @@ const AdminRequest = ({
     ${
       import.meta.env.VITE_REACT_APP_URL_BASE
     }FormattedDesignRequest?page=1&size=10&viewAdmin=true`);
-  const [processRequest, setProcessRequest] = useState([]);
+
+  const handleCleanFilters = async () => {
+    setFieldReset(true);
+    setInitialOptionClient("Clientes");
+    setInitialOptionEmployee("Responsable");
+    setInitialOptionFormat("Formato");
+    setInitialOptionPeace("Pieza");
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+    let tasksEndpoint = "";
+    if (activeTab === 2) {
+      tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100`;
+    } else if (activeTab === 3) {
+      tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10`;
+    }
+    setUrlBase(tasksEndpoint);
+    try {
+      const tasksData = await getData(tasksEndpoint);
+      setRequests(tasksData);
+    } catch (error) {
+      console.error("Error fetching clients data:", error);
+    }
+    setFieldReset(false);
+  };
 
   useEffect(() => {
-    const filteredArray = processes.filter(
-      (process) => process.id === 2 || process.id === 14
-    );
-    setProcessRequest(filteredArray);
-  }, [processes]);
+    if (fieldReset) {
+      const timer = setTimeout(() => {
+        setFieldReset(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [fieldReset]);
 
   async function createRequest() {
     try {
       const body = stateRow;
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const employeesId = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
 
+      body.idemployeeasigned = Number(employeesId);
+      if (!body.estimatedtime) {
+        body.estimatedtime = 0;
+      }
       // Construir la URL del endpoint para las tareas
       const tasksEndpoint = `${baseUrl}DesignRequest`;
       // Enviar los datos modificados al servidor utilizando la función postData
       body.realtime = null;
       body.idemployeeassigned = null;
       await postData(tasksEndpoint, body);
+      setFieldReset(true);
       setStateRow({});
       setTooltipSuccess("Registro creada con exito");
-      setFieldReset(true);
     } catch (error) {
       // Manejar el error aquí
       console.error("Error al crear la tarea:", error);
@@ -100,8 +135,39 @@ const AdminRequest = ({
     });
   };
 
-  const handleTabClick = (tab) => {
+  const handleTabClick = async (tab) => {
     setActiveTab(tab);
+    setLoading(true); // Activar indicador de carga
+    setCancelEdit(true);
+    try {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      let tasksEndpoint = "";
+      let initialOptions = {};
+
+      if (tab === 3) {
+        tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10`;
+        initialOptions = {
+          client: "Clientes",
+        };
+        setCancelEdit(true);
+      } else if (tab === 2) {
+        tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100`;
+        initialOptions = {
+          client: "Clientes",
+        };
+        setCancelEdit(true);
+      }
+
+      setUrlBase(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint);
+      setRequests(tasksData);
+      setInitialOptionClient(initialOptions.client);
+    } catch (error) {
+      console.error("Error al obtener datos de las tareas:", error);
+    } finally {
+      setLoading(false);
+      setCancelEdit(true);
+    }
   };
 
   const tabs = [
@@ -124,22 +190,6 @@ const AdminRequest = ({
     "Estado ",
     "Observaciones ",
     "",
-  ];
-
-  const columnWidths = [
-    "w-44", // Ancho para Columna 1
-    "w-44", // Ancho para Columna 2
-    "w-44", // Ancho para Columna 3
-    "w-[350px]", // Ancho para Columna 4
-    "w-[350px]", // Ancho para Columna 5
-    "w-44", // Ancho para Columna 6
-    "w-44", // Ancho para Columna 7
-    "w-44", // Ancho para Columna 8
-    "w-44", // Ancho para Columna 9
-    "w-44", // Ancho para Columna 10
-    "w-44", // Ancho para Columna 11
-    "w-44", // Ancho para Columna 12
-    "w-10", // Ancho para Columna 13
   ];
 
   const listItems = [
@@ -268,11 +318,16 @@ const AdminRequest = ({
               urlBase={urlBase}
               setUrlBase={setUrlBase}
             />
+            <ButtonWithIcon
+              text={"Limpiar filtros"}
+              icon={<CleanIcon />}
+              action={handleCleanFilters}
+            />
           </div>
         )}
 
         {activeTab === 3 && (
-          <div className="flex gap-3 items-center mb-2">
+          <div className="flex flex-wrap justify-end gap-3 items-center mb-2">
             <Select
               options={clients}
               setTasks={setRequests}
@@ -303,13 +358,6 @@ const AdminRequest = ({
               urlBase={urlBase}
               setUrlBase={setUrlBase}
             />
-            <InputDate
-              text={"Fecha inicio"}
-              urlBase={urlBase}
-              setUrlBase={setUrlBase}
-              setRequests={setRequests}
-              newFilter={"startDate"}
-            />
             <Select
               options={employees}
               setTasks={setRequests}
@@ -319,6 +367,20 @@ const AdminRequest = ({
               isFilter={true}
               urlBase={urlBase}
               setUrlBase={setUrlBase}
+            />
+            <InputDate
+              text={"Fecha inicio"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setRequests={setRequests}
+              newFilter={"startDate"}
+              fieldReset={fieldReset}
+            />
+
+            <ButtonWithIcon
+              text={"Limpiar filtros"}
+              icon={<CleanIcon />}
+              action={handleCleanFilters}
             />
           </div>
         )}
@@ -366,7 +428,7 @@ const AdminRequest = ({
                   <div className="flex flex-col gap-2">
                     <h2>Proceso</h2>
                     <SelectGeneric
-                      options={processRequest}
+                      options={processes}
                       initialOption={""}
                       key_name=""
                       handleSelect={handleSelectProcess}
@@ -446,15 +508,15 @@ const AdminRequest = ({
                     fieldReset={fieldReset}
                   />
                 </div>
-                <div className="w-max flex flex-col gap-3">
+                {/* <div className="w-max flex flex-col gap-3">
                   <span>Hora real</span>
-                  {/* <TimeInput
+                  <TimeInput
                     handleChange={handleChange}
                     key_name={"realtime"}
                     type={"time"}
                     fieldReset={fieldReset}
-                  /> */}
-                </div>
+                  />
+                </div> */}
               </div>
               <div className="w-full flex flex-col gap-4 px-6">
                 <div className="flex flex-col gap-3 ">
@@ -494,7 +556,7 @@ const AdminRequest = ({
               <div className="w-full p-3">
                 <table className="min-w-full">
                   <thead>
-                    <ColumnTableRequest
+                    <ColumnTable
                       columnTitlesActivity={columnTitles}
                       columnWidths={columnWidths}
                       readOnly={false}
@@ -552,7 +614,7 @@ const AdminRequest = ({
                     <div className="overflow-x-auto">
                       <table className="min-w-full">
                         <thead>
-                          <ColumnTableRequest
+                          <ColumnTable
                             columnTitlesActivity={columnTitles}
                             columnWidths={columnWidths}
                             readOnly={false}

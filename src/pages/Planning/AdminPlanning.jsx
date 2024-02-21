@@ -32,6 +32,7 @@ const AdminPlanning = ({
   setLoading,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
+  const user = "SUPERVISOR";
   const {
     setOpenNotifications,
     newTaskEmpty,
@@ -442,28 +443,32 @@ const AdminPlanning = ({
 
   const listAddActivity = [
     {
-      data: "Select",
+      data: "",
       editComponent: "select",
+      type: null,
       options: clients,
-      key_name: "cliente",
+      key_name: "idcustomer",
     },
     {
       data: "",
       editComponent: "input",
       type: "text",
-      key_name: "tarea",
+      options: [],
+      key_name: "name",
     },
     {
       data: "",
       editComponent: "input",
       type: "date",
-      key_name: "fecha_inicio",
+      options: [],
+      key_name: "startdate",
     },
     {
       data: "",
       editComponent: "input",
       type: "date",
-      key_name: "fecha_estimada",
+      options: [],
+      key_name: "estimateddate",
     },
     {
       data: "Pendiente",
@@ -474,7 +479,7 @@ const AdminPlanning = ({
         { id: 3, value: "En ejecucion" },
         { id: 4, value: "En proceso" },
       ],
-      key_name: "estado",
+      key_name: "state",
     },
     {
       data: "",
@@ -487,7 +492,7 @@ const AdminPlanning = ({
       data: "",
       editComponent: "select",
       type: null,
-      options: activities,
+      options: updateActivities || activities,
       key_name: "idactivity",
     },
     {
@@ -567,16 +572,24 @@ const AdminPlanning = ({
       if ("null" in body) {
         delete body["null"];
       }
+
+      if (!body.estimatedtime) {
+        body.estimatedtime = 0;
+      }
+      if (!body.comments) {
+        body.comments = "";
+      }
+
+      if (!body.attachments) {
+        body.attachments = "";
+      }
       // Establecer los demás estados en null
       const keysToSetNull = [
         "id",
         "idcustomer",
         "idactivity",
-        "comments",
-        "estimatedtime",
         "realtimespent",
         "realenddate",
-        "attachments",
       ];
 
       keysToSetNull.forEach((key) => {
@@ -1062,6 +1075,7 @@ const AdminPlanning = ({
                               setTooltipError={setTooltipError}
                               cancelAddTask={cancelAddTask}
                               activeTab={activeTab}
+                              role={user}
                             />
                           ))}
                         </>
@@ -1108,6 +1122,9 @@ const AdminPlanning = ({
                           setTooltipSuccess={setTooltipSuccess}
                           setTooltipError={setTooltipError}
                           cancelAddTask={cancelAddTask}
+                          section="planning"
+                          handleCleanFilters={handleCleanFilters}
+                          endpoint={"Task"}
                         />
                       ))}
                     </>

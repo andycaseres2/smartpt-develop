@@ -34,6 +34,8 @@ const RowTable = ({
   activeTab,
   endpoint,
   section,
+  role,
+  handleCleanFilters,
 }) => {
   const {
     clients,
@@ -165,9 +167,9 @@ const RowTable = ({
     try {
       // Obtener el objeto stateRow
       const body = stateRow;
-
+      const employeesId = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
       // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
-      body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+      body.idemployeeasigned = Number(employeesId);
 
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
@@ -235,6 +237,7 @@ const RowTable = ({
       setOpenModal(false);
       setNewTaskAdd && setNewTaskAdd(false);
       setStateRow({});
+      handleCleanFilters();
     }
   }
 
@@ -435,7 +438,12 @@ const RowTable = ({
               item?.type === "date" &&
               item?.key_name !== "realenddate") ||
             (item?.key_name === "realenddate" && !modeEdit) ? (
-            <span>{item?.data?.split("T")[0]}</span>
+            <DateInput
+              handleChange={handleChange}
+              defaultValue={item?.data}
+              key_name={item?.key_name}
+              readOnly={true}
+            />
           ) : typeof item === "number" ||
             (item === null && index === listItems.length - 1) ? (
             !readOnly ? (
@@ -446,11 +454,15 @@ const RowTable = ({
                     className={"cursor-pointer hover:scale-105"}
                   />
                   {activeTab === 2 ? (
-                    <DeleteIcon
-                      className={"cursor-pointer hover:scale-105"}
-                      action={() => setOpenModalDelete(true)}
-                      style={{ pointerEvents: "none" }}
-                    />
+                    <>
+                      {role === "ADMIN" && (
+                        <DeleteIcon
+                          className={"cursor-pointer hover:scale-105"}
+                          action={() => setOpenModalDelete(true)}
+                          style={{ pointerEvents: "none" }}
+                        />
+                      )}
+                    </>
                   ) : (
                     <>
                       {section === "planning" && (

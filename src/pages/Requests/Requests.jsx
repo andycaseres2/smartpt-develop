@@ -24,6 +24,7 @@ const Requests = () => {
   const [tooltipSuccess, setTooltipSuccess] = useState("");
   const [tooltipError, setTooltipError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentWeek, setCurrentWeek] = useState([]);
 
   useEffect(() => {
     if (tooltipSuccess || tooltipError) {
@@ -37,80 +38,74 @@ const Requests = () => {
   }, [tooltipSuccess, tooltipError]);
 
   useEffect(() => {
-    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-    const clientsEndpoint = `${baseUrl}Customer`;
-    const activitiesEndpoint = `${baseUrl}Activity`;
-    const processesEndpoint = `${baseUrl}Process`;
-    const tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=10`;
-    const paginations = `${baseUrl}FormattedDesignRequest/Pages`;
-
     const fetchDataOnMount = async () => {
       try {
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+        const clientsEndpoint = `${baseUrl}Customer`;
+        const activitiesEndpoint = `${baseUrl}Activity`;
+        const processesEndpoint = `${baseUrl}Process?indesignrequest=true`;
+        const tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=10`;
+        const paginations = `${baseUrl}FormattedDesignRequest/Pages`;
+        const currentWeekEndpoint = `${baseUrl}FormattedDesignRequest/CurrentWeek`;
+        const employeesEndpoint = `${baseUrl}Employee`;
+        const designFormatsEndpoint = `${baseUrl}DesignFormat`;
+        const designPiecesEndpoint = `${baseUrl}DesignPiece`;
+
         const tasksData = await getData(tasksEndpoint);
         setRequests(tasksData);
-      } catch (error) {
-        console.error("Error fetching tasks data:", error);
-      }
 
-      try {
+        const currentWeekData = await getData(currentWeekEndpoint);
+        setCurrentWeek(currentWeekData);
+
         const paginationsData = await getData(paginations);
-        const totalPages = Math.ceil(paginationsData / 10); // Redondear hacia arriba para asegurarse de que todas las tareas se muestren
+        const totalPages = Math.ceil(paginationsData / 10);
         setTotalPages(totalPages);
-      } catch (error) {
-        console.error("Error fetching paginations data:", error);
-      }
 
-      try {
         const clientsData = await getData(clientsEndpoint);
         setClients(clientsData);
-      } catch (error) {
-        console.error("Error fetching clients data:", error);
-      }
 
-      try {
         const activitiesData = await getData(activitiesEndpoint);
         setActivities(activitiesData);
-      } catch (error) {
-        console.error("Error fetching activities data:", error);
-      }
 
-      try {
         const processesData = await getData(processesEndpoint);
         setProcesses(processesData);
-      } catch (error) {
-        console.error("Error fetching processes data:", error);
-      }
 
-      try {
-        const employeesData = await getData(`${baseUrl}Employee`);
+        const employeesData = await getData(employeesEndpoint);
         setEmployees(employeesData);
-      } catch (error) {
-        console.error("Error fetching employees data:", error);
-      }
 
-      try {
-        const designFormatsData = await getData(`${baseUrl}DesignFormat`);
+        const designFormatsData = await getData(designFormatsEndpoint);
         setDesignFormats(designFormatsData);
-      } catch (error) {
-        console.error("Error fetching design formats data:", error);
-      }
 
-      try {
-        const designPiecesData = await getData(`${baseUrl}DesignPiece`);
+        const designPiecesData = await getData(designPiecesEndpoint);
         setDesignPieces(designPiecesData);
       } catch (error) {
-        console.error("Error fetching design pieces data:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
     fetchDataOnMount();
     setRealTime(false);
   }, [realTime]);
+
+  const columnWidths = [
+    "w-44", // Ancho para Columna 1
+    "w-[400px]", // Ancho para Columna 2
+    "w-44", // Ancho para Columna 3
+    "w-44", // Ancho para Columna 4
+    "w-52", // Ancho para Columna 5
+    "w-72", // Ancho para Columna 6
+    "w-64", // Ancho para Columna 7
+    "w-72", // Ancho para Columna 8
+    "w-32", // Ancho para Columna 9
+    "w-44", // Ancho para Columna 10
+    "w-64", // Ancho para Columna 11
+    "w-44", // Ancho para Columna 12
+  ];
   return (
     <div className="flex flex-col w-full h-screen">
       <Header
         title="Solicitudes de diseño"
-        date="4/12/2023 - 8/12/2023"
+        date={currentWeek}
         userName="Kenet Sebastián Segura Murillo"
       />
       <div className="w-full flex flex-col bg-primary-yellow-50 py-4 px-6 h-full">
@@ -124,6 +119,7 @@ const Requests = () => {
             setTooltipError={setTooltipError}
             loading={loading}
             setLoading={setLoading}
+            columnWidths={columnWidths}
           />
         ) : (
           <WorkerRequest
@@ -135,6 +131,7 @@ const Requests = () => {
             setTooltipError={setTooltipError}
             loading={loading}
             setLoading={setLoading}
+            columnWidths={columnWidths}
           />
         )}
       </div>

@@ -19,6 +19,7 @@ const Planning = () => {
   const [tooltipSuccess, setTooltipSuccess] = useState("");
   const [tooltipError, setTooltipError] = useState("");
   const [taskFullyLoaded, setTaskFullyLoaded] = useState(false);
+  const [currentWeek, setCurrentWeek] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -38,16 +39,19 @@ const Planning = () => {
     const fetchDataOnMount = async () => {
       try {
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-
         const clientsEndpoint = `${baseUrl}Customer`;
         const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
         const activitiesEndpoint = `${baseUrl}Activity`;
-        const processesEndpoint = `${baseUrl}Process`;
+        const processesEndpoint = `${baseUrl}Process?intask=true`;
         const paginationsEndpoint = `${baseUrl}FormattedTask/Pages`;
+        const currentWeekEndpoint = `${baseUrl}FormattedTask/CurrentWeek`;
         const employeesEndpoint = `${baseUrl}Employee`;
 
         const employeesData = await getData(employeesEndpoint);
         setEmployees(employeesData);
+
+        const currentWeekData = await getData(currentWeekEndpoint);
+        setCurrentWeek(currentWeekData);
 
         const clientsData = await getData(clientsEndpoint);
         setClients(clientsData);
@@ -96,7 +100,7 @@ const Planning = () => {
     <div className="flex flex-col w-full h-screen">
       <Header
         title="Planeación semanal"
-        date="4/12/2023 - 8/12/2023"
+        date={currentWeek}
         userName="Kenet Sebastián Segura Murillo"
         baseColor="bg-primary-red-600"
       />
