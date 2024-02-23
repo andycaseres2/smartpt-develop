@@ -10,7 +10,6 @@ import WarningCircle from "../../assets/Icons/WarningCircle";
 import { userStore } from "../../store/userStore";
 
 const Requests = () => {
-  const userRole = import.meta.env.VITE_REACT_APP_ROLE;
   const {
     setClients,
     setActivities,
@@ -26,7 +25,7 @@ const Requests = () => {
   const [tooltipError, setTooltipError] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentWeek, setCurrentWeek] = useState([]);
-  const { token } = userStore();
+  const { token, user } = userStore();
 
   useEffect(() => {
     if (tooltipSuccess || tooltipError) {
@@ -111,7 +110,7 @@ const Requests = () => {
         userName="Kenet Sebastián Segura Murillo"
       />
       <div className="w-full flex flex-col bg-primary-yellow-50 py-4 px-6 h-full">
-        {userRole === "ADMIN" ? (
+        {user.profile === 1 || user.profile === 2 ? (
           <AdminRequest
             setRealTime={setRealTime}
             requests={requests}

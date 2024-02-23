@@ -35,7 +35,6 @@ const RowTable = ({
   activeTab,
   endpoint,
   section,
-  role,
   handleCleanFilters,
 }) => {
   const {
@@ -461,7 +460,7 @@ const RowTable = ({
                   />
                   {activeTab === 2 ? (
                     <>
-                      {role === "ADMIN" && (
+                      {user.profile === 1 && (
                         <DeleteIcon
                           className={"cursor-pointer hover:scale-105"}
                           action={() => setOpenModalDelete(true)}

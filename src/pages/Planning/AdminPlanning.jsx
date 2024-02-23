@@ -34,7 +34,7 @@ const AdminPlanning = ({
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const { token } = userStore();
-  const user = "SUPERVISOR";
+
   const {
     setOpenNotifications,
     newTaskEmpty,
@@ -1077,7 +1077,6 @@ const AdminPlanning = ({
                               setTooltipError={setTooltipError}
                               cancelAddTask={cancelAddTask}
                               activeTab={activeTab}
-                              role={user}
                             />
                           ))}
                         </>

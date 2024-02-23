@@ -10,10 +10,9 @@ import WarningCircle from "../../assets/Icons/WarningCircle";
 import { userStore } from "../../store/userStore";
 
 const Planning = () => {
-  const userRole = import.meta.env.VITE_REACT_APP_ROLE;
   const { setProcesses, setClients, setActivities, setEmployees } =
     stateStore();
-  const { token } = userStore();
+  const { token, user } = userStore();
   const [tasks, setTasks] = useState([]);
   const [isNewTask, setIsNewTask] = useState(false);
   const [realTime, setRealTime] = useState(true);
@@ -107,7 +106,7 @@ const Planning = () => {
         baseColor="bg-primary-red-600"
       />
       <div className="w-full flex flex-col bg-primary-pink-50 py-4 px-6 h-full overflow-auto">
-        {userRole === "ADMIN" ? (
+        {user.profile === 1 || user.profile === 2 ? (
           <AdminPlanning
             tasks={tasks}
             setTasks={setTasks}
