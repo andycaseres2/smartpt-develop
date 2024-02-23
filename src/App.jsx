@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 import { applyScrollbarStyles } from "./utils/applyScrollbarStyles";
 
 function App() {
-  const { user, token } = userStore();
+  const { user, token, setUser, setToken } = userStore();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -18,6 +18,22 @@ function App() {
       window.location.href = "/login";
     }
   }, [currentPath]);
+
+  useEffect(() => {
+    // Función para limpiar el token y el usuario después de 5 minutos
+    const clearUserDataAfterTimeout = () => {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      setToken("");
+      setUser({});
+    };
+
+    // Establecer el temporizador para limpiar los datos después de 5 minutos
+    const timeoutId = setTimeout(clearUserDataAfterTimeout, 5 * 60 * 1000);
+
+    // Limpiar el temporizador al desmontar el componente para evitar fugas de memoria
+    return () => clearTimeout(timeoutId);
+  }, []); // El efecto se ejecutará solo una vez al montar el componente
 
   return (
     <main className="min-h-screen flex">
