@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Tooltip from "../../components/Tooltips/Tooltip";
 import CircleCheck from "../../assets/Icons/CircleCheck";
 import WarningCircle from "../../assets/Icons/WarningCircle";
+import { userStore } from "../../store/userStore";
 
 const Requests = () => {
   const userRole = import.meta.env.VITE_REACT_APP_ROLE;
@@ -25,6 +26,7 @@ const Requests = () => {
   const [tooltipError, setTooltipError] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentWeek, setCurrentWeek] = useState([]);
+  const { token } = userStore();
 
   useEffect(() => {
     if (tooltipSuccess || tooltipError) {
@@ -51,32 +53,32 @@ const Requests = () => {
         const designFormatsEndpoint = `${baseUrl}DesignFormat`;
         const designPiecesEndpoint = `${baseUrl}DesignPiece`;
 
-        const tasksData = await getData(tasksEndpoint);
+        const tasksData = await getData(tasksEndpoint, token);
         setRequests(tasksData);
 
-        const currentWeekData = await getData(currentWeekEndpoint);
+        const currentWeekData = await getData(currentWeekEndpoint, token);
         setCurrentWeek(currentWeekData);
 
-        const paginationsData = await getData(paginations);
+        const paginationsData = await getData(paginations, token);
         const totalPages = Math.ceil(paginationsData / 10);
         setTotalPages(totalPages);
 
-        const clientsData = await getData(clientsEndpoint);
+        const clientsData = await getData(clientsEndpoint, token);
         setClients(clientsData);
 
-        const activitiesData = await getData(activitiesEndpoint);
+        const activitiesData = await getData(activitiesEndpoint, token);
         setActivities(activitiesData);
 
-        const processesData = await getData(processesEndpoint);
+        const processesData = await getData(processesEndpoint, token);
         setProcesses(processesData);
 
-        const employeesData = await getData(employeesEndpoint);
+        const employeesData = await getData(employeesEndpoint, token);
         setEmployees(employeesData);
 
-        const designFormatsData = await getData(designFormatsEndpoint);
+        const designFormatsData = await getData(designFormatsEndpoint, token);
         setDesignFormats(designFormatsData);
 
-        const designPiecesData = await getData(designPiecesEndpoint);
+        const designPiecesData = await getData(designPiecesEndpoint, token);
         setDesignPieces(designPiecesData);
       } catch (error) {
         console.error("Error fetching data:", error);

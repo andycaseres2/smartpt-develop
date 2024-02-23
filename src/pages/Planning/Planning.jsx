@@ -7,11 +7,13 @@ import { stateStore } from "../../store/stateStore";
 import Tooltip from "../../components/Tooltips/Tooltip";
 import CircleCheck from "../../assets/Icons/CircleCheck";
 import WarningCircle from "../../assets/Icons/WarningCircle";
+import { userStore } from "../../store/userStore";
 
 const Planning = () => {
   const userRole = import.meta.env.VITE_REACT_APP_ROLE;
   const { setProcesses, setClients, setActivities, setEmployees } =
     stateStore();
+  const { token } = userStore();
   const [tasks, setTasks] = useState([]);
   const [isNewTask, setIsNewTask] = useState(false);
   const [realTime, setRealTime] = useState(true);
@@ -47,26 +49,26 @@ const Planning = () => {
         const currentWeekEndpoint = `${baseUrl}FormattedTask/CurrentWeek`;
         const employeesEndpoint = `${baseUrl}Employee`;
 
-        const employeesData = await getData(employeesEndpoint);
+        const employeesData = await getData(employeesEndpoint, token);
         setEmployees(employeesData);
 
-        const currentWeekData = await getData(currentWeekEndpoint);
+        const currentWeekData = await getData(currentWeekEndpoint, token);
         setCurrentWeek(currentWeekData);
 
-        const clientsData = await getData(clientsEndpoint);
+        const clientsData = await getData(clientsEndpoint, token);
         setClients(clientsData);
 
-        const tasksData = await getData(tasksEndpoint);
+        const tasksData = await getData(tasksEndpoint, token);
         setTasks(tasksData);
         setTaskFullyLoaded(true);
 
-        const activitiesData = await getData(activitiesEndpoint);
+        const activitiesData = await getData(activitiesEndpoint, token);
         setActivities(activitiesData);
 
-        const processesData = await getData(processesEndpoint);
+        const processesData = await getData(processesEndpoint, token);
         setProcesses(processesData);
 
-        const paginationsData = await getData(paginationsEndpoint);
+        const paginationsData = await getData(paginationsEndpoint, token);
         const totalPages = Math.ceil(paginationsData / 10);
         setTotalPages(totalPages);
       } catch (error) {

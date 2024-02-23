@@ -1,16 +1,29 @@
+import { useState } from "react";
+
 const NotificationItem = ({
   showInput,
   asignner,
   dateassigned,
   handleChange,
 }) => {
+  const [checked, setChecked] = useState(false);
+
+  const handleCheckboxChange = () => {
+    setChecked(true); // Marcar el checkbox temporalmente
+    handleChange();
+    setTimeout(() => {
+      setChecked(false); // Desmarcar el checkbox después de 1 segundo
+    }, 200);
+  };
+
   return (
     <div className="flex gap-2">
       {showInput && (
         <input
           type="checkbox"
           className="w-7 h-7 accent-primary-red-600 cursor-pointer"
-          onChange={handleChange}
+          checked={checked}
+          onChange={handleCheckboxChange}
         />
       )}
       <p className="text-black">

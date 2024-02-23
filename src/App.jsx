@@ -7,18 +7,21 @@ import { useLocation } from "react-router-dom";
 import { applyScrollbarStyles } from "./utils/applyScrollbarStyles";
 
 function App() {
-  const { user } = userStore();
+  const { user, token } = userStore();
   const location = useLocation();
   const currentPath = location.pathname;
 
   useEffect(() => {
     const colorInfo = getColor(currentPath).hex;
     applyScrollbarStyles(colorInfo);
+    if (!user) {
+      window.location.href = "/login";
+    }
   }, [currentPath]);
 
   return (
     <main className="min-h-screen flex">
-      {!!user.length && <Sidebar />}
+      {Object.keys(user).length > 0 && token && <Sidebar />}
       <div className="flex-1 overflow-hidden">
         <Router />
       </div>

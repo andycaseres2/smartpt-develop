@@ -3,6 +3,7 @@ import Button from "../Buttons/Button";
 import NotificationItem from "../Notifications/NotificationItem";
 import NotificationsTab from "../Tabs/NotificationsTab";
 import { putData } from "../../services/putData";
+import { userStore } from "../../store/userStore";
 // import NotificationItemBudget from "../Notifications/NotificationItemBudget";
 // import { useLocation } from "react-router-dom";
 
@@ -14,6 +15,8 @@ const ModalNotifications = ({
   setRealTime,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
+  const { token } = userStore();
+
   // const location = useLocation();
   // const currentPath = location.pathname;
 
@@ -53,17 +56,30 @@ const ModalNotifications = ({
   const handleAceptTask = async (notification) => {
     try {
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-      const acceptEndpoint = `${baseUrl}AsignedTask/${notification.idtask}`;
+      const acceptEndpoint = `${baseUrl}AsignedTask`;
       const body = notification;
-      body.accepted = true;
-      body.dateaccepted = new Date().toISOString();
+      body.accepted = 1;
 
-      await putData(acceptEndpoint, body);
+      // Formatear la fecha con milisegundos
+      const currentDate = new Date();
+      const milliseconds = String(currentDate.getMilliseconds()).padStart(
+        3,
+        "0"
+      );
+      body.dateaccepted = currentDate.toISOString().slice(0, -1) + milliseconds;
+
+      await putData(acceptEndpoint, body, token);
     } catch (error) {
       console.error("Error al aceptar la tarea:", error);
     } finally {
       setRealTime(true);
     }
+  };
+
+  const handleAcceptAll = () => {
+    notification.forEach((notification) => {
+      handleAceptTask(notification);
+    });
   };
 
   return (
@@ -121,7 +137,7 @@ const ModalNotifications = ({
       )}
       {activeTab === 1 && (
         <div className="w-full flex justify-center p-2">
-          <Button text={"Aceptar tareas"} />
+          <Button action={handleAcceptAll} text={"Aceptar tareas"} />
         </div>
       )}
     </div>

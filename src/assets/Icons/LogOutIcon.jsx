@@ -1,4 +1,4 @@
-const LogOutIcon = ({ className, width, height }) => {
+const LogOutIcon = ({ className, width, height, action }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -7,6 +7,7 @@ const LogOutIcon = ({ className, width, height }) => {
       viewBox="0 0 48 48"
       fill="none"
       className={className || ""}
+      onClick={action || ""}
     >
       <g clipPath="url(#clip0_180_2397)">
         <path

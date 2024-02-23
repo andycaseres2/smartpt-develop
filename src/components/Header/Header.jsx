@@ -6,9 +6,17 @@ import { useLocation } from "react-router-dom";
 import { getColor } from "../../utils/getColor";
 import { useEffect, useState } from "react";
 import { getData } from "../../services/getData";
+import { userStore } from "../../store/userStore";
 
-const Header = ({ title, date, userName, textColor }) => {
-  const { openNotifications, setOpenNotifications, employees } = stateStore();
+const Header = ({ title, date, textColor }) => {
+  const {
+    openNotifications,
+    setOpenNotifications,
+    employees,
+    updateNotifications,
+    setUpdateNotifications,
+  } = stateStore();
+  const { token, user } = userStore();
   const location = useLocation();
   const currentPath = location.pathname;
   const [notification, setNotification] = useState([]);
@@ -24,26 +32,29 @@ const Header = ({ title, date, userName, textColor }) => {
     const fetchNotify = async () => {
       try {
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-        const employeesId = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+        const employeesId = user.id;
         const notifyEndpoint = `${baseUrl}AsignedTask/PerEmployee/${employeesId}`;
         const notifyEndpointHistory = `${baseUrl}AsignedTask/PerEmployee/${employeesId}?pendientes=false`;
 
-        const notifyData = await getData(notifyEndpoint);
+        const notifyData = await getData(notifyEndpoint, token);
         setNotification(notifyData);
 
-        const notifyHistoryData = await getData(notifyEndpointHistory);
+        const notifyHistoryData = await getData(notifyEndpointHistory, token);
         setNotificationHistory(notifyHistoryData);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setRealTime(false);
       }
     };
 
     // Llama a fetchNotify al inicio y luego cada 30 segundos
     fetchNotify();
-    setRealTime(false);
+    setUpdateNotifications(false);
     const intervalId = setInterval(fetchNotify, 30000);
     return () => clearInterval(intervalId);
-  }, [realTime]);
+  }, [realTime, updateNotifications]);
+
   return (
     <div
       className={`header flex justify-between items-center ${
@@ -61,7 +72,7 @@ const Header = ({ title, date, userName, textColor }) => {
       </div>
       <div className="flex flex-col items-end z-30">
         <p className="text-base">Bienvenido</p>
-        <p className="font-semibold text-base mb-2">{userName}</p>
+        <p className="font-semibold text-base mb-2">{user.fullname}</p>
         <span
           className={`${
             openNotifications && "bg-white"

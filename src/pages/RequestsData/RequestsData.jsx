@@ -7,6 +7,7 @@ import { useState } from "react";
 import CircleCheck from "../../assets/Icons/CircleCheck";
 import WarningCircle from "../../assets/Icons/WarningCircle";
 import Tooltip from "../../components/Tooltips/Tooltip";
+import { userStore } from "../../store/userStore";
 
 const RequestsData = () => {
   const {
@@ -23,27 +24,35 @@ const RequestsData = () => {
   const [tooltipError, setTooltipError] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentWeek, setCurrentWeek] = useState([]);
+  const { token } = userStore();
 
   useEffect(() => {
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
     const clientsEndpoint = `${baseUrl}Customer`;
     const activitiesEndpoint = `${baseUrl}Activity`;
     const processesEndpoint = `${baseUrl}Process?indatauniverse=true`;
-    const servicesTypesEndpoint = `${baseUrl}ServiceType`;
-    const tasksEndpoint = `${baseUrl}FormattedDataUniverseRequest?page=1&size=10`;
+    const servicesTypesEndpoint = `${baseUrl}ServiceType?page=1&size=100`;
+    const tasksEndpoint = `${baseUrl}FormattedDataUniverseRequest?page=1&size=100`;
     const paginations = `${baseUrl}FormattedDataUniverseRequest/Pages`;
     const currentWeekEndpoint = `${baseUrl}FormattedDataUniverseRequest/CurrentWeek`;
 
     const fetchDataOnMount = async () => {
       try {
-        const tasksData = await getData(tasksEndpoint);
+        const tasksData = await getData(tasksEndpoint, token);
         setRequests(tasksData);
       } catch (error) {
         console.error("Error fetching tasks data:", error);
       }
 
       try {
-        const paginationsData = await getData(paginations);
+        const clientsData = await getData(clientsEndpoint, token);
+        setClients(clientsData);
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+
+      try {
+        const paginationsData = await getData(paginations, token);
         const totalPages = Math.ceil(paginationsData / 10); // Redondear hacia arriba para asegurarse de que todas las tareas se muestren
         setTotalPages(totalPages);
       } catch (error) {
@@ -51,42 +60,35 @@ const RequestsData = () => {
       }
 
       try {
-        const currentWeekData = await getData(currentWeekEndpoint);
+        const currentWeekData = await getData(currentWeekEndpoint, token);
         setCurrentWeek(currentWeekData);
       } catch (error) {
         console.error("Error fetching paginations data:", error);
       }
 
       try {
-        const clientsData = await getData(clientsEndpoint);
-        setClients(clientsData);
-      } catch (error) {
-        console.error("Error fetching clients data:", error);
-      }
-
-      try {
-        const servicesTypeData = await getData(servicesTypesEndpoint);
+        const servicesTypeData = await getData(servicesTypesEndpoint, token);
         setServicesType(servicesTypeData);
       } catch (error) {
         console.error("Error fetching clients data:", error);
       }
 
       try {
-        const activitiesData = await getData(activitiesEndpoint);
+        const activitiesData = await getData(activitiesEndpoint, token);
         setActivities(activitiesData);
       } catch (error) {
         console.error("Error fetching activities data:", error);
       }
 
       try {
-        const processesData = await getData(processesEndpoint);
+        const processesData = await getData(processesEndpoint, token);
         setProcesses(processesData);
       } catch (error) {
         console.error("Error fetching processes data:", error);
       }
 
       try {
-        const employeesData = await getData(`${baseUrl}Employee`);
+        const employeesData = await getData(`${baseUrl}Employee`, token);
         setEmployees(employeesData);
       } catch (error) {
         console.error("Error fetching employees data:", error);

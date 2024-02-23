@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ArrowDown from "../../assets/Icons/ArrowDown";
 import { getData } from "../../services/getData";
+import { userStore } from "../../store/userStore";
 
 const Select = ({
   options,
@@ -17,6 +18,7 @@ const Select = ({
   urlBase,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { token } = userStore();
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
@@ -45,7 +47,7 @@ const Select = ({
 
       try {
         // Obtener los datos usando la nueva URL
-        const tasksData = await getData(newUrl);
+        const tasksData = await getData(newUrl, token);
 
         // Actualizar el estado con la nueva URL
         setUrlBase(newUrl);

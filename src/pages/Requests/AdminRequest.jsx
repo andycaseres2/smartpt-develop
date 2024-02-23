@@ -15,6 +15,7 @@ import RowTable from "../../components/Tables/RowTable";
 import ColumnTable from "../../components/Tables/ColumnTable";
 import { getData } from "../../services/getData";
 import CleanIcon from "../../assets/Icons/CleanIcon";
+import { userStore } from "../../store/userStore";
 
 const AdminRequest = ({
   requests,
@@ -39,6 +40,7 @@ const AdminRequest = ({
     setCancelEdit,
   } = stateStore();
   const [stateRow, setStateRow] = useState({});
+  const { token, user } = userStore();
   const [fieldReset, setFieldReset] = useState(false);
   const [updateActivities, setUpdateActivities] = useState([]);
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
@@ -66,7 +68,7 @@ const AdminRequest = ({
     }
     setUrlBase(tasksEndpoint);
     try {
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setRequests(tasksData);
     } catch (error) {
       console.error("Error fetching clients data:", error);
@@ -89,7 +91,7 @@ const AdminRequest = ({
       const body = stateRow;
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-      const employeesId = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+      const employeesId = user.id;
 
       body.idemployeeasigned = Number(employeesId);
       if (!body.estimatedtime) {
@@ -100,7 +102,7 @@ const AdminRequest = ({
       // Enviar los datos modificados al servidor utilizando la función postData
       body.realtime = null;
       body.idemployeeassigned = null;
-      await postData(tasksEndpoint, body);
+      await postData(tasksEndpoint, body, token);
       setFieldReset(true);
       setStateRow({});
       setTooltipSuccess("Registro creada con exito");
@@ -159,7 +161,7 @@ const AdminRequest = ({
       }
 
       setUrlBase(tasksEndpoint);
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setRequests(tasksData);
       setInitialOptionClient(initialOptions.client);
     } catch (error) {

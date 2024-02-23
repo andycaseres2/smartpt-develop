@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ArrowDown from "../../assets/Icons/ArrowDown";
 import { putData } from "../../services/putData";
 import ModalConfirmation from "../Modals/ModalConfirmation";
+import { userStore } from "../../store/userStore";
 
 const SelectStatus = ({
   options,
@@ -21,11 +22,13 @@ const SelectStatus = ({
   setTooltipError,
   rowId,
   setIsUpdateStatus,
+  handleCleanFilters,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const { token } = userStore();
 
   async function editTask(id) {
     if (!modeEdit) {
@@ -50,11 +53,11 @@ const SelectStatus = ({
 
         // Enviar los datos modificados al servidor utilizando la función putData (o postData según tu implementación)
         if ((id === 3 || id === 4) && updatedStateRow.realtimespent !== null) {
-          await putData(taskEndpoint, updatedStateRow);
+          await putData(taskEndpoint, updatedStateRow, token);
           setRealTime(true);
           setTooltipSuccess("Tarea editada con éxito");
         } else if (id !== 3 && id !== 4) {
-          await putData(taskEndpoint, updatedStateRow);
+          await putData(taskEndpoint, updatedStateRow, token);
           setRealTime(true);
           setTooltipSuccess("Tarea editada con éxito");
         } else {
@@ -66,6 +69,8 @@ const SelectStatus = ({
 
         // Puedes definir un estado de error y guardarlo en tu componente si es necesario
         setTooltipError("Hubo un error editando la tarea");
+      } finally {
+        handleCleanFilters();
       }
     }
   }

@@ -13,6 +13,7 @@ import RowTable from "../../components/Tables/RowTable";
 import ColumnTable from "../../components/Tables/ColumnTable";
 import { getData } from "../../services/getData";
 import CleanIcon from "../../assets/Icons/CleanIcon";
+import { userStore } from "../../store/userStore";
 
 const WorkerRequest = ({
   requests,
@@ -45,6 +46,7 @@ const WorkerRequest = ({
       import.meta.env.VITE_REACT_APP_URL_BASE
     }FormattedDesignRequest?page=1&size=10`);
   const [fieldReset, setFieldReset] = useState(false);
+  const { token, user } = userStore();
 
   useEffect(() => {
     if (fieldReset) {
@@ -70,7 +72,7 @@ const WorkerRequest = ({
     }
     setUrlBase(tasksEndpoint);
     try {
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setRequests(tasksData);
     } catch (error) {
       console.error("Error fetching clients data:", error);
@@ -104,7 +106,7 @@ const WorkerRequest = ({
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
 
-      const employeesId = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+      const employeesId = user.id;
 
       body.idemployeeasigned = Number(employeesId);
       if (!body.estimatedtime) {
@@ -116,7 +118,7 @@ const WorkerRequest = ({
       // Enviar los datos modificados al servidor utilizando la función postData
       body.realtime = null;
       body.idemployeeassigned = null;
-      await postData(tasksEndpoint, body);
+      await postData(tasksEndpoint, body, token);
       setStateRow({});
       setTooltipSuccess("Registro creada con exito");
       setFieldReset(true);
@@ -153,7 +155,7 @@ const WorkerRequest = ({
       }
 
       setUrlBase(tasksEndpoint);
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setRequests(tasksData);
       setInitialOptionClient(initialOptions.client);
     } catch (error) {

@@ -17,6 +17,7 @@ import CleanIcon from "../../assets/Icons/CleanIcon";
 import Spinner from "../../components/Spinners/Spinner";
 import SelectState from "../../components/Selects/SelectState";
 import { postData } from "../../services/postData";
+import { userStore } from "../../store/userStore";
 
 const AdminPlanning = ({
   tasks,
@@ -32,6 +33,7 @@ const AdminPlanning = ({
   setLoading,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
+  const { token } = userStore();
   const user = "SUPERVISOR";
   const {
     setOpenNotifications,
@@ -68,7 +70,7 @@ const AdminPlanning = ({
   }, [employees]);
 
   useEffect(() => {
-    if (selectedUserId !== null) {
+    if (selectedUserId !== null && selectedUserId) {
       setLoading(true); // Activar indicador de carga
       const fetchDataOnMount = async () => {
         try {
@@ -76,7 +78,7 @@ const AdminPlanning = ({
             import.meta.env.VITE_REACT_APP_URL_BASE
           }FormattedTask?page=1&size=10&IdEmployee=${selectedUserId}`;
 
-          const employeesDataTask = await getData(employeesTaskEndpoint);
+          const employeesDataTask = await getData(employeesTaskEndpoint, token);
 
           // Aplicamos la lógica a cada subarray dentro de employeesDataTask
           const formatArray = employeesDataTask.map((subarray) => {
@@ -98,7 +100,7 @@ const AdminPlanning = ({
 
       fetchDataOnMount();
     }
-  }, [selectedUserId, realTime]);
+  }, [selectedUserId, realTime, employees]);
 
   const filterState = [
     {
@@ -152,7 +154,7 @@ const AdminPlanning = ({
 
   const getDataValues = (arr) => {
     const result = [];
-    arr.forEach((innerArray) => {
+    arr?.forEach((innerArray) => {
       innerArray.forEach((obj) => {
         if (obj?.key_name === "idcustomer") {
           result.push(obj.data);
@@ -201,7 +203,7 @@ const AdminPlanning = ({
         setCancelEdit(true);
       }
       setUrlBase(tasksEndpoint);
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setTasks(tasksData);
       setInitialOptionClient(initialOptions.client);
       if (initialOptions.activity)
@@ -552,7 +554,7 @@ const AdminPlanning = ({
     }
     setUrlBase(tasksEndpoint);
     try {
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setTasks(tasksData);
     } catch (error) {
       console.error("Error fetching clients data:", error);
@@ -607,7 +609,7 @@ const AdminPlanning = ({
 
       // Construir la URL del endpoint para las tareas
       const tasksEndpoint = `${baseUrl}Task`;
-      await postData(tasksEndpoint, body);
+      await postData(tasksEndpoint, body, token);
       setRealTime(true);
       setStateRow({});
       setTooltipSuccess("Tarea creada con éxito");

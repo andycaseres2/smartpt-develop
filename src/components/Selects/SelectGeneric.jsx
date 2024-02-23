@@ -76,7 +76,7 @@ const SelectGeneric = ({
     toggleDropdown();
   };
 
-  const filteredOptions = options.filter((option) => {
+  const filteredOptions = options?.filter((option) => {
     const lowercaseSearchTerm = searchTerm?.toLowerCase();
     return (
       option?.name?.toLowerCase().includes(lowercaseSearchTerm) ||

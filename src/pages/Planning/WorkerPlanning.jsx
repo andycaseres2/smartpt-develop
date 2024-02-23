@@ -13,6 +13,7 @@ import TotalTimes from "../../components/Texts/TotalTimes";
 import CleanIcon from "../../assets/Icons/CleanIcon";
 import Spinner from "../../components/Spinners/Spinner";
 import SelectState from "../../components/Selects/SelectState";
+import { userStore } from "../../store/userStore";
 
 const WorkerPlanning = ({
   tasks,
@@ -36,6 +37,7 @@ const WorkerPlanning = ({
     statusModeEdit,
   } = stateStore();
   const [activeTab, setActiveTab] = useState(1);
+  const { token } = userStore();
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
   const [initialOptionState, setInitialOptionState] = useState("Estados");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
@@ -114,7 +116,7 @@ const WorkerPlanning = ({
 
   const getDataValues = (arr) => {
     const result = [];
-    arr.forEach((innerArray) => {
+    arr?.forEach((innerArray) => {
       innerArray.forEach((obj) => {
         if (obj?.key_name === "idcustomer") {
           result.push(obj.data);
@@ -186,7 +188,7 @@ const WorkerPlanning = ({
       }
 
       setUrlBase(tasksEndpoint);
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setTasks(tasksData);
       setInitialOptionClient(initialOptions.client);
       if (initialOptions.activity)
@@ -267,7 +269,7 @@ const WorkerPlanning = ({
     }
     setUrlBase(tasksEndpoint);
     try {
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setTasks(tasksData);
     } catch (error) {
       console.error("Error fetching clients data:", error);
@@ -378,9 +380,7 @@ const WorkerPlanning = ({
       </div>
 
       <div
-        className={`bg-white rounded-bl-md rounded-r-md overflow-auto ${
-          activeTab === 1 ? "h-[550px] overflow-y-auto" : "h-full"
-        }} px-4`}
+        className={`bg-white rounded-bl-md rounded-r-md overflow-auto h-[550px] overflow-y-auto px-4`}
       >
         {activeTab === 1 && (
           <div className="overflow-x-auto h-full">
@@ -418,6 +418,7 @@ const WorkerPlanning = ({
                           setTooltipError={setTooltipError}
                           cancelAddTask={cancelAddTask}
                           endpoint={"Task"}
+                          handleCleanFilters={handleCleanFilters}
                           section="planning"
                         />
                       ))}

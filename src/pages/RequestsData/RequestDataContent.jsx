@@ -6,7 +6,6 @@ import Pagination from "../../components/Paginations/Pagination";
 import InputDate from "../../components/Inputs/InputDate";
 import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
 import Select from "../../components/Selects/Select";
-import RowTableRequest from "../../components/Tables/RowTableRequest";
 import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 import { postData } from "../../services/postData";
@@ -16,6 +15,7 @@ import { getData } from "../../services/getData";
 import CleanIcon from "../../assets/Icons/CleanIcon";
 import SelectState from "../../components/Selects/SelectState";
 import ColumnTable from "../../components/Tables/ColumnTable";
+import { userStore } from "../../store/userStore";
 
 const RequestDataContent = ({
   requests,
@@ -38,6 +38,7 @@ const RequestDataContent = ({
     setCancelEdit,
   } = stateStore();
   const [stateRow, setStateRow] = useState({});
+  const { token, user } = userStore();
   const [fieldReset, setFieldReset] = useState(false);
   const [updateActivities, setUpdateActivities] = useState([]);
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
@@ -60,7 +61,7 @@ const RequestDataContent = ({
     }
     setUrlBase(tasksEndpoint);
     try {
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setRequests(tasksData);
     } catch (error) {
       console.error("Error fetching clients data:", error);
@@ -106,7 +107,7 @@ const RequestDataContent = ({
     try {
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-      const employeesId = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+      const employeesId = user.id;
 
       const body = stateRow;
 
@@ -118,7 +119,7 @@ const RequestDataContent = ({
       // Construir la URL del endpoint para las tareas
       const tasksEndpoint = `${baseUrl}DataUniverseRequest`;
       // Enviar los datos modificados al servidor utilizando la función postData
-      await postData(tasksEndpoint, body);
+      await postData(tasksEndpoint, body, token);
       setStateRow({});
       setTooltipSuccess("Registro creada con exito");
       setFieldReset(true);
@@ -167,7 +168,7 @@ const RequestDataContent = ({
       }
 
       setUrlBase(tasksEndpoint);
-      const tasksData = await getData(tasksEndpoint);
+      const tasksData = await getData(tasksEndpoint, token);
       setRequests(tasksData);
       setInitialOptionClient(initialOptions.client);
     } catch (error) {

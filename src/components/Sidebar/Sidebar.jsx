@@ -7,11 +7,13 @@ import BudgetIcon from "../../assets/Icons/BudgetIcon";
 import DashboardIcon from "../../assets/Icons/DashboardIcon";
 import { useLocation } from "react-router-dom";
 import { stateStore } from "../../store/stateStore";
+import { userStore } from "../../store/userStore";
 
 const Sidebar = () => {
   const { setOpenNotifications } = stateStore();
   const location = useLocation();
   const currentPath = location.pathname;
+  const { setUser, setToken } = userStore();
   const links = [
     {
       icon: (
@@ -70,6 +72,12 @@ const Sidebar = () => {
     },
   ];
 
+  const logOut = () => {
+    setUser({});
+    setToken("");
+    window.location.href = "/login";
+  };
+
   return (
     <div
       className={`w-[100px] flex justify-between flex-col items-center py-9 shadow-3xl`}
@@ -89,7 +97,12 @@ const Sidebar = () => {
           </a>
         ))}
       </div>
-      <LogOutIcon width={40} height={40} />
+      <LogOutIcon
+        className={"cursor-pointer hover:scale-105"}
+        action={logOut}
+        width={40}
+        height={40}
+      />
     </div>
   );
 };

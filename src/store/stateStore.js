@@ -183,5 +183,9 @@ export const stateStore = create((set) => {
     setStatusModeEdit: (statusModeEdit) => {
       set({ statusModeEdit });
     },
+    updateNotifications: false,
+    setUpdateNotifications: (updateNotifications) => {
+      set({ updateNotifications });
+    },
   };
 });

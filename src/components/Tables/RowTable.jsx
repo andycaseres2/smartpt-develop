@@ -15,6 +15,7 @@ import { stateStore } from "../../store/stateStore";
 import OptionsEmployees from "../Selects/OptionsEmployees";
 import DeleteIcon from "../../assets/Icons/DeleteIcon";
 import { deleteData } from "../../services/deleteData";
+import { userStore } from "../../store/userStore";
 
 const RowTable = ({
   listItems,
@@ -44,6 +45,7 @@ const RowTable = ({
     cancelEdit,
     setCancelEdit,
     setStatusModeEdit,
+    setUpdateNotifications,
   } = stateStore();
   const [modeEdit, setModeEdit] = useState(editMode ?? false);
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
@@ -56,6 +58,7 @@ const RowTable = ({
   const [showSelectEmployee, setShowSelectEmployee] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openModalDelete, setOpenModalDelete] = useState(false);
+  const { token, user } = userStore();
 
   useEffect(() => {
     setStatusModeEdit(modeEdit);
@@ -131,7 +134,7 @@ const RowTable = ({
         }
 
         // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
-        body.idemployeeasigned = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+        body.idemployeeasigned = user.id;
 
         // Definir la URL base
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
@@ -140,7 +143,7 @@ const RowTable = ({
         const tasksEndpoint = `${baseUrl}Task`;
 
         // Enviar los datos modificados al servidor utilizando la función postData
-        await postData(tasksEndpoint, body);
+        await postData(tasksEndpoint, body, token);
 
         // Restablecer los modos de edición y agregar nueva tarea
         setModeEdit(false);
@@ -167,7 +170,7 @@ const RowTable = ({
     try {
       // Obtener el objeto stateRow
       const body = stateRow;
-      const employeesId = import.meta.env.VITE_REACT_APP_EMPLOYEE_ID;
+      const employeesId = user.id;
       // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
       body.idemployeeasigned = Number(employeesId);
 
@@ -193,7 +196,7 @@ const RowTable = ({
           (body.state === 3 || body.state === 4) &&
           body.realtimespent !== null
         ) {
-          await putData(taskEndpoint, body);
+          await putData(taskEndpoint, body, token);
           setRealTime(true);
           setTooltipSuccess("Tarea editada con éxito");
           // Restablecer los modos de edición y agregar nueva tarea
@@ -203,7 +206,7 @@ const RowTable = ({
           setTooltipSuccess("Tarea editada con exito");
           setStateRow({});
         } else if (body.state !== 3 && body.state !== 4) {
-          await putData(taskEndpoint, body);
+          await putData(taskEndpoint, body, token);
           setRealTime(true);
           setTooltipSuccess("Tarea editada con éxito");
           // Restablecer los modos de edición y agregar nueva tarea
@@ -215,7 +218,7 @@ const RowTable = ({
           setTooltipError("Hubo un error editando la tarea");
         }
       } else {
-        await putData(taskEndpoint, body);
+        await putData(taskEndpoint, body, token);
         setRealTime(true);
         setTooltipSuccess("Tarea editada con éxito");
         // Restablecer los modos de edición y agregar nueva tarea
@@ -274,13 +277,14 @@ const RowTable = ({
         accepted: null,
         dateaccepted: null,
       };
-      await postData(asignedEndpoint, body);
+      await postData(asignedEndpoint, body, token);
       setTooltipSuccess("Empleado asignado con exito");
     } catch (error) {
       setTooltipError("Error al asignar el empleado");
       console.error("Error al asignar el empleado:", error);
     } finally {
       setShowSelectEmployee(false);
+      setUpdateNotifications(true);
     }
   };
 
@@ -330,6 +334,7 @@ const RowTable = ({
               setTooltipSuccess={setTooltipSuccess}
               rowId={rowId}
               setIsUpdateStatus={setIsUpdateStatus}
+              handleCleanFilters={handleCleanFilters}
             />
           ) : item?.type === "status" && !modeEdit ? (
             <SelectStatus
@@ -351,6 +356,7 @@ const RowTable = ({
               setTooltipSuccess={setTooltipSuccess}
               rowId={rowId}
               setIsUpdateStatus={setIsUpdateStatus}
+              handleCleanFilters={handleCleanFilters}
             />
           ) : item?.editComponent === "input" &&
             item?.type === "text" &&

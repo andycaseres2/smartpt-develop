@@ -7,6 +7,7 @@ import ArrowFromPrev from "../../assets/Icons/ArrowFromPrev";
 import { useLocation } from "react-router-dom";
 import { getColor } from "../../utils/getColor";
 import { getData } from "../../services/getData";
+import { userStore } from "../../store/userStore";
 
 const Pagination = ({
   setTasks,
@@ -16,6 +17,7 @@ const Pagination = ({
   setLoading,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const { token } = userStore();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -45,7 +47,7 @@ const Pagination = ({
 
     const fetchDataOnMount = async () => {
       try {
-        const pageData = await getData(newUrl);
+        const pageData = await getData(newUrl, token);
         setTasks(pageData);
         setUrlBase(newUrl);
       } catch (error) {

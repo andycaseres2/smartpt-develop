@@ -1,10 +1,11 @@
 // Función para realizar solicitudes POST
-export const postData = async (url, body) => {
+export const postData = async (url, body, token) => {
   try {
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
     });

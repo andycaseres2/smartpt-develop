@@ -1,10 +1,11 @@
 // Función para realizar solicitudes GET// Función para realizar solicitudes POST
-export const getData = async (url) => {
+export const getData = async (url, token) => {
   try {
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     });
 
