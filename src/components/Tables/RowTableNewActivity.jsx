@@ -17,6 +17,8 @@ const RowTableNewActivity = ({
   handleChange,
   editMode,
   showButtonsEdit,
+  handleSelectProcess,
+  resetFieldsAssinedTask,
 }) => {
   const [modeEdit, setModeEdit] = useState(editMode ?? false);
   const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
@@ -55,6 +57,7 @@ const RowTableNewActivity = ({
                 key_name={item.key_name}
                 handleChange={handleChange}
                 editStatus={true}
+                resetFieldsAssinedTask={resetFieldsAssinedTask}
               />
             ) : item.editComponent === "status" && !modeEdit ? (
               <SelectStatus
@@ -68,6 +71,7 @@ const RowTableNewActivity = ({
                 key_name={item.key_name}
                 handleChange={handleChange}
                 editStatus={true}
+                resetFieldsAssinedTask={resetFieldsAssinedTask}
               />
             ) : item.editComponent === "input" &&
               item.type === "text" &&
@@ -78,6 +82,7 @@ const RowTableNewActivity = ({
                 key_name={item.key_name}
                 handleChange={handleChange}
                 initialValue={item.data}
+                resetFieldsAssinedTask={resetFieldsAssinedTask}
               />
             ) : item.editComponent === "input" &&
               item.type === "text" &&
@@ -92,6 +97,8 @@ const RowTableNewActivity = ({
                 initialOption={item.data}
                 key_name={item.key_name}
                 handleChange={handleChange}
+                handleSelect={handleSelectProcess}
+                resetFieldsAssinedTask={resetFieldsAssinedTask}
               />
             ) : item.editComponent === "select" && !modeEdit ? (
               <span>{item.data}</span>
@@ -103,6 +110,7 @@ const RowTableNewActivity = ({
                 defaultValue={item.data}
                 key_name={item.key_name}
                 type={item.type}
+                resetFieldsAssinedTask={resetFieldsAssinedTask}
               />
             ) : item.editComponent === "input" &&
               item.type === "time" &&
@@ -111,7 +119,11 @@ const RowTableNewActivity = ({
             ) : item.editComponent === "input" &&
               item.type === "date" &&
               modeEdit ? (
-              <DateInput handleChange={handleChange} key_name={item.key_name} />
+              <DateInput
+                resetFieldsAssinedTask={resetFieldsAssinedTask}
+                handleChange={handleChange}
+                key_name={item.key_name}
+              />
             ) : item.editComponent === "input" &&
               item.type === "date" &&
               !modeEdit ? (

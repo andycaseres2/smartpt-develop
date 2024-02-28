@@ -36,15 +36,20 @@ const ModalNotifications = ({
       return;
     }
 
-    const [, year, month, day, hours, minutes] = dateString.match(regex);
-    const formattedDate = `${parseInt(month)}/${parseInt(day)}/${year}`;
-    const formattedHours = (hours % 12 || 12).toString();
-    const formattedMinutes = parseInt(minutes).toString().padStart(2, "0");
-    const ampm = hours < 12 ? "am" : "pm";
+    const [, year, month, day, hours, minutes, seconds] =
+      dateString.match(regex);
+    const formattedDate = `${parseInt(month)}/${parseInt(day) - 1}/${year}`;
+    const utcDate = new Date(
+      Date.UTC(year, month - 1, day, hours, minutes, seconds)
+    );
+    const formattedHours = (utcDate.getHours() % 12 || 12).toString();
+    const formattedMinutes = utcDate.getMinutes().toString().padStart(2, "0");
+    const ampm = utcDate.getHours() < 12 ? "am" : "pm";
     const formattedTime = `${formattedHours}:${formattedMinutes}${ampm}`;
 
     return `${formattedDate} - ${formattedTime}`;
   }
+
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
@@ -52,6 +57,8 @@ const ModalNotifications = ({
   const handleClickInsideModal = (e) => {
     e.stopPropagation();
   };
+
+  const [selectedNotifications, setSelectedNotifications] = useState([]);
 
   const handleAceptTask = async (notification) => {
     try {
@@ -76,10 +83,27 @@ const ModalNotifications = ({
     }
   };
 
-  const handleAcceptAll = () => {
-    notification.forEach((notification) => {
-      handleAceptTask(notification);
-    });
+  const handleCheckboxChange = (notification) => {
+    const isSelected = selectedNotifications.includes(notification);
+    if (isSelected) {
+      setSelectedNotifications(
+        selectedNotifications.filter((n) => n !== notification)
+      );
+    } else {
+      setSelectedNotifications([...selectedNotifications, notification]);
+    }
+  };
+
+  const handleAcceptSelectedTasks = async () => {
+    try {
+      for (const notification of selectedNotifications) {
+        await handleAceptTask(notification);
+      }
+      // Limpia las notificaciones seleccionadas después de asignarlas
+      setSelectedNotifications([]);
+    } catch (error) {
+      console.error("Error al aceptar las tareas:", error);
+    }
   };
 
   return (
@@ -109,7 +133,7 @@ const ModalNotifications = ({
                 )}
                 dateassigned={formatDateString(notification.dateassigned)}
                 showInput={true}
-                handleChange={() => handleAceptTask(notification)}
+                handleChange={() => handleCheckboxChange(notification)}
               />
             ))}
             {/* <NotificationItem showInput={true} />
@@ -137,7 +161,7 @@ const ModalNotifications = ({
       )}
       {activeTab === 1 && (
         <div className="w-full flex justify-center p-2">
-          <Button action={handleAcceptAll} text={"Aceptar tareas"} />
+          <Button action={handleAcceptSelectedTasks} text={"Aceptar tareas"} />
         </div>
       )}
     </div>

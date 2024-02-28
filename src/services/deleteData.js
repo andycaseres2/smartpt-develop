@@ -1,7 +1,11 @@
-export const deleteData = async (url) => {
+export const deleteData = async (url, token) => {
   try {
     const response = await fetch(url, {
       method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     if (response.ok) {

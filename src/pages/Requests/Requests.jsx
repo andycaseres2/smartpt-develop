@@ -8,6 +8,7 @@ import Tooltip from "../../components/Tooltips/Tooltip";
 import CircleCheck from "../../assets/Icons/CircleCheck";
 import WarningCircle from "../../assets/Icons/WarningCircle";
 import { userStore } from "../../store/userStore";
+// import { postData } from "../../services/postData";
 
 const Requests = () => {
   const {
@@ -17,6 +18,7 @@ const Requests = () => {
     setEmployees,
     setDesignFormats,
     setDesignPieces,
+    // setToken,
   } = stateStore();
   const [realTime, setRealTime] = useState(true);
   const [requests, setRequests] = useState([]);
@@ -79,6 +81,14 @@ const Requests = () => {
 
         const designPiecesData = await getData(designPiecesEndpoint, token);
         setDesignPieces(designPiecesData);
+
+        // const refreshEndpoint = `${baseUrl}refresh`;
+        // const body = {
+        //   grant_type: "refresh_token",
+        //   refresh_token: token,
+        // };
+        // const updateToken = await postData(refreshEndpoint, body, token);
+        // setToken(updateToken.access_token);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -101,6 +111,24 @@ const Requests = () => {
     "w-44", // Ancho para Columna 10
     "w-64", // Ancho para Columna 11
     "w-44", // Ancho para Columna 12
+    "w-52", // Ancho para Columna 13
+  ];
+
+  const columnTitles = [
+    "Cliente",
+    "Formato",
+    "Pieza ",
+    "Descripción pieza",
+    "Requerimientos pieza ",
+    "Fecha de entrega ",
+    "Responsable",
+    "Horas estimadas",
+    "Horas reales",
+    "Fecha de trabajo ",
+    "Estado ",
+    "Observaciones ",
+    "Interesado",
+    "",
   ];
   return (
     <div className="flex flex-col w-full h-screen">
@@ -109,7 +137,7 @@ const Requests = () => {
         date={currentWeek}
         userName="Kenet Sebastián Segura Murillo"
       />
-      <div className="w-full flex flex-col bg-primary-yellow-50 py-4 px-6 h-full">
+      <div className="w-full flex flex-col bg-primary-yellow-50 py-4 px-6 h-full overflow-hidden overflow-y-auto">
         {user.profile === 1 || user.profile === 2 ? (
           <AdminRequest
             setRealTime={setRealTime}
@@ -121,6 +149,7 @@ const Requests = () => {
             loading={loading}
             setLoading={setLoading}
             columnWidths={columnWidths}
+            columnTitles={columnTitles}
           />
         ) : (
           <WorkerRequest
@@ -133,6 +162,7 @@ const Requests = () => {
             loading={loading}
             setLoading={setLoading}
             columnWidths={columnWidths}
+            columnTitles={columnTitles}
           />
         )}
       </div>

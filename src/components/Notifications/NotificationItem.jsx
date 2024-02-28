@@ -11,9 +11,6 @@ const NotificationItem = ({
   const handleCheckboxChange = () => {
     setChecked(true); // Marcar el checkbox temporalmente
     handleChange();
-    setTimeout(() => {
-      setChecked(false); // Desmarcar el checkbox después de 1 segundo
-    }, 200);
   };
 
   return (

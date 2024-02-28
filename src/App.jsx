@@ -5,6 +5,7 @@ import { userStore } from "./store/userStore";
 import { getColor } from "./utils/getColor";
 import { useLocation } from "react-router-dom";
 import { applyScrollbarStyles } from "./utils/applyScrollbarStyles";
+import { fetch, setOriginalFetch } from "./utils/fetchInterceptor";
 
 function App() {
   const { user, token, setUser, setToken } = userStore();
@@ -29,12 +30,16 @@ function App() {
     };
 
     // Establecer el temporizador para limpiar los datos después de 5 minutos
-    const timeoutId = setTimeout(clearUserDataAfterTimeout, 5 * 60 * 1000);
+    const timeoutId = setTimeout(clearUserDataAfterTimeout, 10 * 60 * 1000);
 
     // Limpiar el temporizador al desmontar el componente para evitar fugas de memoria
     return () => clearTimeout(timeoutId);
   }, []); // El efecto se ejecutará solo una vez al montar el componente
 
+  useEffect(() => {
+    // Sobrescribe window.fetch con tu función personalizada
+    setOriginalFetch(fetch);
+  }, []);
   return (
     <main className="min-h-screen flex">
       {Object.keys(user).length > 0 && token && <Sidebar />}

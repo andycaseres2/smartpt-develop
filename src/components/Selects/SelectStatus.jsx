@@ -23,12 +23,20 @@ const SelectStatus = ({
   rowId,
   setIsUpdateStatus,
   handleCleanFilters,
+  resetFieldsAssinedTask,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const { token } = userStore();
+
+  useEffect(() => {
+    if (resetFieldsAssinedTask) {
+      setSelectedOption("Pendiente");
+      setSelectedOptionId(1);
+    }
+  }, [resetFieldsAssinedTask]);
 
   async function editTask(id) {
     if (!modeEdit) {

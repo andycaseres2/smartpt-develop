@@ -1,13 +1,19 @@
 import { useState, useEffect } from "react";
 
-const TimeInput = ({ defaultValue, handleChange, key_name, fieldReset }) => {
+const TimeInput = ({
+  defaultValue,
+  handleChange,
+  key_name,
+  fieldReset,
+  resetFieldsAssinedTask,
+}) => {
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
-    if (fieldReset) {
+    if (fieldReset || resetFieldsAssinedTask) {
       setInputValue("");
     }
-  }, [fieldReset]);
+  }, [fieldReset, resetFieldsAssinedTask]);
 
   useEffect(() => {
     if (defaultValue) {

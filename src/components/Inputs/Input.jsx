@@ -1,30 +1,28 @@
 import { useEffect, useState } from "react";
 
-const Input = ({ type, value, key_name, handleChange, initialValue }) => {
+const Input = ({
+  value,
+  key_name,
+  handleChange,
+  initialValue,
+  resetFieldsAssinedTask,
+}) => {
   const [inputValue, setInputValue] = useState("");
+
+  useEffect(() => {
+    if (resetFieldsAssinedTask) {
+      setInputValue("");
+    }
+  }, [resetFieldsAssinedTask]);
 
   const handleInputChange = (e) => {
     const newValue = e.target.value;
-    setInputValue(newValue);
-    handleChange({ target: { name: key_name, value: newValue } });
-  };
-
-  const isValidDate = (dateString) => {
-    const regexDate = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
-    return regexDate.test(dateString);
-  };
-
-  const formatDateForInput = (dateString) => {
-    if (!isValidDate(dateString)) {
-      return "";
+    if (newValue === "") {
+      setInputValue(""); // Si el nuevo valor es una cadena vacía, establece el estado en una cadena vacía
+    } else {
+      setInputValue(newValue); // Si el nuevo valor no es una cadena vacía, actualiza el estado con el nuevo valor
     }
-
-    const [day, month, year] = dateString.split("/");
-    const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
-      2,
-      "0"
-    )}`;
-    return formattedDate;
+    handleChange({ target: { name: key_name, value: newValue } });
   };
 
   useEffect(() => {
@@ -36,14 +34,14 @@ const Input = ({ type, value, key_name, handleChange, initialValue }) => {
       setInputValue(initial);
       handleChange({ target: { name: key_name, value: initial } });
     }
-  }, [value, initialValue, key_name]);
+  }, [key_name]);
 
   return (
     <input
       className="w-full border-none p-2 bg-gray-100 rounded-md  focus:outline-none"
-      type={type === "date" ? "date" : type}
+      type="text"
       name={key_name}
-      value={type === "date" ? formatDateForInput(inputValue) : inputValue}
+      value={inputValue}
       onChange={handleInputChange}
     />
   );

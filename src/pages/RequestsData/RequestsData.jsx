@@ -121,6 +121,21 @@ const RequestsData = () => {
     "w-44", // Ancho para Columna 8
     "w-32", // Ancho para Columna 9
     "w-44", // Ancho para Columna 10
+    "w-52", // Ancho para Columna 11
+  ];
+  const columnTitles = [
+    "Cliente",
+    "Tipo de servicio ",
+    "Proceso",
+    "Actividad ",
+    "Especificaciones",
+    "Fecha de entrega",
+    "Responsable",
+    "Horas estimadas",
+    "Horas reales",
+    "Estado ",
+    "Interesado",
+    "",
   ];
 
   return (
@@ -131,7 +146,7 @@ const RequestsData = () => {
         userName="Kenet Sebastián Segura Murillo"
         textColor={"text-primary-blue-500"}
       />
-      <div className="w-full flex flex-col bg-primary-lightblue-50 py-4 px-6 h-full">
+      <div className="w-full flex flex-col bg-primary-lightblue-50 py-4 px-6 h-full overflow-hidden overflow-y-auto">
         <RequestDataContent
           setRealTime={setRealTime}
           requests={requests}
@@ -142,6 +157,7 @@ const RequestsData = () => {
           loading={loading}
           setLoading={setLoading}
           columnWidths={columnWidths}
+          columnTitles={columnTitles}
         />
       </div>
 

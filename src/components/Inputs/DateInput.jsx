@@ -1,7 +1,20 @@
 import { useState, useEffect } from "react";
 
-const DateInput = ({ defaultValue, handleChange, key_name, readOnly }) => {
+const DateInput = ({
+  defaultValue,
+  handleChange,
+  key_name,
+  readOnly,
+  resetFieldsAssinedTask,
+}) => {
   const [selectedDate, setSelectedDate] = useState("");
+  const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    if (resetFieldsAssinedTask) {
+      setSelectedDate("");
+    }
+  }, [resetFieldsAssinedTask]);
 
   useEffect(() => {
     setSelectedDate(defaultValue?.split("T")[0]);
@@ -36,6 +49,7 @@ const DateInput = ({ defaultValue, handleChange, key_name, readOnly }) => {
       onChange={handleDateChange}
       name={key_name}
       readOnly={readOnly}
+      min={today}
     />
   );
 };

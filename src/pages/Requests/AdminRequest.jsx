@@ -27,6 +27,7 @@ const AdminRequest = ({
   setLoading,
   setRealTime,
   columnWidths,
+  columnTitles,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const {
@@ -51,7 +52,7 @@ const AdminRequest = ({
   const [urlBase, setUrlBase] = useState(`
     ${
       import.meta.env.VITE_REACT_APP_URL_BASE
-    }FormattedDesignRequest?page=1&size=10&viewAdmin=true`);
+    }FormattedDesignRequest?page=1&size=10&IdEmployee=${user.id}`);
 
   const handleCleanFilters = async () => {
     setFieldReset(true);
@@ -62,9 +63,9 @@ const AdminRequest = ({
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
     let tasksEndpoint = "";
     if (activeTab === 2) {
-      tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100`;
+      tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100&IdEmployee=${user.id}`;
     } else if (activeTab === 3) {
-      tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10`;
+      tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
     }
     setUrlBase(tasksEndpoint);
     try {
@@ -91,15 +92,14 @@ const AdminRequest = ({
       const body = stateRow;
       // Definir la URL base
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-      const employeesId = user.id;
 
-      body.idemployeeasigned = Number(employeesId);
       if (!body.estimatedtime) {
         body.estimatedtime = 0;
       }
       // Construir la URL del endpoint para las tareas
       const tasksEndpoint = `${baseUrl}DesignRequest`;
       // Enviar los datos modificados al servidor utilizando la función postData
+      body.idemployeecreator = user.id;
       body.realtime = null;
       body.idemployeeassigned = null;
       await postData(tasksEndpoint, body, token);
@@ -147,13 +147,13 @@ const AdminRequest = ({
       let initialOptions = {};
 
       if (tab === 3) {
-        tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10`;
+        tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
         initialOptions = {
           client: "Clientes",
         };
         setCancelEdit(true);
       } else if (tab === 2) {
-        tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100`;
+        tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100&IdEmployee=${user.id}`;
         initialOptions = {
           client: "Clientes",
         };
@@ -176,22 +176,6 @@ const AdminRequest = ({
     { id: 1, label: "Registrar solicitud" },
     { id: 2, label: "Solicitudes" },
     { id: 3, label: "Consolidado" },
-  ];
-
-  const columnTitles = [
-    "Cliente",
-    "Formato",
-    "Pieza ",
-    "Descripción pieza",
-    "Requerimientos pieza ",
-    "Fecha de entrega ",
-    "Responsable",
-    "Horas estimadas",
-    "Horas reales",
-    "Fecha de trabajo ",
-    "Estado ",
-    "Observaciones ",
-    "",
   ];
 
   const listItems = [
@@ -388,7 +372,7 @@ const AdminRequest = ({
         )}
       </div>
 
-      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[660px]">
+      <div className="bg-white rounded-bl-md rounded-r-md h-full">
         {activeTab === 1 && (
           <div className="overflow-x-auto h-full">
             <div className="min-w-max">

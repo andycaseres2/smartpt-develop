@@ -90,7 +90,7 @@ const Select = ({
           {options.map((option) => (
             <div
               key={option.id}
-              className="p-2 cursor-pointer hover:bg-gray-100 w-max"
+              className="p-2 cursor-pointer hover:bg-gray-100 w-full"
               onClick={() =>
                 handleOptionClick(option.name || option.fullname, option.id)
               }

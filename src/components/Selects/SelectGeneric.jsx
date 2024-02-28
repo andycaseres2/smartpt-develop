@@ -12,6 +12,7 @@ const SelectGeneric = ({
   readOnly,
   handleSelect,
   fieldReset,
+  resetFieldsAssinedTask,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -22,10 +23,10 @@ const SelectGeneric = ({
   const inputRef = useRef(null); // Referencia al campo de búsqueda
 
   useEffect(() => {
-    if (fieldReset) {
+    if (fieldReset || resetFieldsAssinedTask) {
       setSelectedOption(null);
     }
-  }, [fieldReset]);
+  }, [fieldReset, resetFieldsAssinedTask]);
 
   useEffect(() => {
     if (initialOption && Array.isArray(options)) {
@@ -121,7 +122,7 @@ const SelectGeneric = ({
       </div>
       {isOpen && !readOnly && !!options.length && (
         <div
-          className={`w-max absolute top-[37px] left-0 w-full bg-gray-100 border border-gray-100 mt-1 rounded ${
+          className={`w-max absolute top-[37px] left-0 bg-gray-100 border border-gray-100 mt-1 rounded ${
             options.length > 6 ? "h-[300px]" : "h-max"
           } overflow-y-auto`}
           onClick={(e) => e.stopPropagation()}
@@ -139,7 +140,7 @@ const SelectGeneric = ({
           {filteredOptions.map((option) => (
             <div
               key={option.id}
-              className="p-2 cursor-pointer hover:bg-gray-200 w-max"
+              className="p-2 cursor-pointer hover:bg-gray-200 w-full"
               onClick={() =>
                 handleOptionClick(
                   option.name || option.fullname || option.value,

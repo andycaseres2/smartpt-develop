@@ -18,6 +18,7 @@ import Spinner from "../../components/Spinners/Spinner";
 import SelectState from "../../components/Selects/SelectState";
 import { postData } from "../../services/postData";
 import { userStore } from "../../store/userStore";
+import ModalConfirmation from "../../components/Modals/ModalConfirmation";
 
 const AdminPlanning = ({
   tasks,
@@ -33,8 +34,7 @@ const AdminPlanning = ({
   setLoading,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
-  const { token } = userStore();
-
+  const { token, user } = userStore();
   const {
     setOpenNotifications,
     newTaskEmpty,
@@ -45,6 +45,7 @@ const AdminPlanning = ({
     setCancelEdit,
     employees,
     statusModeEdit,
+    setUpdateNotifications,
   } = stateStore();
   const [selectedFrequencyOption, setselectedFrequencyOption] =
     useState("Semanal");
@@ -64,19 +65,23 @@ const AdminPlanning = ({
   const [taskbyEmployee, setTaskByEmployee] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [totalTimes, setTotalTimes] = useState(0);
+  const [asignedActividity, setAsignedActividity] = useState(false);
+  const [responsable, setResponsable] = useState("");
 
   useEffect(() => {
-    setSelectedUserId(employees[0]?.id);
+    if (employees) {
+      setSelectedUserId(employees[0]?.id);
+    }
   }, [employees]);
 
   useEffect(() => {
-    if (selectedUserId !== null && selectedUserId) {
+    if (selectedUserId !== null) {
       setLoading(true); // Activar indicador de carga
       const fetchDataOnMount = async () => {
         try {
           const employeesTaskEndpoint = `${
             import.meta.env.VITE_REACT_APP_URL_BASE
-          }FormattedTask?page=1&size=10&IdEmployee=${selectedUserId}`;
+          }FormattedTask?page=1&size=100&IdEmployee=${selectedUserId}`;
 
           const employeesDataTask = await getData(employeesTaskEndpoint, token);
 
@@ -100,7 +105,7 @@ const AdminPlanning = ({
 
       fetchDataOnMount();
     }
-  }, [selectedUserId, realTime, employees]);
+  }, [selectedUserId, realTime]);
 
   const filterState = [
     {
@@ -188,23 +193,27 @@ const AdminPlanning = ({
       let initialOptions = {};
 
       if (tab === 4) {
-        tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
+        tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
         initialOptions = {
           client: "Clientes",
           activity: "Actividad",
           process: "Proceso",
         };
         setCancelEdit(true);
+        setUrlBase(tasksEndpoint);
+        const tasksData = await getData(tasksEndpoint, token);
+        setTasks(tasksData);
       } else if (tab === 3) {
-        tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+        tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100&IdEmployee=${user.id}`;
         initialOptions = {
           client: "Clientes",
         };
         setCancelEdit(true);
+        setUrlBase(tasksEndpoint);
+        const tasksData = await getData(tasksEndpoint, token);
+        setTasks(tasksData);
       }
-      setUrlBase(tasksEndpoint);
-      const tasksData = await getData(tasksEndpoint, token);
-      setTasks(tasksData);
+
       setInitialOptionClient(initialOptions.client);
       if (initialOptions.activity)
         setInitialOptionSelectActivity(initialOptions.activity);
@@ -255,6 +264,7 @@ const AdminPlanning = ({
 
   const handleUserSelection = (clientId) => {
     setSelectedUserId(clientId);
+    setResetFieldsAssinedTask(true);
   };
 
   const data = [
@@ -443,6 +453,8 @@ const AdminPlanning = ({
     }
   };
 
+  const [resetFieldsAssinedTask, setResetFieldsAssinedTask] = useState(false);
+
   const listAddActivity = [
     {
       data: "",
@@ -563,6 +575,39 @@ const AdminPlanning = ({
     setFieldReset(false);
   };
 
+  useEffect(() => {
+    if (resetFieldsAssinedTask) {
+      const timer = setTimeout(() => {
+        setResetFieldsAssinedTask(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [resetFieldsAssinedTask]);
+
+  const handleAsignedEmployee = async (idTask) => {
+    try {
+      const asignedEndpoint = `${
+        import.meta.env.VITE_REACT_APP_URL_BASE
+      }AsignedTask`;
+      const employeeassignerId = user.id;
+      const body = {
+        idemployeeassigner: employeeassignerId,
+        idemployeeassigned: selectedUserId,
+        idtask: idTask,
+        dateassigned: new Date().toISOString(),
+        accepted: 1,
+        dateaccepted: new Date().toISOString(),
+      };
+      await postData(asignedEndpoint, body, token);
+    } catch (error) {
+      console.error("Error al asignar el empleado:", error);
+    } finally {
+      setUpdateNotifications(true);
+      setResetFieldsAssinedTask(true);
+    }
+  };
+
   const handleAsignedTask = async () => {
     try {
       // Obtener el objeto stateRow
@@ -609,13 +654,22 @@ const AdminPlanning = ({
 
       // Construir la URL del endpoint para las tareas
       const tasksEndpoint = `${baseUrl}Task`;
-      await postData(tasksEndpoint, body, token);
+      if (selectedUserId) {
+        const newTask = await postData(tasksEndpoint, body, token);
+        handleAsignedEmployee(newTask.id);
+      }
+      setResetFieldsAssinedTask(true);
       setRealTime(true);
       setStateRow({});
       setTooltipSuccess("Tarea creada con éxito");
     } catch (error) {
       console.error("Error al crear la tarea:", error);
       setTooltipError("Hubo un error al crear la tarea");
+    } finally {
+      setUpdateNotifications(true);
+      setStateRow({});
+      setResetFieldsAssinedTask(true);
+      setRealTime(true);
     }
   };
 
@@ -654,6 +708,18 @@ const AdminPlanning = ({
     }
   }, [tasks]);
 
+  console.log("stateRow", stateRow);
+
+  useEffect(() => {
+    if (selectedUserId !== undefined && employees.length > 0) {
+      const employee = employees.find(
+        (employee) => employee.id === selectedUserId
+      );
+      setResponsable(employee.fullname);
+    }
+  }, [selectedUserId, employees]);
+
+  console.log("responsable", responsable);
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
       <div className="w-full flex justify-between z-[2]">
@@ -996,46 +1062,51 @@ const AdminPlanning = ({
                 selectedId={selectedUserId}
               />
               <div className="w-full flex flex-col overflow-y-auto  rounded-md gap-5">
-                <div
-                  className={`min-w-max h-[65%] border border-gray-200 rounded-md shadow-lg`}
-                >
-                  <div className="w-full p-3">
-                    <h2 className="text-xl text-primary-red-600 font-semibold">
-                      Asignar actividad nueva
-                    </h2>
-                  </div>
+                {selectedUserId !== 0 && (
+                  <div
+                    className={`min-w-max h-[65%] border border-gray-200 rounded-md shadow-lg`}
+                  >
+                    <div className="w-full p-3">
+                      <h2 className="text-xl text-primary-red-600 font-semibold">
+                        Asignar actividad nueva
+                      </h2>
+                    </div>
 
-                  <table className="min-w-full">
-                    <thead>
-                      <ColumnTableAddActivity
-                        columnTitlesActivity={columnsAddActivity}
-                        columnWidths={columnWidthsActivity}
-                        readOnly={false}
-                      />
-                    </thead>
-                    <tbody className="border-b border-gray-300">
-                      <RowTableNewActivity
-                        listItems={listAddActivity}
-                        columnWidths={columnWidthsActivity}
-                        stateRow={stateRow}
-                        handleChange={handleChange}
-                        readOnly={false}
-                        editStatus={true}
-                        editMode={true}
-                        showButtonsEdit={false}
-                      />
-                    </tbody>
-                  </table>
+                    <table className="min-w-full">
+                      <thead>
+                        <ColumnTableAddActivity
+                          columnTitlesActivity={columnsAddActivity}
+                          columnWidths={columnWidthsActivity}
+                          readOnly={false}
+                        />
+                      </thead>
+                      <tbody className="border-b border-gray-300">
+                        <RowTableNewActivity
+                          listItems={listAddActivity}
+                          columnWidths={columnWidthsActivity}
+                          stateRow={stateRow}
+                          handleChange={handleChange}
+                          readOnly={false}
+                          editStatus={true}
+                          editMode={true}
+                          showButtonsEdit={false}
+                          handleSelectProcess={handleSelectProcess}
+                          resetFieldsAssinedTask={resetFieldsAssinedTask}
+                        />
+                      </tbody>
+                    </table>
 
-                  <div className="w-full flex justify-end p-4">
-                    <ButtonWithIcon
-                      text={"Añadir actividad"}
-                      disabled={false}
-                      icon={<CirclePlus />}
-                      action={() => handleAsignedTask()}
-                    />
+                    <div className="w-full flex justify-end p-4">
+                      <ButtonWithIcon
+                        text={"Añadir actividad"}
+                        disabled={false}
+                        icon={<CirclePlus />}
+                        action={() => setAsignedActividity(true)}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
+
                 <div
                   className={`min-w-max h-full border border-gray-200 rounded-md shadow-lg overflow-hidden overflow-y-auto`}
                 >
@@ -1186,6 +1257,15 @@ const AdminPlanning = ({
             loading={loading}
           />
         </div>
+      )}
+
+      {activeTab === 2 && asignedActividity && (
+        <ModalConfirmation
+          onClose={() => setAsignedActividity(false)}
+          handleCancel={handleAsignedTask}
+          text={`Esta seguro que desea asignar la tarea "${stateRow["name"]}" al responsable ${responsable}`}
+          designModal={"!w-[60%]"}
+        />
       )}
     </div>
   );

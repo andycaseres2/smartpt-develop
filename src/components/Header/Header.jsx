@@ -1,5 +1,4 @@
 import BellIcon from "../../assets/Icons/BellIcon";
-
 import ModalNotifications from "../Modals/ModalNotifications";
 import { stateStore } from "../../store/stateStore";
 import { useLocation } from "react-router-dom";
@@ -7,6 +6,7 @@ import { getColor } from "../../utils/getColor";
 import { useEffect, useState } from "react";
 import { getData } from "../../services/getData";
 import { userStore } from "../../store/userStore";
+import BellNotificationActive from "../../assets/Icons/BellNotificationActive";
 
 const Header = ({ title, date, textColor }) => {
   const {
@@ -79,14 +79,25 @@ const Header = ({ title, date, textColor }) => {
           }  rounded-lg flex justify-center items-center w-10 h-10 relative cursor-pointer z-50 hover:scale-105 `}
           onClick={handleOpenNotifications}
         >
-          <BellIcon
-            fill={openNotifications && getColor(currentPath).hex}
-            optionalColor={
-              currentPath === "/solicitudes/informacion" && "#477BFF"
-            }
-            className="cursor-pointer z-50"
-            action={handleOpenNotifications}
-          />
+          {notification.length ? (
+            <BellNotificationActive
+              fill={openNotifications && getColor(currentPath).hex}
+              optionalColor={
+                currentPath === "/solicitudes/informacion" && "#477BFF"
+              }
+              className="cursor-pointer z-50"
+              action={handleOpenNotifications}
+            />
+          ) : (
+            <BellIcon
+              fill={openNotifications && getColor(currentPath).hex}
+              optionalColor={
+                currentPath === "/solicitudes/informacion" && "#477BFF"
+              }
+              className="cursor-pointer z-50"
+              action={handleOpenNotifications}
+            />
+          )}
         </span>
       </div>
       {openNotifications && (

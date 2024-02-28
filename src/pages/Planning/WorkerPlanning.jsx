@@ -172,7 +172,7 @@ const WorkerPlanning = ({
       let initialOptions = {};
 
       if (tab === 2) {
-        tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
+        tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
         initialOptions = {
           client: "Clientes",
           activity: "Actividad",
@@ -180,7 +180,7 @@ const WorkerPlanning = ({
         };
         setCancelEdit(true);
       } else if (tab === 1) {
-        tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+        tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100&IdEmployee=${user.id}`;
         initialOptions = {
           client: "Clientes",
         };
@@ -263,9 +263,9 @@ const WorkerPlanning = ({
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
     let tasksEndpoint = "";
     if (activeTab === 1) {
-      tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+      tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100&IdEmployee=${user.id}`;
     } else {
-      tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
+      tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
     }
     setUrlBase(tasksEndpoint);
     try {

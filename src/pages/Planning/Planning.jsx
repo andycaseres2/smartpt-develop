@@ -102,7 +102,6 @@ const Planning = () => {
       <Header
         title="Planeación semanal"
         date={currentWeek}
-        userName="Kenet Sebastián Segura Murillo"
         baseColor="bg-primary-red-600"
       />
       <div className="w-full flex flex-col bg-primary-pink-50 py-4 px-6 h-full overflow-auto">

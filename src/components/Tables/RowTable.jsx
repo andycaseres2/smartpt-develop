@@ -217,6 +217,10 @@ const RowTable = ({
           setTooltipError("Hubo un error editando la tarea");
         }
       } else {
+        if (!body.realtimespent) {
+          body.realtimespent = 0;
+        }
+
         await putData(taskEndpoint, body, token);
         setRealTime(true);
         setTooltipSuccess("Tarea editada con éxito");
@@ -267,9 +271,9 @@ const RowTable = ({
       const asignedEndpoint = `${
         import.meta.env.VITE_REACT_APP_URL_BASE
       }AsignedTask`;
-
+      const employeeassignerId = user.id;
       const body = {
-        idemployeeassigner: 1,
+        idemployeeassigner: employeeassignerId,
         idemployeeassigned: id,
         idtask: rowId,
         dateassigned: new Date().toISOString(),
@@ -296,7 +300,7 @@ const RowTable = ({
     try {
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
       const tasksEndpoint = `${baseUrl}Task/${rowId}`;
-      await deleteData(tasksEndpoint);
+      await deleteData(tasksEndpoint, token);
       setRealTime(true);
       setTooltipSuccess("Tarea eliminada con exito");
       setRealTime(true);
@@ -375,7 +379,6 @@ const RowTable = ({
             item?.type === "link" &&
             modeEdit ? (
             <Input
-              type={item?.type}
               value={stateRow[item?.key_name]}
               key_name={item?.key_name}
               handleChange={handleChange}
@@ -464,6 +467,12 @@ const RowTable = ({
                         <DeleteIcon
                           className={"cursor-pointer hover:scale-105"}
                           action={() => setOpenModalDelete(true)}
+                          style={{ pointerEvents: "none" }}
+                        />
+                      )}
+                      {user.profile === 1 && (<ProfilePicture
+                          className={"cursor-pointer hover:scale-105"}
+                          action={toogleEmployee}
                           style={{ pointerEvents: "none" }}
                         />
                       )}
