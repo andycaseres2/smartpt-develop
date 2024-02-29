@@ -52,6 +52,7 @@ const AdminPlanning = ({
   const [selectedMonthOption, setselectedMonthOption] = useState("Septiembre");
 
   const [stateRow, setStateRow] = useState({});
+  console.log("stateRow", stateRow);
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
     useState("Actividad");
@@ -59,7 +60,9 @@ const AdminPlanning = ({
     useState("Proceso");
   const [updateActivities, setUpdateActivities] = useState([]);
   const [urlBase, setUrlBase] = useState(`
-    ${import.meta.env.VITE_REACT_APP_URL_BASE}FormattedTask?page=1&size=10`);
+    ${
+      import.meta.env.VITE_REACT_APP_URL_BASE
+    }FormattedTask?page=1&size=10&IdEmployee=${user.id}`);
   const [fieldReset, setFieldReset] = useState(false);
   const [initialOptionState, setInitialOptionState] = useState("Estados");
   const [taskbyEmployee, setTaskByEmployee] = useState([]);
@@ -560,9 +563,9 @@ const AdminPlanning = ({
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
     let tasksEndpoint = "";
     if (activeTab === 3) {
-      tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+      tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100&IdEmployee=${user.id}`;
     } else if (activeTab === 4) {
-      tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10`;
+      tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
     }
     setUrlBase(tasksEndpoint);
     try {
@@ -670,6 +673,7 @@ const AdminPlanning = ({
       setStateRow({});
       setResetFieldsAssinedTask(true);
       setRealTime(true);
+      setAsignedActividity(false);
     }
   };
 
@@ -708,18 +712,35 @@ const AdminPlanning = ({
     }
   }, [tasks]);
 
-  console.log("stateRow", stateRow);
-
   useEffect(() => {
     if (selectedUserId !== undefined && employees.length > 0) {
       const employee = employees.find(
         (employee) => employee.id === selectedUserId
       );
-      setResponsable(employee.fullname);
+      setResponsable(employee?.fullname);
     }
   }, [selectedUserId, employees]);
 
-  console.log("responsable", responsable);
+  // Función para manejar la acción del botón
+  const handleAction = () => {
+    // Verificar que los valores existan en el objeto stateRow
+    if (
+      stateRow &&
+      stateRow.idcustomer &&
+      stateRow.name &&
+      stateRow.startdate &&
+      stateRow.estimateddate &&
+      stateRow.idprocesses
+    ) {
+      // Ejecutar la acción si todos los valores están presentes
+      setAsignedActividity(true);
+    } else {
+      // Mostrar un mensaje de error si faltan algunos valores
+      setTooltipError("Faltan valores por rellenar");
+      // O cualquier otra lógica que desees para manejar el error
+    }
+  };
+
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
       <div className="w-full flex justify-between z-[2]">
@@ -1101,7 +1122,7 @@ const AdminPlanning = ({
                         text={"Añadir actividad"}
                         disabled={false}
                         icon={<CirclePlus />}
-                        action={() => setAsignedActividity(true)}
+                        action={handleAction}
                       />
                     </div>
                   </div>

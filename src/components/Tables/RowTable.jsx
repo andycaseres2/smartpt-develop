@@ -470,7 +470,8 @@ const RowTable = ({
                           style={{ pointerEvents: "none" }}
                         />
                       )}
-                      {user.profile === 1 && (<ProfilePicture
+                      {user.profile === 1 && (
+                        <ProfilePicture
                           className={"cursor-pointer hover:scale-105"}
                           action={toogleEmployee}
                           style={{ pointerEvents: "none" }}

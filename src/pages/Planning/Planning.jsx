@@ -41,7 +41,7 @@ const Planning = () => {
       try {
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
         const clientsEndpoint = `${baseUrl}Customer`;
-        const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+        const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100&IdEmployee=${user.id}`;
         const activitiesEndpoint = `${baseUrl}Activity`;
         const processesEndpoint = `${baseUrl}Process?intask=true`;
         const paginationsEndpoint = `${baseUrl}FormattedTask/Pages`;

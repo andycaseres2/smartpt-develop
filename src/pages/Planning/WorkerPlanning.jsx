@@ -37,7 +37,7 @@ const WorkerPlanning = ({
     statusModeEdit,
   } = stateStore();
   const [activeTab, setActiveTab] = useState(1);
-  const { token } = userStore();
+  const { token, user } = userStore();
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
   const [initialOptionState, setInitialOptionState] = useState("Estados");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
@@ -48,7 +48,9 @@ const WorkerPlanning = ({
   const { setOpenNotifications, activitiesByProcess } = stateStore();
   const [updateActivities, setUpdateActivities] = useState([]);
   const [urlBase, setUrlBase] = useState(`
-    ${import.meta.env.VITE_REACT_APP_URL_BASE}FormattedTask?page=1&size=10`);
+    ${
+      import.meta.env.VITE_REACT_APP_URL_BASE
+    }FormattedTask?page=1&size=10&IdEmployee=${user.id}`);
   const [fieldReset, setFieldReset] = useState(false);
   const [newTaskAdd, setNewTaskAdd] = useState(false);
   const [totalTimes, setTotalTimes] = useState(0);

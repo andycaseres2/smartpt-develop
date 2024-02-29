@@ -30,7 +30,7 @@ function App() {
     };
 
     // Establecer el temporizador para limpiar los datos después de 5 minutos
-    const timeoutId = setTimeout(clearUserDataAfterTimeout, 10 * 60 * 1000);
+    const timeoutId = setTimeout(clearUserDataAfterTimeout, 30 * 60 * 1000);
 
     // Limpiar el temporizador al desmontar el componente para evitar fugas de memoria
     return () => clearTimeout(timeoutId);
