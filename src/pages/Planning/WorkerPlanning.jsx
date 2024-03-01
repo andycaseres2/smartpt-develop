@@ -328,8 +328,16 @@ const WorkerPlanning = ({
               urlBase={urlBase}
               setUrlBase={setUrlBase}
             />
+
             <Select
-              options={updateActivities || activities}
+              options={processes}
+              setTasks={setTasks}
+              initialOption={initialOptionSelectProcess}
+              setInitialOption={setInitialOptionSelectProcess}
+              handleSelect={handleSelectProcess}
+            />
+            <Select
+              options={updateActivities}
               setTasks={setTasks}
               newFilter={"IdActivity"}
               initialOption={initialOptionSelectActivity}
@@ -338,13 +346,6 @@ const WorkerPlanning = ({
               isFilter={true}
               urlBase={urlBase}
               setUrlBase={setUrlBase}
-            />
-            <Select
-              options={processes}
-              setTasks={setTasks}
-              initialOption={initialOptionSelectProcess}
-              setInitialOption={setInitialOptionSelectProcess}
-              handleSelect={handleSelectProcess}
             />
             <SelectState
               options={filterState}

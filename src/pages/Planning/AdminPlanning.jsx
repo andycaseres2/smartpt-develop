@@ -163,7 +163,7 @@ const AdminPlanning = ({
   const getDataValues = (arr) => {
     const result = [];
     arr?.forEach((innerArray) => {
-      innerArray.forEach((obj) => {
+      innerArray?.forEach((obj) => {
         if (obj?.key_name === "idcustomer") {
           result.push(obj.data);
         }
@@ -172,7 +172,7 @@ const AdminPlanning = ({
     return result;
   };
 
-  const dataList = getDataValues(tasks);
+  const dataList = tasks && getDataValues(tasks);
 
   // Usar un objeto para llevar un registro de los elementos únicos
   const uniqueMap = {};
@@ -811,8 +811,16 @@ const AdminPlanning = ({
               urlBase={urlBase}
               setUrlBase={setUrlBase}
             />
+
             <Select
-              options={updateActivities || activities}
+              options={processes}
+              setTasks={setTasks}
+              initialOption={initialOptionSelectProcess}
+              setInitialOption={setInitialOptionSelectProcess}
+              handleSelect={handleSelectProcess}
+            />
+            <Select
+              options={updateActivities}
               setTasks={setTasks}
               newFilter={"IdActivity"}
               initialOption={initialOptionSelectActivity}
@@ -821,13 +829,6 @@ const AdminPlanning = ({
               isFilter={true}
               urlBase={urlBase}
               setUrlBase={setUrlBase}
-            />
-            <Select
-              options={processes}
-              setTasks={setTasks}
-              initialOption={initialOptionSelectProcess}
-              setInitialOption={setInitialOptionSelectProcess}
-              handleSelect={handleSelectProcess}
             />
             <SelectState
               options={filterState}

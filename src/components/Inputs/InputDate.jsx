@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Calendar from "../../assets/Icons/Calendar";
 import { getData } from "../../services/getData";
+import { userStore } from "../../store/userStore";
 
 const InputDate = ({
   text,
@@ -16,6 +17,7 @@ const InputDate = ({
   handleChange,
   fieldReset,
 }) => {
+  const { token } = userStore();
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef(null);
@@ -48,7 +50,7 @@ const InputDate = ({
       const newUrl = urlObject.toString();
 
       try {
-        const tasksData = await getData(newUrl);
+        const tasksData = await getData(newUrl, token);
 
         // Actualizar el estado con la nueva URL
         setUrlBase(newUrl);

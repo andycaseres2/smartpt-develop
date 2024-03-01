@@ -6,7 +6,6 @@ import Pagination from "../../components/Paginations/Pagination";
 import InputDate from "../../components/Inputs/InputDate";
 import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
 import Select from "../../components/Selects/Select";
-import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 import { postData } from "../../services/postData";
 import TimeInput from "../../components/Inputs/TimeInput";
@@ -56,9 +55,9 @@ const RequestDataContent = ({
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
     let tasksEndpoint = "";
     if (activeTab === 2) {
-      tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100&IdEmployee=${user.id}`;
+      tasksEndpoint = `${baseUrl}FormattedDataUniverseRequest?page=1&size=100&IdEmployee=${user.id}`;
     } else if (activeTab === 3) {
-      tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
+      tasksEndpoint = `${baseUrl}FormattedDataUniverseRequest?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
     }
     setUrlBase(tasksEndpoint);
     try {
@@ -155,7 +154,7 @@ const RequestDataContent = ({
       let initialOptions = {};
 
       if (tab === 3) {
-        tasksEndpoint = `${baseUrl}FormattedDataUniverseRequest?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
+        tasksEndpoint = `${baseUrl}FormattedDataUniverseRequest?consolidated=true&page=1&size=100&IdEmployee=${user.id}`;
         initialOptions = {
           client: "Clientes",
         };
@@ -186,6 +185,74 @@ const RequestDataContent = ({
     { id: 3, label: "Consolidado" },
   ];
 
+  function groupRequestsByCustomer(requests) {
+    const groupedByCustomer = {};
+
+    // Iterar sobre el array de arrays 'requests'
+    requests.forEach((item) => {
+      // Obtener el nombre del cliente
+      const customerName = item.find(
+        (obj) => obj.key_name === "idcustomer"
+      )?.data;
+      if (customerName) {
+        // Verificar si el cliente ya está en el objeto
+        if (groupedByCustomer[customerName]) {
+          // Agregar el elemento al array correspondiente al cliente
+          groupedByCustomer[customerName].push(item);
+        } else {
+          // Crear una nueva entrada para el cliente y agregar el elemento
+          groupedByCustomer[customerName] = [item];
+        }
+      }
+    });
+
+    // Crear un nuevo array con los elementos agrupados por cliente y sumar las horas estimadas
+    const groupedRequests = Object.keys(groupedByCustomer).map(
+      (customerName) => {
+        const items = groupedByCustomer[customerName];
+        const horas = items.reduce((total, item) => {
+          const estimatedTime =
+            item.find((obj) => obj?.key_name === "estimatedtime")?.data || 0;
+          return total + parseFloat(estimatedTime);
+        }, 0);
+        return {
+          customer: customerName,
+          hours: horas,
+          items: items,
+        };
+      }
+    );
+
+    return groupedRequests;
+  }
+
+  const groupedRequests = groupRequestsByCustomer(requests);
+
+  const getDataValues = (arr) => {
+    const result = [];
+    arr?.forEach((innerArray) => {
+      innerArray?.forEach((obj) => {
+        if (obj?.key_name === "idcustomer") {
+          result.push(obj.data);
+        }
+      });
+    });
+    return result;
+  };
+
+  const dataList = requests && getDataValues(requests);
+
+  // Usar un objeto para llevar un registro de los elementos únicos
+  const uniqueMap = {};
+  const newClients = [];
+  dataList.forEach((value) => {
+    const found = clients.find((client) => client.name === value);
+    if (found && !uniqueMap[found.id]) {
+      uniqueMap[found.id] = true; // Registrar el id como único
+      newClients.push(found);
+    }
+  });
+
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
       <div className="w-full flex justify-between z-[2]">
@@ -201,7 +268,7 @@ const RequestDataContent = ({
         {activeTab === 2 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={clients}
+              options={newClients}
               setTasks={setRequests}
               newFilter={"IdCustomer"}
               initialOption={initialOptionClient}
@@ -221,7 +288,7 @@ const RequestDataContent = ({
         {activeTab === 3 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={clients}
+              options={newClients}
               setTasks={setRequests}
               newFilter={"IdCustomer"}
               initialOption={initialOptionClient}
@@ -453,59 +520,50 @@ const RequestDataContent = ({
           </div>
         )}
         {activeTab === 3 && (
-          <div className="w-full h-full flex flex-col gap-6">
-            <div className="w-full h-full flex flex-col">
-              <div className="flex px-4 mt-6 bg-white justify-between">
-                <div className="flex gap-2 items-center">
-                  <p className="text-xl text-primary-red-600 font-semibold">
-                    SmartPR
-                  </p>
-                  <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500">
-                    0 horas
-                  </span>
+          <div className="w-full h-full flex flex-col gap-6 relative">
+            {groupedRequests.map((item, index) => (
+              <div key={index} className="w-full h-full flex flex-col">
+                <div className="flex px-4 mt-6 bg-white justify-between">
+                  <div className="flex gap-2 items-center">
+                    <p className="text-xl text-primary-red-600 font-semibold">
+                      {item.customer}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex gap-2 items-center">
-                  <p className="text-xl text-primary-red-600 font-semibold">
-                    Horas totales:
-                  </p>
-                  <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-blue-500">
-                    0 horas
-                  </span>
-                </div>
-              </div>
-              <div className="overflow-x-auto h-full">
-                <div className="min-w-max">
-                  <div className="w-full p-3">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full">
-                        <thead>
-                          <ColumnTableRequest
-                            columnTitlesActivity={columnTitles}
-                            columnWidths={columnWidths}
-                            readOnly={false}
-                          />
-                        </thead>
-                        <tbody className="border-b border-gray-300">
-                          {requests?.map((item, index) => (
-                            <RowTable
-                              key={index}
-                              listItems={item}
+                <div className="overflow-x-auto h-full">
+                  <div className="min-w-max">
+                    <div className="w-full p-3">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                          <thead>
+                            <ColumnTable
+                              columnTitlesActivity={columnTitles}
                               columnWidths={columnWidths}
-                              stateRow={stateRow}
-                              handleChange={handleChange}
-                              readOnly={true}
-                              editStatus={false}
-                              setStateRow={setStateRow}
-                              setRealTime={setRealTime}
+                              readOnly={false}
                             />
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="border-b border-gray-300">
+                            {item.items?.map((item, index) => (
+                              <RowTable
+                                key={index}
+                                listItems={item}
+                                columnWidths={columnWidths}
+                                stateRow={stateRow}
+                                handleChange={handleChange}
+                                readOnly={true}
+                                editStatus={false}
+                                setStateRow={setStateRow}
+                                setRealTime={setRealTime}
+                              />
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         )}
       </div>

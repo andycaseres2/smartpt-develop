@@ -45,7 +45,7 @@ const WorkerRequest = ({
   const [urlBase, setUrlBase] = useState(`
     ${
       import.meta.env.VITE_REACT_APP_URL_BASE
-    }FormattedDesignRequest?page=1&size=10&IdEmployee=${user.id}`);
+    }FormattedDesignRequest?page=1&size=100&IdEmployee=${user.id}`);
   const [fieldReset, setFieldReset] = useState(false);
   const { token, user } = userStore();
 
@@ -438,7 +438,7 @@ const WorkerRequest = ({
                         columnWidths={columnWidths}
                         stateRow={stateRow}
                         handleChange={handleChange}
-                        readOnly={false}
+                        readOnly={true}
                         editStatus={true}
                         setStateRow={setStateRow}
                         endpoint={"DesignRequest"}

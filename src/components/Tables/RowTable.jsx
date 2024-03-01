@@ -36,6 +36,7 @@ const RowTable = ({
   endpoint,
   section,
   handleCleanFilters,
+  onlyView,
 }) => {
   const {
     clients,
@@ -75,20 +76,20 @@ const RowTable = ({
     if (isUpdateStatus && !modeEdit) {
       const newStateRow = listItems.reduce((accumulator, currentItem) => {
         let value;
-        if (currentItem.key_name === "idcustomer") {
+        if (currentItem?.key_name === "idcustomer") {
           const customer = clients.find(
             (customer) => customer.name === currentItem.data
           );
           value = customer ? customer.id : ""; // Si se encuentra el cliente, se toma su id, de lo contrario se asigna una cadena vacía
-        } else if (currentItem.key_name === "idactivity") {
+        } else if (currentItem?.key_name === "idactivity") {
           const activity = activities.find(
-            (activity) => activity.name === currentItem.data
+            (activity) => activity.name === currentItem?.data
           );
           value = activity ? activity.id : ""; // Si se encuentra la actividad, se toma su id, de lo contrario se asigna una cadena vacía
         } else {
-          value = currentItem.data; // Para otros casos, se mantiene el mismo valor data
+          value = currentItem?.data; // Para otros casos, se mantiene el mismo valor data
         }
-        accumulator[currentItem.key_name] = value;
+        accumulator[currentItem?.key_name] = value;
         return accumulator;
       }, {});
       setStateRow(newStateRow);

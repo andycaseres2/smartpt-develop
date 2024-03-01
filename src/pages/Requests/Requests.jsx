@@ -47,7 +47,7 @@ const Requests = () => {
         const clientsEndpoint = `${baseUrl}Customer`;
         const activitiesEndpoint = `${baseUrl}Activity`;
         const processesEndpoint = `${baseUrl}Process?indesignrequest=true`;
-        const tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=10`;
+        const tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=100&IdEmployee=${user.id}`;
         const paginations = `${baseUrl}FormattedDesignRequest/Pages`;
         const currentWeekEndpoint = `${baseUrl}FormattedDesignRequest/CurrentWeek`;
         const employeesEndpoint = `${baseUrl}Employee`;

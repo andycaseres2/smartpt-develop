@@ -6,8 +6,6 @@ import Pagination from "../../components/Paginations/Pagination";
 import InputDate from "../../components/Inputs/InputDate";
 import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
 import Select from "../../components/Selects/Select";
-import RowTableRequest from "../../components/Tables/RowTableRequest";
-import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
 import CirclePlus from "../../assets/Icons/CirclePlus";
 import { postData } from "../../services/postData";
 import TimeInput from "../../components/Inputs/TimeInput";
@@ -52,7 +50,7 @@ const AdminRequest = ({
   const [urlBase, setUrlBase] = useState(`
     ${
       import.meta.env.VITE_REACT_APP_URL_BASE
-    }FormattedDesignRequest?page=1&size=10&IdEmployee=${user.id}`);
+    }FormattedDesignRequest?page=1&size=100&IdEmployee=${user.id}`);
 
   const handleCleanFilters = async () => {
     setFieldReset(true);
@@ -147,7 +145,7 @@ const AdminRequest = ({
       let initialOptions = {};
 
       if (tab === 3) {
-        tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
+        tasksEndpoint = `${baseUrl}FormattedDesignRequest?consolidated=true&page=1&size=100&IdEmployee=${user.id}`;
         initialOptions = {
           client: "Clientes",
         };
@@ -178,101 +176,89 @@ const AdminRequest = ({
     { id: 3, label: "Consolidado" },
   ];
 
-  const listItems = [
-    {
-      data: "Ford",
-      editComponent: "select",
-      options: [
-        { id: 1, value: "SmartPR" },
-        { id: 2, value: "MTC" },
-        { id: 3, value: "Ford" },
-        { id: 4, value: "Toyota" },
-      ],
-      key_name: "cliente",
-    },
-    {
-      data: "Video",
-      editComponent: "select",
-      options: [
-        { id: 1, value: "Video" },
-        { id: 2, value: "Grafica" },
-        { id: 3, value: "Ambos" },
-      ],
-      key_name: "video",
-    },
-    {
-      data: "Video corto",
-      editComponent: "input",
-      type: "text",
-      key_name: "pieza",
-    },
-    {
-      data: "Video corto sobre las capacidades de ...",
-      editComponent: "input",
-      type: "text",
-      key_name: "descripción_pieza",
-    },
-    {
-      data: "look and feel smartPR tenerlo...",
-      editComponent: "input",
-      type: "text",
-      key_name: "requerimientos_pieza",
-    },
-    {
-      data: "2024-01-26",
-      editComponent: "input",
-      type: "date",
-      key_name: "fecha_entrega",
-    },
-    {
-      data: "German",
-      editComponent: "select",
-      options: [
-        { id: 1, value: "German" },
-        { id: 2, value: "Sebas" },
-      ],
-      key_name: "Responsable",
-    },
-    {
-      data: "04:00",
-      editComponent: "input",
-      type: "time",
-      key_name: "hora_estimada",
-    },
-    {
-      data: "05:00",
-      editComponent: "input",
-      type: "time",
-      key_name: "hora_reales",
-    },
-    {
-      data: "2024-01-26",
-      editComponent: "input",
-      type: "date",
-      key_name: "fecha_trabajo",
-    },
-    {
-      data: "En proceso",
-      editComponent: "status",
-      options: [
-        { id: 1, value: "Pendiente" },
-        { id: 2, value: "Finalizado" },
-        { id: 3, value: "En ejecucion" },
-        { id: 4, value: "En proceso" },
-      ],
-      key_name: "estado",
-    },
-    {
-      data: "Animación",
-      editComponent: "input",
-      type: "text",
-      key_name: "observaciones",
-    },
-  ];
+  // Función para agrupar los elementos por cliente y sumar las horas estimadas
+  function groupRequestsByCustomer(requests) {
+    const groupedByCustomer = {};
+
+    // Iterar sobre el array de arrays 'requests'
+    requests.forEach((item) => {
+      // Obtener el nombre del cliente
+      const customerName = item.find(
+        (obj) => obj.key_name === "idcustomer"
+      )?.data;
+      if (customerName) {
+        // Verificar si el cliente ya está en el objeto
+        if (groupedByCustomer[customerName]) {
+          // Agregar el elemento al array correspondiente al cliente
+          groupedByCustomer[customerName].push(item);
+        } else {
+          // Crear una nueva entrada para el cliente y agregar el elemento
+          groupedByCustomer[customerName] = [item];
+        }
+      }
+    });
+
+    // Crear un nuevo array con los elementos agrupados por cliente y sumar las horas estimadas
+    const groupedRequests = Object.keys(groupedByCustomer).map(
+      (customerName) => {
+        const items = groupedByCustomer[customerName];
+        const horas = items.reduce((total, item) => {
+          const estimatedTime =
+            item.find((obj) => obj?.key_name === "estimatedtime")?.data || 0;
+          return total + parseFloat(estimatedTime);
+        }, 0);
+        return {
+          customer: customerName,
+          hours: horas,
+          items: items,
+        };
+      }
+    );
+
+    return groupedRequests;
+  }
+
+  const groupedRequests = groupRequestsByCustomer(requests);
+
+  function getTotalHours(requests) {
+    const totalHours = requests.reduce((total, item) => {
+      const estimatedTime =
+        item.find((obj) => obj?.key_name === "estimatedtime")?.data || 0;
+      return total + parseFloat(estimatedTime);
+    }, 0);
+    return totalHours;
+  }
+
+  const totalHours = getTotalHours(requests);
+
+  const getDataValues = (arr) => {
+    const result = [];
+    arr?.forEach((innerArray) => {
+      innerArray?.forEach((obj) => {
+        if (obj?.key_name === "idcustomer") {
+          result.push(obj.data);
+        }
+      });
+    });
+    return result;
+  };
+
+  const dataList = requests && getDataValues(requests);
+
+  // Usar un objeto para llevar un registro de los elementos únicos
+  const uniqueMap = {};
+  const newClients = [];
+  dataList.forEach((value) => {
+    const found = clients.find((client) => client.name === value);
+    if (found && !uniqueMap[found.id]) {
+      uniqueMap[found.id] = true; // Registrar el id como único
+      newClients.push(found);
+    }
+  });
 
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
-      <div className="w-full flex justify-between z-[2]">
+      <div className="w-full flex justify-between z-[2] ">
         <div className="flex items-end tab">
           <div className="flex items-end">
             <Tabs
@@ -285,7 +271,7 @@ const AdminRequest = ({
         {activeTab === 2 && (
           <div className="flex gap-3 items-center mb-2">
             <Select
-              options={clients}
+              options={newClients}
               setTasks={setRequests}
               newFilter={"IdCustomer"}
               initialOption={initialOptionClient}
@@ -315,7 +301,7 @@ const AdminRequest = ({
         {activeTab === 3 && (
           <div className="flex flex-wrap justify-end gap-3 items-center mb-2">
             <Select
-              options={clients}
+              options={newClients}
               setTasks={setRequests}
               newFilter={"IdCustomer"}
               initialOption={initialOptionClient}
@@ -537,7 +523,7 @@ const AdminRequest = ({
         )}
 
         {activeTab === 2 && (
-          <div className="overflow-x-auto h-full">
+          <div className="overflow-x-auto min-h-[500px] h-full">
             <div className="min-w-max">
               <div className="w-full p-3">
                 <table className="min-w-full">
@@ -556,7 +542,7 @@ const AdminRequest = ({
                         columnWidths={columnWidths}
                         stateRow={stateRow}
                         handleChange={handleChange}
-                        readOnly={false}
+                        readOnly={true}
                         editStatus={true}
                         setStateRow={setStateRow}
                         endpoint={"DesignRequest"}
@@ -564,6 +550,7 @@ const AdminRequest = ({
                         setTooltipError={setTooltipError}
                         section={"requests"}
                         setRealTime={setRealTime}
+                        onlyView={true}
                       />
                     ))}
                   </tbody>
@@ -574,98 +561,61 @@ const AdminRequest = ({
         )}
 
         {activeTab === 3 && (
-          <div className="w-full h-full flex flex-col gap-6">
-            <div className="w-full h-full flex flex-col">
-              <div className="flex px-4 mt-6 bg-white justify-between">
-                <div className="flex gap-2 items-center">
-                  <p className="text-xl text-primary-red-600 font-semibold">
-                    SmartPR
-                  </p>
-                  <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500">
-                    140 horas
-                  </span>
+          <div className="w-full h-full flex flex-col gap-6 relative">
+            <div className="flex gap-2 items-center absolute top-6 left-[77%]">
+              <p className="text-xl text-primary-red-600 font-semibold">
+                Horas totales:
+              </p>
+              <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-blue-500">
+                {totalHours} horas
+              </span>
+            </div>
+            {groupedRequests.map((item, index) => (
+              <div key={index} className="w-full h-full flex flex-col">
+                <div className="flex px-4 mt-6 bg-white justify-between">
+                  <div className="flex gap-2 items-center">
+                    <p className="text-xl text-primary-red-600 font-semibold">
+                      {item.customer}
+                    </p>
+                    <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500">
+                      {item.hours} horas
+                    </span>
+                  </div>
                 </div>
-                <div className="flex gap-2 items-center">
-                  <p className="text-xl text-primary-red-600 font-semibold">
-                    Horas totales:
-                  </p>
-                  <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-blue-500">
-                    504 horas
-                  </span>
-                </div>
-              </div>
-              <div className="overflow-x-auto h-full">
-                <div className="min-w-max">
-                  <div className="w-full p-3">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full">
-                        <thead>
-                          <ColumnTable
-                            columnTitlesActivity={columnTitles}
-                            columnWidths={columnWidths}
-                            readOnly={false}
-                          />
-                        </thead>
-                        <tbody className="border-b border-gray-300">
-                          {requests?.map((item, index) => (
-                            <RowTable
-                              key={index}
-                              listItems={item}
+                <div className="overflow-x-auto h-full">
+                  <div className="min-w-max">
+                    <div className="w-full p-3">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                          <thead>
+                            <ColumnTable
+                              columnTitlesActivity={columnTitles}
                               columnWidths={columnWidths}
-                              stateRow={stateRow}
-                              handleChange={handleChange}
-                              readOnly={true}
-                              editStatus={false}
-                              setStateRow={setStateRow}
-                              setRealTime={setRealTime}
+                              readOnly={false}
                             />
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="border-b border-gray-300">
+                            {item.items?.map((item, index) => (
+                              <RowTable
+                                key={index}
+                                listItems={item}
+                                columnWidths={columnWidths}
+                                stateRow={stateRow}
+                                handleChange={handleChange}
+                                readOnly={true}
+                                editStatus={false}
+                                setStateRow={setStateRow}
+                                setRealTime={setRealTime}
+                              />
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="w-full h-full flex flex-col">
-              <div className="flex px-4 mt-6 bg-white justify-between">
-                <div className="flex gap-2 items-center">
-                  <p className="text-xl text-primary-red-600 font-semibold">
-                    SmartPR
-                  </p>
-                  <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500">
-                    140 horas
-                  </span>
-                </div>
-              </div>
-              <div className="overflow-x-auto h-full">
-                <div className="min-w-max">
-                  <div className="w-full p-3">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full">
-                        <thead>
-                          <ColumnTableRequest
-                            columnTitlesActivity={columnTitles}
-                            columnWidths={columnWidths}
-                            readOnly={false}
-                          />
-                        </thead>
-                        <tbody className="border-b border-gray-300">
-                          <RowTableRequest
-                            listItems={listItems}
-                            columnWidths={columnWidths}
-                            stateRow={stateRow}
-                            handleChange={handleChange}
-                            readOnly={true}
-                            editStatus={false}
-                          />
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         )}
       </div>

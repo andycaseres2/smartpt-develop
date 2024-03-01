@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ArrowDown from "../../assets/Icons/ArrowDown";
 import { getData } from "../../services/getData";
+import { userStore } from "../../store/userStore";
 
 const SelectState = ({
   options,
@@ -17,6 +18,7 @@ const SelectState = ({
   urlBase,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { token } = userStore();
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
@@ -45,7 +47,7 @@ const SelectState = ({
 
       try {
         // Obtener los datos usando la nueva URL
-        const tasksData = await getData(newUrl);
+        const tasksData = await getData(newUrl, token);
 
         // Actualizar el estado con la nueva URL
         setUrlBase(newUrl);
@@ -81,14 +83,14 @@ const SelectState = ({
       </div>
       {isOpen && !!options.length && (
         <div
-          className={`absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-max ${
+          className={`absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 min-w-full w-max ${
             options.length > 7 ? "h-[300px]" : "h-max"
           } h-[300px] overflow-y-auto`}
         >
           {options.map((option) => (
             <div
               key={option.id}
-              className="p-2 cursor-pointer hover:bg-gray-100 w-max"
+              className="p-2 cursor-pointer hover:bg-gray-100 w-full"
               onClick={() => handleOptionClick(option.value, option.id)}
             >
               {option.value}

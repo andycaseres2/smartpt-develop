@@ -83,7 +83,7 @@ const Select = ({
       </div>
       {isOpen && !!options.length && (
         <div
-          className={`absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 w-max ${
+          className={`absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg z-50 min-w-full w-max ${
             options.length > 7 ? "h-[300px]" : "h-max"
           } h-[300px] overflow-y-auto`}
         >

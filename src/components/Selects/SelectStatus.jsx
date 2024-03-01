@@ -173,7 +173,7 @@ const SelectStatus = ({
           {options.map((option) => (
             <div
               key={option.id}
-              className="p-2 cursor-pointer hover:bg-gray-100 w-full"
+              className="p-2 cursor-pointer hover:bg-gray-100 w-full z-50"
               onClick={() => handleOptionClick(option.value, option.id)}
             >
               {option.value}
