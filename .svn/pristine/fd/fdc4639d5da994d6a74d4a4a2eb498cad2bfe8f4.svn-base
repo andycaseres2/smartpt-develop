@@ -1,0 +1,55 @@
+import BellIcon from "../../assets/Icons/BellIcon";
+
+import ModalNotifications from "../Modals/ModalNotifications";
+import { stateStore } from "../../store/stateStore";
+import { useLocation } from "react-router-dom";
+import { getColor } from "../../utils/getColor";
+
+const Header = ({ title, date, userName }) => {
+  const { openNotifications, setOpenNotifications } = stateStore();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const handleOpenNotifications = (e) => {
+    e.stopPropagation();
+    setOpenNotifications(!openNotifications);
+  };
+  return (
+    <div
+      className={`header flex justify-between items-center ${
+        getColor(currentPath).bg
+      } px-8 py-4 text-white relative z-10`}
+      onClick={() => setOpenNotifications(false)}
+    >
+      <div className="flex flex-col z-30">
+        <h1 className="text-[32px] font-semibold">{title}</h1>
+        <h2 className="text-2xl font-semibold">{date}</h2>
+      </div>
+      <div className="flex flex-col items-end z-30">
+        <p className="text-base">Bienvenido</p>
+        <p className="font-semibold text-base mb-2">{userName}</p>
+        <span
+          className={`${
+            openNotifications && "bg-white"
+          }  rounded-lg flex justify-center items-center w-10 h-10 relative cursor-pointer z-50 hover:scale-105 `}
+          onClick={handleOpenNotifications}
+        >
+          <BellIcon
+            fill={openNotifications && getColor(currentPath).hex}
+            className="cursor-pointer z-50"
+            action={handleOpenNotifications}
+          />
+        </span>
+      </div>
+      {openNotifications && (
+        <ModalNotifications
+          open={openNotifications}
+          styleContainer={"absolute top-[120px] right-8"}
+          setOpenNotifications={setOpenNotifications}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Header;

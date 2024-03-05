@@ -1,0 +1,44 @@
+import { useState } from "react";
+import ArrowDown from "../../assets/Icons/ArrowDown";
+
+const Select = ({ options, onSelect, initialOption }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleOptionClick = (option) => {
+    setSelectedOption(option);
+    setIsOpen(false);
+    onSelect(option); // Llamar a la función onSelect cuando se selecciona una opción
+  };
+
+  return (
+    <div className="relative inline-block">
+      <div
+        className="bg-white py-2 px-4 rounded cursor-pointer font-semibold relative flex items-center justify-between gap-4"
+        onClick={toggleDropdown}
+      >
+        {selectedOption || initialOption}
+        {isOpen ? <ArrowDown className="rotate-180" /> : <ArrowDown />}
+      </div>
+      {isOpen && (
+        <div className="absolute top-[37px] left-0 w-full bg-white border border-gray-300 mt-1 rounded">
+          {options.map((option) => (
+            <div
+              key={option}
+              className="p-2 cursor-pointer hover:bg-gray-100"
+              onClick={() => handleOptionClick(option)}
+            >
+              {option}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Select;

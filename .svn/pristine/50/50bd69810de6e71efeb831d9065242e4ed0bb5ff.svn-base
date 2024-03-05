@@ -1,0 +1,160 @@
+import { useEffect, useState } from "react";
+import Header from "../../components/Header/Header";
+import AdminPlanning from "./AdminPlanning";
+import WorkerPlanning from "./WorkerPlanning";
+import { getData } from "../../services/getData";
+import { stateStore } from "../../store/stateStore";
+import Tooltip from "../../components/Tooltips/Tooltip";
+import CircleCheck from "../../assets/Icons/CircleCheck";
+import WarningCircle from "../../assets/Icons/WarningCircle";
+import { userStore } from "../../store/userStore";
+
+const Planning = () => {
+  const { setProcesses, setClients, setActivities, setEmployees } =
+    stateStore();
+  const { token, user } = userStore();
+  const [tasks, setTasks] = useState([]);
+  const [isNewTask, setIsNewTask] = useState(false);
+  const [realTime, setRealTime] = useState(true);
+  const [totalPages, setTotalPages] = useState(0);
+  const [tooltipSuccess, setTooltipSuccess] = useState("");
+  const [tooltipError, setTooltipError] = useState("");
+  const [taskFullyLoaded, setTaskFullyLoaded] = useState(false);
+  const [currentWeek, setCurrentWeek] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (tooltipSuccess || tooltipError) {
+      const timer = setTimeout(() => {
+        setTooltipSuccess("");
+        setTooltipError("");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [tooltipSuccess, tooltipError]);
+
+  useEffect(() => {
+    setLoading(true); // Activar indicador de carga
+
+    const fetchDataOnMount = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+        const clientsEndpoint = `${baseUrl}Customer`;
+        const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+        const activitiesEndpoint = `${baseUrl}Activity`;
+        const processesEndpoint = `${baseUrl}Process?intask=true`;
+        const paginationsEndpoint = `${baseUrl}FormattedTask/Pages`;
+        const currentWeekEndpoint = `${baseUrl}FormattedTask/CurrentWeek`;
+        const employeesEndpoint = `${baseUrl}Employee`;
+
+        const employeesData = await getData(employeesEndpoint, token);
+        setEmployees(employeesData);
+
+        const currentWeekData = await getData(currentWeekEndpoint, token);
+        setCurrentWeek(currentWeekData);
+
+        const clientsData = await getData(clientsEndpoint, token);
+        setClients(clientsData);
+
+        const tasksData = await getData(tasksEndpoint, token);
+        setTasks(tasksData);
+        setTaskFullyLoaded(true);
+
+        const activitiesData = await getData(activitiesEndpoint, token);
+        setActivities(activitiesData);
+
+        const processesData = await getData(processesEndpoint, token);
+        setProcesses(processesData);
+
+        const paginationsData = await getData(paginationsEndpoint, token);
+        const totalPages = Math.ceil(paginationsData / 10);
+        setTotalPages(totalPages);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Desactivar indicador de carga, ya sea éxito o error
+      }
+    };
+
+    fetchDataOnMount();
+    setRealTime(false);
+  }, [isNewTask, realTime]);
+
+  const columnTitles = [
+    "Cliente",
+    "Tarea",
+    "Fecha inicio",
+    "Fecha entrega",
+    "Estado",
+    "Comentarios",
+    "Proceso",
+    "Actividad",
+    "Hora estimada",
+    "Hora real",
+    "Documentos asociados",
+    "Fecha fin",
+    "",
+  ];
+
+  return (
+    <div className="flex flex-col w-full h-screen">
+      <Header
+        title="Planeación semanal"
+        date={currentWeek}
+        baseColor="bg-primary-red-600"
+      />
+      <div className="w-full flex flex-col bg-primary-pink-50 py-4 px-6 h-full overflow-auto">
+        {user.profile === 1 || user.profile === 2 ? (
+          <AdminPlanning
+            tasks={tasks}
+            setTasks={setTasks}
+            setRealTime={setRealTime}
+            realTime={realTime}
+            setIsNewTask={setIsNewTask}
+            isNewTask={isNewTask}
+            totalPages={totalPages}
+            setTooltipSuccess={setTooltipSuccess}
+            setTooltipError={setTooltipError}
+            columnTitles={columnTitles}
+            taskFullyLoaded={taskFullyLoaded}
+            setLoading={setLoading}
+            loading={loading}
+          />
+        ) : (
+          <WorkerPlanning
+            tasks={tasks}
+            setTasks={setTasks}
+            setIsNewTask={setIsNewTask}
+            isNewTask={isNewTask}
+            setRealTime={setRealTime}
+            totalPages={totalPages}
+            setTooltipSuccess={setTooltipSuccess}
+            setTooltipError={setTooltipError}
+            columnTitles={columnTitles}
+            taskFullyLoaded={taskFullyLoaded}
+            setLoading={setLoading}
+            loading={loading}
+          />
+        )}
+      </div>
+      {tooltipSuccess && (
+        <Tooltip
+          text={tooltipSuccess}
+          icon={<CircleCheck fill={"#60D935"} className={"w-7 h-7"} />}
+          color="bg-primary-green-500"
+        />
+      )}
+
+      {tooltipError && (
+        <Tooltip
+          text={tooltipError}
+          icon={<WarningCircle stroke={"#F70000"} className={"w-7 h-7"} />}
+          color="bg-primary-red-500"
+        />
+      )}
+    </div>
+  );
+};
+
+export default Planning;
