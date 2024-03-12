@@ -22,17 +22,6 @@ const BudgetModalContent = ({
   const [subTotal, setSubTotal] = useState(0);
   const [total, setTotal] = useState(0);
   const [totalUSD, setTotalUSD] = useState(0);
-  const [rows, setRows] = useState([
-    {
-      id: 0,
-      idbudget: 0,
-      description: "",
-      units: 0,
-      price: 0,
-      type: 0,
-      idtax: 0,
-    },
-  ]);
 
   const getById = (clientId, options) => {
     const client = options.find((client) => client.id === clientId);
@@ -72,21 +61,6 @@ const BudgetModalContent = ({
       (activity) => activity.idprocess === id
     );
     setUpdateActivities(filterActivities);
-  };
-  
-  const addRow = () => {
-    setRows([
-      ...rows,
-      {
-        id: 0,
-        idbudget: 0,
-        description: "",
-        units: 1,
-        price: 0,
-        type: 0,
-        idtax: 0,
-      },
-    ]);
   };
 
   return (
@@ -197,11 +171,11 @@ const BudgetModalContent = ({
                     readOnly={readOnly}
                   />
                 </div>
-                {readOnly?(<div></div>):(<ButtonWithIcon
+                {/* <ButtonWithIcon
                   text=" Agregar fila"
                   action={addRow}
                   icon={<CirclePlus />}
-                />)}
+                /> */}
               </div>
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>

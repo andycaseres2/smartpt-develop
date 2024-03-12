@@ -65,9 +65,6 @@ const BudgetContent = ({
   const handleCloseModal = () => {
     setIsOpenModal(false);
   };
-  const handleCloseModalEdit = () => {
-    setIsOpenModalEdit(false);
-  };
   const handleChange = (e) => {
     setStateRow((prevState) => {
       return {
@@ -146,10 +143,10 @@ const BudgetContent = ({
 
   useEffect(() => {
     const financial = (subTotal * porcentajeFinancial) / 100;
-    const taxes = Math.round(((tax.percentage * subTotal) / 100) / TRM);
+    const taxes = Math.round(((tax.percentage * subTotal) / 100) * TRM);
     const total = subTotal + financial + taxes;
     setTotal(total);
-    setTotalUSD(Math.round(total / TRM));
+    setTotalUSD(Math.round(total * TRM));
   }, [total, TRM, subTotal, tax, porcentajeFinancial]);
 
   const handleInputChange = (index, event) => {
@@ -169,12 +166,12 @@ const BudgetContent = ({
     const units = parseFloat(updatedRows[index].units) || 0;
     const price = parseFloat(updatedRows[index].price) || 0;
     updatedRows[index].total = units * price;
-    updatedRows[index].totalUSD = updatedRows[index].total / TRM;
+    updatedRows[index].totalUSD = TRM * updatedRows[index].total;
 
     // Calcular el total en USD (asumiendo un tipo de cambio fijo)
     const exchangeRate = Number(TRM);
     updatedRows[index].totalUSD = Math.round(
-      updatedRows[index].total / exchangeRate
+      updatedRows[index].total * exchangeRate
     );
 
     // Actualizar el estado de las filas
@@ -341,31 +338,12 @@ const BudgetContent = ({
     });
     setBodyRow(updatedBody);
   };
-  
-  const handleUpdateArchive = async (state) => {
-    try {
-      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-      const budgetEndpoint = `${baseUrl}Budget/${selectedRowId}`;
-      let body = bodyRow;
-      delete body.id;
-      body.approvedclient = 0;
-      body.approvedplanning = 0;
-      await putData(budgetEndpoint, body, token);
-      setTooltipSuccess("Presupuesto archivado con exito");
-    } catch (error) {
-      console.error("Error al actualizar el presupuesto:", error);
-      setTooltipError("Hubo un error al archivar el presupuesto");
-    } finally {
-      setRealTime(true);
-    }
-  };
 
   const handleUpdateBudgetAprobedClient = async (state) => {
     try {
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
       const budgetEndpoint = `${baseUrl}Budget/${selectedRowId}`;
       let body = bodyRow;
-      delete body.id;
       body.approvedclient = state;
       await putData(budgetEndpoint, body, token);
       setTooltipSuccess("Presupuesto aprobado con exito");
@@ -382,7 +360,6 @@ const BudgetContent = ({
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
       const budgetEndpoint = `${baseUrl}Budget/${selectedRowId}`;
       let body = bodyRow;
-      delete body.id;
       body.approvedplanning = state;
       await putData(budgetEndpoint, body, token);
       setTooltipSuccess("Presupuesto aprobado con exito");
@@ -658,7 +635,7 @@ const BudgetContent = ({
                           <td className="py-2 w-1/5"></td>
                           <td className="py-2 w-1/5 text-center">{subTotal}</td>
                           <td className="py-2 w-1/5 text-center">
-                            {Math.round(subTotal / TRM)}
+                            {Math.round(TRM * subTotal)}
                           </td>
                         </tr>
                         {/* Financial Expenses*/}
@@ -690,7 +667,7 @@ const BudgetContent = ({
                           </td>
                           <td className="py-2 w-1/5 text-center items-center flex justify-center">
                             {Math.round(
-                              ((subTotal * porcentajeFinancial) / 100) / TRM
+                              ((subTotal * porcentajeFinancial) / 100) * TRM
                             )}
                           </td>
                         </tr>
@@ -705,7 +682,7 @@ const BudgetContent = ({
                           <td className="py-2 w-1/5 text-center">
                             {Math.round(
                               subTotal +
-                                ((subTotal * porcentajeFinancial) / 100) / TRM
+                                ((subTotal * porcentajeFinancial) / 100) * TRM
                             )}
                           </td>
                         </tr>
@@ -721,7 +698,7 @@ const BudgetContent = ({
                           </td>
                           <td className="py-2 w-1/5 text-center">
                             {Math.round(
-                              ((tax.percentage * subTotal) / 100) / TRM
+                              ((tax.percentage * subTotal) / 100) * TRM
                             )}
                           </td>
                         </tr>
@@ -850,9 +827,8 @@ const BudgetContent = ({
               <div className="fixed w-full flex gap-4 justify-center py-4">
                 <ButtonWithIcon
                   icon={<ProfileCheck />}
-                  text="Archivar"
-                  action={handleUpdateArchive}
-                  designButton="!w-52 flex justify-center items-center"
+                  text="Aprobar por cliente"
+                  action={handleUpdateBudgetAprobedClient}
                 />
                 <ButtonWithIcon
                   icon={<CircleCheck />}
@@ -926,7 +902,7 @@ const BudgetContent = ({
         </Modal>
       )}
       {isOpenModalEdit && (
-        <Modal onClose={handleCloseModalEdit}>
+        <Modal onClose={handleCloseModal}>
           <BudgetModalContent
             currentBudget={currentBudget}
             currentBudgetTables={currentBudgetTables}
