@@ -13,6 +13,7 @@ const SelectGeneric = ({
   handleSelect,
   fieldReset,
   resetFieldsAssinedTask,
+  classContainer,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -104,7 +105,10 @@ const SelectGeneric = ({
   }, []);
 
   return (
-    <div ref={selectRef} className="relative inline-block w-full">
+    <div
+      ref={selectRef}
+      className={`relative inline-block w-full ${classContainer}`}
+    >
       <div
         className={`py-2 px-2 ${styleSelect || "px-4"} rounded ${
           !readOnly ? "cursor-pointer" : ""

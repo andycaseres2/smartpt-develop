@@ -66,7 +66,7 @@ const Dashboard = () => {
   }, [realTime]);
 
   return (
-    <div className="flex flex-col w-full h-screen">
+    <div className="flex flex-col w-full h-full">
       <Header
         title="Dashboard"
         date={currentWeek}
