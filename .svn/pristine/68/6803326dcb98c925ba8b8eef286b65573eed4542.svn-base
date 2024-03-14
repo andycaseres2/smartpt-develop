@@ -20,8 +20,6 @@ import { userStore } from "../../store/userStore";
 import { getData } from "../../services/getData";
 import CleanIcon from "../../assets/Icons/CleanIcon";
 import { putData } from "../../services/putData";
-import RowTable from "../../components/Tables/RowTable";
-import ColumnTable from "../../components/Tables/ColumnTable";
 
 const BudgetContent = ({
   budget,
@@ -120,48 +118,9 @@ const BudgetContent = ({
     { id: 2, label: "Solicitudes" },
     { id: 3, label: "Consolidado" },
   ];
-  
-  function groupRequestsByCustomer(requests) {
-    const groupedByCustomer = {};
-
-    // Iterar sobre el array de arrays 'requests'
-    requests.forEach((item) => {
-      // Obtener el nombre del cliente
-      const customerName = item.find(
-        (obj) => obj.key_name === "idcustomer"
-      )?.data;
-      if (customerName) {
-        // Verificar si el cliente ya está en el objeto
-        if (groupedByCustomer[customerName]) {
-          // Agregar el elemento al array correspondiente al cliente
-          groupedByCustomer[customerName].push(item);
-        } else {
-          // Crear una nueva entrada para el cliente y agregar el elemento
-          groupedByCustomer[customerName] = [item];
-        }
-      }
-    });
-
-    // Crear un nuevo array con los elementos agrupados por cliente y sumar las horas estimadas
-    const groupedRequests = Object.keys(groupedByCustomer).map(
-      (customerName) => {
-        const items = groupedByCustomer[customerName];
-        return {
-          customer: customerName,
-          items: items,
-        };
-      }
-    );
-
-    return groupedRequests;
-  }
-
-  const groupedRequests = groupRequestsByCustomer(budget);
 
   useEffect(() => {
     setUpdateActivities(activities);
-    setTRM(1);
-    recalculateRows();
   }, [activities]);
 
   const handleSelectProcess = (id) => {
@@ -188,29 +147,21 @@ const BudgetContent = ({
 
   useEffect(() => {
     const beforeTaxes = subTotal + (subTotal * porcentajeFinancial) / 100;
-    const taxes = (tax.percentage * (subTotal + (subTotal * porcentajeFinancial) / 100)) / 100;
+    const taxes = ((tax.percentage * subTotal) / 100);
     const total = beforeTaxes + taxes;
     setTotal(total);
     setTotalUSD((total / TRM).toFixed(2));
   }, [total, TRM, subTotal, tax, porcentajeFinancial]);
   
   const recalculateRows = () => {
-    const updatedRows = [...rows.filter(n=>n)];
-    let newTotal = 0;
+    const updatedRows = [...rows];
     for(var i=0;i<updatedRows.length;i++)
     {
-      if(updatedRows[i]!==undefined) {
-        updatedRows[i].totalUSD = updatedRows[i].total / TRM;
-        newTotal += parseFloat(updatedRows[i].total);
-      }
+      updatedRows[i].totalUSD = updatedRows[i].total / TRM
     }
-    
+
     // Actualizar el estado de las filas
     setRows(updatedRows);
-    // Actualizar el estado del total
-    setTotal(newTotal);
-    setSubTotal(newTotal);
-
   }
   const handleInputChange = (index, event) => {
     const { name, value } = event.target;
@@ -339,7 +290,7 @@ const BudgetContent = ({
         financialexpense: 0,
         trm: 0,
       });
-      setTRM(1);
+      setTRM(0);
       setPorcentajeFinancial(0);
       setTotal(0);
       setSubTotal(0);
@@ -706,17 +657,14 @@ const BudgetContent = ({
                             </td>
 
                             <td className="py-2 w-1/5 text-center flex items-center justify-center">
-                              {isNaN(row.total) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format(row.total)}
+                              {row.total}
                             </td>
                             <td className="py-2 w-1/5 text-center flex items-center justify-center">
-                              {isNaN(row.totalUSD) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format(row.totalUSD)}
+                              {row.totalUSD}
                             </td>
                             <td className="py-2 w-1/8 text-center flex items-center justify-center">
                               <CloseIcon
-                                action={() => {
-                                  delete rows[index];
-                                  recalculateRows();
-                                }}
+                                action={() => delete rows[index]}
                                 className={"cursor-pointer hover:scale-105"}
                               />
                             </td>
@@ -727,9 +675,9 @@ const BudgetContent = ({
                           <td className="py-2 font-bold w-2/5">Subtotal</td>
                           <td className="py-2 w-1/5"></td>
                           <td className="py-2 w-1/5"></td>
-                          <td className="py-2 w-1/5 text-center">{isNaN(subTotal) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format(subTotal)}</td>
+                          <td className="py-2 w-1/5 text-center">{subTotal}</td>
                           <td className="py-2 w-1/5 text-center">
-                            {isNaN(subTotal) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format(subTotal / TRM)}
+                            {(subTotal / TRM).toFixed(2)}
                           </td>
                           <td className="py-2 w-1/8"></td>
                         </tr>
@@ -757,11 +705,11 @@ const BudgetContent = ({
                           </td>
                           <td className="py-2 w-1/5 text-center flex items-center justify-center">
                             {porcentajeFinancial
-                              ? Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format((subTotal * porcentajeFinancial) / 100)
-                              : "$0.00"}
+                              ? (subTotal * porcentajeFinancial) / 100
+                              : 0}
                           </td>
                           <td className="py-2 w-1/5 text-center items-center flex justify-center">
-                            {porcentajeFinancial ? Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format((subTotal * porcentajeFinancial) / 100 / TRM):"$0.00"}
+                            {((subTotal * porcentajeFinancial) / 100 / TRM).toFixed(2)}
                           </td>
                           <td className="py-2 w-1/8"></td>
                         </tr>
@@ -771,11 +719,11 @@ const BudgetContent = ({
                           <td className="py-2 w-1/5"></td>
                           <td className="py-2 w-1/5"></td>
                           <td className="py-2 w-1/5 text-center">
-                            {isNaN(subTotal) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format(subTotal + (subTotal * porcentajeFinancial) / 100)}
+                            {subTotal + (subTotal * porcentajeFinancial) / 100}
                           </td>
                           <td className="py-2 w-1/5 text-center">
                             {
-                              isNaN(subTotal) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format((subTotal + ((subTotal * porcentajeFinancial) / 100)) / TRM)
+                              ((subTotal + ((subTotal * porcentajeFinancial) / 100)) / TRM).toFixed(2)
                             }
                           </td>
                           <td className="py-2 w-1/8"></td>
@@ -788,10 +736,10 @@ const BudgetContent = ({
                           <td className="py-2 w-1/5"></td>
                           <td className="py-2 w-1/5"></td>
                           <td className="py-2 w-1/5 text-center">
-                            {isNaN(subTotal) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format((tax.percentage * (subTotal + (subTotal * porcentajeFinancial) / 100)) / 100)}
+                            {(tax.percentage * (subTotal + (subTotal * porcentajeFinancial) / 100)) / 100}
                           </td>
                           <td className="py-2 w-1/5 text-center">
-                            {isNaN(subTotal) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format((tax.percentage * (subTotal + (subTotal * porcentajeFinancial) / 100)) / 100 / TRM)}
+                            {((tax.percentage * (subTotal + (subTotal * porcentajeFinancial) / 100)) / 100 / TRM).toFixed(2)}
                           </td>
                           <td className="py-2 w-1/8"></td>
                         </tr>
@@ -801,10 +749,10 @@ const BudgetContent = ({
                           <td className="py-2 w-1/5"></td>
                           <td className="py-2 w-1/5"></td>
                           <td className="py-2 w-1/5 text-center">
-                            {isNaN(total) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format(total)}
+                            {Math.round(total)}
                           </td>
                           <td className="py-2 w-1/5 text-center">
-                            {isNaN(totalUSD) ? "$0.00" : Intl.NumberFormat("es-CO", {style: "currency",currency: "COP",}).format(totalUSD)}
+                            {totalUSD}
                           </td>
                           <td className="py-2 w-1/8"></td>
                         </tr>
@@ -943,50 +891,34 @@ const BudgetContent = ({
         )}
 
         {activeTab === 3 && (
-          <div className="w-full h-full flex flex-col gap-6 relative">
-            {groupedRequests.map((item, index) => (
-              <div key={index} className="w-full h-full flex flex-col">
-                <div className="flex px-4 mt-6 bg-white justify-between">
-                  <div className="flex gap-2 items-center">
-                    <p className="text-xl text-primary-red-600 font-semibold">
-                      {item.customer}
-                    </p>
-                  </div>
-                </div>
-                <div className="overflow-x-auto h-full">
-                  <div className="min-w-max">
-                    <div className="w-full p-3">
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full">
-                          <thead>
-                            <ColumnTable
-                              columnTitlesActivity={columnTitles}
-                              columnWidths={columnWidths}
-                              readOnly={false}
-                            />
-                          </thead>
-                          <tbody className="border-b border-gray-300">
-                            {item.items?.map((item, index) => (
-                              <RowTable
-                                key={index}
-                                listItems={item}
-                                columnWidths={columnWidths}
-                                stateRow={stateRow}
-                                handleChange={handleChange}
-                                readOnly={true}
-                                editStatus={false}
-                                setStateRow={setStateRow}
-                                setRealTime={setRealTime}
-                              />
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <div className="overflow-x-auto h-full">
+            <div className="min-w-max">
+              <div className="w-full p-3">
+                <table className="min-w-full">
+                  <thead>
+                    <ColumnTableRequest
+                      columnTitlesActivity={columnTitles}
+                      columnWidths={columnWidths}
+                      readOnly={false}
+                    />
+                  </thead>
+                  <tbody className="border-b border-gray-300">
+                    {budget?.map((item, index) => (
+                      <RowTableBudget
+                        key={index}
+                        listItems={item}
+                        columnWidths={columnWidths}
+                        stateRow={stateRow}
+                        handleChange={handleChange}
+                        readOnly={true}
+                        onOpenModal={selectedRowId && handleOpenModal}
+                        selectedRowId={selectedRowId}
+                      />
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
+            </div>
           </div>
         )}
       </div>
