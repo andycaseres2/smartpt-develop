@@ -23,7 +23,6 @@ const Header = ({ title, date }) => {
   const [notification, setNotification] = useState([]);
   const [notificationHistory, setNotificationHistory] = useState([]);
   const [realTime, setRealTime] = useState(false);
-  const [tasks, setTasks] = useState([]);
 
   const handleOpenNotifications = (e) => {
     e.stopPropagation();
@@ -37,10 +36,6 @@ const Header = ({ title, date }) => {
         const employeesId = user.id;
         const notifyEndpoint = `${baseUrl}AsignedTask/PerEmployee/${employeesId}`;
         const notifyEndpointHistory = `${baseUrl}AsignedTask/PerEmployee/${employeesId}?pendientes=false`;
-        const tasksEndpoint = `${baseUrl}Task?page=0&size=100&IdEmployee=${user.id}&active=true`;
-
-        const tasksData = await getData(tasksEndpoint, token);
-        setTasks(tasksData);
 
         const notifyData = await getData(notifyEndpoint, token);
         setNotification(notifyData);
@@ -138,7 +133,6 @@ const Header = ({ title, date }) => {
           notificationHistory={notificationHistory}
           setRealTime={setRealTime}
           employees={employees}
-          tasks={tasks}
         />
       )}
     </div>

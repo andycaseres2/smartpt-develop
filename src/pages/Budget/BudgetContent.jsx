@@ -56,6 +56,9 @@ const BudgetContent = ({
   const [porcentajeFinancial, setPorcentajeFinancial] = useState(null);
   const [TRM, setTRM] = useState(null);
   const [showBottonsAproved, setShowBottonsAproved] = useState(false);
+  const [currentBudget, setCurrentBudget] = useState(null);
+  const [currentBudgetTables, setCurrentBudgetTables] = useState(null);
+  const [idCreatorTask, setIdCreatorTask] = useState(null);
 
   const handleOpenModal = () => {
     setIsOpenModal(true);
@@ -425,6 +428,7 @@ const BudgetContent = ({
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
       const budgetEndpoint = `${baseUrl}Budget/${selectedRowId}`;
       let body = bodyRow;
+      body.idemployeecreator = idCreatorTask;
       delete body.id;
       body.approvedclient = state;
       await putData(budgetEndpoint, body, token);
@@ -442,6 +446,7 @@ const BudgetContent = ({
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
       const budgetEndpoint = `${baseUrl}Budget/${selectedRowId}`;
       let body = bodyRow;
+      body.idemployeecreator = idCreatorTask;
       delete body.id;
       body.approvedplanning = state;
       await putData(budgetEndpoint, body, token);
@@ -462,9 +467,6 @@ const BudgetContent = ({
     }
   };
 
-  const [currentBudget, setCurrentBudget] = useState(null);
-  const [currentBudgetTables, setCurrentBudgetTables] = useState(null);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -479,6 +481,7 @@ const BudgetContent = ({
         );
         setCurrentBudget(budgetResponse);
         setCurrentBudgetTables(budgetDetailsResponse);
+        setIdCreatorTask(budgetResponse.idemployeecreator);
       } catch (error) {
         console.error("Error al obtener el presupuesto:", error);
       }

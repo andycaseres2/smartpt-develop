@@ -13,15 +13,9 @@ const ModalNotifications = ({
   notificationHistory,
   employees,
   setRealTime,
-  tasks,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const { token } = userStore();
-
-  const getNameTask = (id) => {
-    const task = tasks.find((task) => task.id === id);
-    return task?.name;
-  };
 
   const tabs = [
     { id: 1, label: "Pendiente" },
@@ -137,7 +131,7 @@ const ModalNotifications = ({
                 dateassigned={formatDateString(notification.dateassigned)}
                 showInput={true}
                 handleChange={() => handleCheckboxChange(notification)}
-                nameTask={getNameTask(notification.idtask)}
+                idTask={notification.idtask}
               />
             ))}
             {/* <NotificationItem showInput={true} />
@@ -158,7 +152,7 @@ const ModalNotifications = ({
                 )}
                 dateassigned={formatDateString(notification.dateassigned)}
                 showInput={false}
-                nameTask={getNameTask(notification.idtask)}
+                idTask={notification.idtask}
               />
             ))}
           </div>

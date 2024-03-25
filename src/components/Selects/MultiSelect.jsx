@@ -16,6 +16,7 @@ const MultiSelect = ({
   isFilter,
   setUrlBase,
   urlBase,
+  colorSelect,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -109,13 +110,24 @@ const MultiSelect = ({
             <div
               key={option.id}
               className={`p-2 cursor-pointer hover:bg-gray-100 w-full ${
-                selectedOptions.includes(option.id) && "bg-red-200"
+                selectedOptions.includes(option.id) &&
+                `${colorSelect} font-bold`
               }`}
               onClick={() =>
                 handleOptionClick(option.name || option.fullname, option.id)
               }
             >
-              {option.name || option.fullname}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="accent-primary-red-500 border border-white"
+                  onChange={() =>
+                    handleOptionClick(option.name || option.fullname, option.id)
+                  }
+                  checked={selectedOptions.includes(option.id)}
+                />
+                {option.name || option.fullname}
+              </div>
             </div>
           ))}
         </div>

@@ -287,6 +287,7 @@ const GeneralDashboards = () => {
             isFilter={true}
             urlBase={""}
             setUrlBase={""}
+            colorSelect={"bg-primary-purple-50"}
           />
           <InputDate
             text={"Fecha inicio"}
