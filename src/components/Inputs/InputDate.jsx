@@ -16,11 +16,13 @@ const InputDate = ({
   key_name,
   handleChange,
   fieldReset,
+  minValue,
 }) => {
   const { token } = userStore();
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef(null);
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     if (fieldReset) {
@@ -93,6 +95,10 @@ const InputDate = ({
     return formattedDate;
   };
 
+  function convertirFechaISOaFecha(fechaISO) {
+    return new Date(fechaISO).toISOString().split("T")[0];
+  }
+
   return (
     <div
       className={`bg-white h-[40px] shadow-3xl rounded px-4 z-[1] py-2 flex justify-between items-center gap-2 relative cursor-pointer ${
@@ -120,6 +126,7 @@ const InputDate = ({
             showPopperArrow={false}
             popperPlacement="bottom-start"
             inline
+            min={(minValue && convertirFechaISOaFecha(minValue)) || today}
           />
         </div>
       )}

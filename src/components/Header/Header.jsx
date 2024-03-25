@@ -7,8 +7,9 @@ import { useEffect, useState } from "react";
 import { getData } from "../../services/getData";
 import { userStore } from "../../store/userStore";
 import BellNotificationActive from "../../assets/Icons/BellNotificationActive";
+import Logo from "../../assets/Icons/Logo";
 
-const Header = ({ title, date, textColor }) => {
+const Header = ({ title, date }) => {
   const {
     openNotifications,
     setOpenNotifications,
@@ -22,6 +23,7 @@ const Header = ({ title, date, textColor }) => {
   const [notification, setNotification] = useState([]);
   const [notificationHistory, setNotificationHistory] = useState([]);
   const [realTime, setRealTime] = useState(false);
+  const [tasks, setTasks] = useState([]);
 
   const handleOpenNotifications = (e) => {
     e.stopPropagation();
@@ -35,6 +37,10 @@ const Header = ({ title, date, textColor }) => {
         const employeesId = user.id;
         const notifyEndpoint = `${baseUrl}AsignedTask/PerEmployee/${employeesId}`;
         const notifyEndpointHistory = `${baseUrl}AsignedTask/PerEmployee/${employeesId}?pendientes=false`;
+        const tasksEndpoint = `${baseUrl}Task?page=0&size=100&IdEmployee=${user.id}&active=true`;
+
+        const tasksData = await getData(tasksEndpoint, token);
+        setTasks(tasksData);
 
         const notifyData = await getData(notifyEndpoint, token);
         setNotification(notifyData);
@@ -55,45 +61,68 @@ const Header = ({ title, date, textColor }) => {
     return () => clearInterval(intervalId);
   }, [realTime, updateNotifications]);
 
+  const formatDate = (date) => {
+    if (typeof date !== "string") {
+      return ""; // Manejar el caso en el que date no sea una cadena
+    }
+
+    const [year, month, day] = date.split("-");
+    return `${day}-${month}-${year}`;
+  };
+
   return (
     <div
       className={`header flex justify-between items-center ${
         getColor(currentPath).bg
-      } px-8 py-4 ${textColor ?? "text-white"}  relative z-10`}
+      } px-8 py-4 text-white  relative z-10`}
       onClick={() => setOpenNotifications(false)}
     >
       <div className="flex flex-col z-30">
-        <h1 className="text-[32px] font-semibold">{title}</h1>
-        <div className="flex gap-2">
-          <h2 className="text-2xl font-semibold">{date[0]}</h2>
-          <span className="text-2xl font-semibold"> - </span>
-          <h2 className="text-2xl font-semibold">{date[1]}</h2>
+        <div className="flex items-center gap-4">
+          <Logo />
+          <div className="h-full w-1 bg-white"></div>
+          <div>
+            <h1 className="text-[32px] font-semibold drop-shadow-lg">
+              {title}
+            </h1>
+            <>
+              {date && (
+                <div className="flex gap-2">
+                  <h2 className="text-2xl font-semibold drop-shadow-lg">
+                    {formatDate(date[0])}
+                  </h2>
+                  <span className="text-2xl font-semibold drop-shadow-lg">
+                    -
+                  </span>
+                  <h2 className="text-2xl font-semibold drop-shadow-lg">
+                    {formatDate(date[1])}
+                  </h2>
+                </div>
+              )}
+            </>
+          </div>
         </div>
       </div>
       <div className="flex flex-col items-end z-30">
-        <p className="text-base">Bienvenido</p>
-        <p className="font-semibold text-base mb-2">{user.fullname}</p>
+        <p className="text-base drop-shadow-lg">Bienvenido</p>
+        <p className="font-semibold text-base mb-2 drop-shadow-lg">
+          {user.fullname}
+        </p>
         <span
           className={`${
             openNotifications && "bg-white"
-          }  rounded-lg flex justify-center items-center w-10 h-10 relative cursor-pointer z-50 hover:scale-105 `}
+          }  rounded-lg flex justify-center items-center w-10 h-10 relative cursor-pointer z-50 hover:scale-105`}
           onClick={handleOpenNotifications}
         >
           {notification.length ? (
             <BellNotificationActive
               fill={openNotifications && getColor(currentPath).hex}
-              optionalColor={
-                currentPath === "/solicitudes/informacion" && "#477BFF"
-              }
               className="cursor-pointer z-50"
               action={handleOpenNotifications}
             />
           ) : (
             <BellIcon
               fill={openNotifications && getColor(currentPath).hex}
-              optionalColor={
-                currentPath === "/solicitudes/informacion" && "#477BFF"
-              }
               className="cursor-pointer z-50"
               action={handleOpenNotifications}
             />
@@ -109,6 +138,7 @@ const Header = ({ title, date, textColor }) => {
           notificationHistory={notificationHistory}
           setRealTime={setRealTime}
           employees={employees}
+          tasks={tasks}
         />
       )}
     </div>

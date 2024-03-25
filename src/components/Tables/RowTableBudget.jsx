@@ -5,9 +5,9 @@ import { formatTime } from "../../utils/formatTime";
 import DateInput from "../Inputs/DateInput";
 import Input from "../Inputs/Input";
 import TimeInput from "../Inputs/TimeInput";
-import Select from "../Selects/Select";
 import SelectGeneric from "../Selects/SelectGeneric";
 import EyeIcon from "../../assets/Icons/EyeIcon";
+import AprovedCheck from "../AprovedCheck";
 
 const RowTableBudget = ({
   listItems,
@@ -15,21 +15,13 @@ const RowTableBudget = ({
   stateRow,
   handleChange,
   readOnly,
-  editStatus,
   editMode,
   onOpenModal,
+  onOpenModalEdit,
 }) => {
   const [modeEdit, setModeEdit] = useState(editMode ?? false);
-  const [initialOptionSelectStatus, setInitialOptionSelectStatus] =
-    useState("");
   const [initialOptionSelectOption, setInitialOptionSelectOption] =
     useState("");
-
-  const handleSelectStatus = (selectedOption, index) => {
-    const newOptions = [...initialOptionSelectStatus];
-    newOptions[index] = selectedOption;
-    setInitialOptionSelectStatus(newOptions);
-  };
 
   const handleSelectOption = (selectedOption, index) => {
     const newOptions = [...initialOptionSelectOption];
@@ -42,37 +34,11 @@ const RowTableBudget = ({
       {listItems?.map((item, index) => (
         <td
           key={index}
-          className={`${columnWidths[index]} flex items-center justify-start`}
+          className={`${columnWidths[index]} flex items-center justify-start cursor-pointer `}
         >
-          {item.editComponent === "status" && modeEdit ? (
-            <Select
-              options={item.options}
-              onSelect={(selectedOption) =>
-                handleSelectStatus(selectedOption, index)
-              }
-              initialOption={item.data}
-              colorArrow={"white"}
-              readOnly={readOnly}
-              key_name={item.key_name}
-              handleChange={handleChange}
-              editStatus={modeEdit || editStatus}
-            />
-          ) : item.editComponent === "status" && !modeEdit ? (
-            <Select
-              options={item.options}
-              onSelect={(selectedOption) =>
-                handleSelectStatus(selectedOption, index)
-              }
-              initialOption={item.data}
-              colorArrow={"white"}
-              readOnly={readOnly}
-              key_name={item.key_name}
-              handleChange={handleChange}
-              editStatus={modeEdit || editStatus}
-            />
-          ) : item.editComponent === "input" &&
-            item.type === "text" &&
-            modeEdit ? (
+          {item.editComponent === "input" &&
+          item.type === "text" &&
+          modeEdit ? (
             <Input
               type={item.type}
               value={stateRow[item.key_name]}
@@ -121,6 +87,8 @@ const RowTableBudget = ({
             item.type === "date" &&
             !modeEdit ? (
             <span>{item.data}</span>
+          ) : item.editComponent === "check" && !modeEdit ? (
+            <AprovedCheck approved={item.data} />
           ) : (
             <span>{item.data}</span>
           )}
@@ -136,7 +104,7 @@ const RowTableBudget = ({
           (!modeEdit ? (
             <td className="flex w-10 items-center gap-4 justify-center">
               <PencilIcon
-                action={() => setModeEdit(true)}
+                action={onOpenModalEdit}
                 className={"cursor-pointer hover:scale-105"}
               />
             </td>

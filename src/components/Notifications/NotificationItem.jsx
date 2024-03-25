@@ -5,6 +5,7 @@ const NotificationItem = ({
   asignner,
   dateassigned,
   handleChange,
+  nameTask,
 }) => {
   const [checked, setChecked] = useState(false);
 
@@ -14,20 +15,25 @@ const NotificationItem = ({
   };
 
   return (
-    <div className="flex gap-2">
-      {showInput && (
-        <input
-          type="checkbox"
-          className="w-7 h-7 accent-primary-red-600 cursor-pointer"
-          checked={checked}
-          onChange={handleCheckboxChange}
-        />
+    <>
+      {asignner && (
+        <div className="flex gap-2">
+          {showInput && (
+            <input
+              type="checkbox"
+              className="w-7 h-7 accent-primary-red-600 cursor-pointer"
+              checked={checked}
+              onChange={handleCheckboxChange}
+            />
+          )}
+          <p className="text-black">
+            <strong className="mr-1">{asignner}</strong>
+            te ha asignado la tarea &quot;<strong>{nameTask}</strong>&quot;. (
+            {dateassigned})
+          </p>
+        </div>
       )}
-      <p className="text-black">
-        <strong className="mr-1">{asignner}</strong>
-        te ha asignado una tarea. ({dateassigned})
-      </p>
-    </div>
+    </>
   );
 };
 

@@ -100,10 +100,10 @@ const Requests = () => {
 
   const columnWidths = [
     "w-44", // Ancho para Columna 1
-    "w-[400px]", // Ancho para Columna 2
-    "w-44", // Ancho para Columna 3
-    "w-44", // Ancho para Columna 4
-    "w-52", // Ancho para Columna 5
+    "w-40", // Ancho para Columna 2
+    "w-72", // Ancho para Columna 3
+    "w-72", // Ancho para Columna 4
+    "w-[500px]", // Ancho para Columna 5
     "w-72", // Ancho para Columna 6
     "w-64", // Ancho para Columna 7
     "w-72", // Ancho para Columna 8

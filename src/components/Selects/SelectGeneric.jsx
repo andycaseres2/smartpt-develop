@@ -13,6 +13,7 @@ const SelectGeneric = ({
   handleSelect,
   fieldReset,
   resetFieldsAssinedTask,
+  classContainer,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -58,7 +59,7 @@ const SelectGeneric = ({
 
   const handleOptionClick = (option, id) => {
     setSelectedOption(option);
-    if (handleSelect) {
+    if (handleSelect && key_name === "idprocesses") {
       handleSelect(id);
     }
     setIsOpen(false);
@@ -104,9 +105,14 @@ const SelectGeneric = ({
   }, []);
 
   return (
-    <div ref={selectRef} className="relative inline-block w-full">
+    <div
+      ref={selectRef}
+      className={`relative inline-block w-full ${classContainer}`}
+    >
       <div
-        className={`py-2 px-2 ${styleSelect || "px-4"} rounded ${
+        className={`container-select py-2 px-2 ${
+          styleSelect || "px-4"
+        } rounded ${
           !readOnly ? "cursor-pointer" : ""
         } font-semibold relative flex items-center  gap-4 bg-white shadow-3xl h-[40px] ${
           !initialOption ? "justify-end pr-2" : "justify-between"

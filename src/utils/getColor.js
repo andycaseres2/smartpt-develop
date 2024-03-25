@@ -3,31 +3,31 @@ export const getColor = (currentPath) => {
 
   if (currentPath === "/planeacion") {
     result = {
-      hex: "#D93535",
+      hex: "#F72149",
       border: "border-primary-red-600",
       bg: "bg-primary-red-600",
     };
   } else if (currentPath === "/solicitudes") {
     result = {
-      hex: "#FAA500",
+      hex: "#FBB21A",
       border: "border-primary-yellow-600",
       bg: "bg-primary-yellow-600",
     };
   } else if (currentPath === "/solicitudes/informacion") {
     result = {
-      hex: "#75EED1",
+      hex: "#60D773",
       border: "border-primary-lightblue-600",
       bg: "bg-primary-lightblue-600",
     };
   } else if (currentPath === "/presupuesto") {
     result = {
-      hex: "#2961CE",
+      hex: "#2771e1",
       border: "border-primary-blue-600",
       bg: "bg-primary-blue-600",
     };
   } else if (currentPath === "/dashboard") {
     result = {
-      hex: "#6528E5",
+      hex: "#592ee6",
       border: "border-primary-purple-600",
       bg: "bg-primary-purple-600",
     };

@@ -19,6 +19,7 @@ import SelectState from "../../components/Selects/SelectState";
 import { postData } from "../../services/postData";
 import { userStore } from "../../store/userStore";
 import ModalConfirmation from "../../components/Modals/ModalConfirmation";
+import ModalGeneric from "../../components/Modals/ModalGeneric";
 
 const AdminPlanning = ({
   tasks,
@@ -52,7 +53,7 @@ const AdminPlanning = ({
   const [selectedMonthOption, setselectedMonthOption] = useState("Septiembre");
 
   const [stateRow, setStateRow] = useState({});
-  console.log("stateRow", stateRow);
+
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
     useState("Actividad");
@@ -91,8 +92,8 @@ const AdminPlanning = ({
           // Aplicamos la lógica a cada subarray dentro de employeesDataTask
           const formatArray = employeesDataTask.map((subarray) => {
             // Eliminar el elemento con key_name 'comments' antes de formatear
-            const filteredSubarray = subarray.filter(
-              (item) => item.key_name !== "comments"
+            const filteredSubarray = subarray.filter((item) =>
+              item != null ? item.key_name !== "comments" : false
             );
             const firstFive = filteredSubarray.slice(0, 8); // Tomamos los primeros 5 elementos
             const lastElement = filteredSubarray[filteredSubarray.length - 1]; // Tomamos el último elemento
@@ -741,6 +742,16 @@ const AdminPlanning = ({
     }
   };
 
+  const [openModalLimitTimes, setOpenModalLimitTimes] = useState(false);
+
+  useEffect(() => {
+    if (totalTimes > 45) {
+      setOpenModalLimitTimes(true);
+    } else {
+      setOpenModalLimitTimes(false);
+    }
+  }, [totalTimes]);
+
   return (
     <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
       <div className="w-full flex justify-between z-[2]">
@@ -1287,6 +1298,14 @@ const AdminPlanning = ({
           handleCancel={handleAsignedTask}
           text={`Esta seguro que desea asignar la tarea "${stateRow["name"]}" al responsable ${responsable}`}
           designModal={"!w-[60%]"}
+        />
+      )}
+
+      {activeTab === 3 && openModalLimitTimes && (
+        <ModalGeneric
+          onClose={() => setOpenModalLimitTimes(false)}
+          text={`Tiene más horas programadas de las permitidas (45 horas).`}
+          textOnClose={"Cerrar"}
         />
       )}
     </div>

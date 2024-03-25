@@ -120,8 +120,9 @@ const RequestsData = () => {
     "w-44", // Ancho para Columna 7
     "w-44", // Ancho para Columna 8
     "w-32", // Ancho para Columna 9
-    "w-44", // Ancho para Columna 10
-    "w-52", // Ancho para Columna 11
+    "w-32", // Ancho para Columna 10
+    "w-44", // Ancho para Columna 11
+    "w-52", // Ancho para Columna 12
   ];
   const columnTitles = [
     "Cliente",
@@ -133,6 +134,7 @@ const RequestsData = () => {
     "Responsable",
     "Horas estimadas",
     "Horas reales",
+    "Fecha de trabajo ",
     "Estado ",
     "Interesado",
     "",
@@ -143,7 +145,6 @@ const RequestsData = () => {
       <Header
         title="Solicitudes data universe"
         date={currentWeek}
-        userName="Kenet Sebastián Segura Murillo"
         textColor={"text-primary-blue-500"}
       />
       <div className="w-full flex flex-col bg-primary-lightblue-50 py-4 px-6 h-full overflow-hidden overflow-y-auto">

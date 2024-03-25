@@ -21,7 +21,6 @@ const AdminRequest = ({
   totalPages,
   setTooltipSuccess,
   setTooltipError,
-  loading,
   setLoading,
   setRealTime,
   columnWidths,
@@ -402,7 +401,7 @@ const AdminRequest = ({
                     <SelectGeneric
                       options={processes}
                       initialOption={""}
-                      key_name=""
+                      key_name="idprocesses"
                       handleSelect={handleSelectProcess}
                       styleSelect={"w-[157px]"}
                       fieldReset={fieldReset}

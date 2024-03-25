@@ -22,7 +22,6 @@ const RequestDataContent = ({
   totalPages,
   setTooltipSuccess,
   setTooltipError,
-  loading,
   setLoading,
   setRealTime,
   columnWidths,
@@ -121,7 +120,7 @@ const RequestDataContent = ({
       body.idemployeeassigned = null;
       await postData(tasksEndpoint, body, token);
       setStateRow({});
-      setTooltipSuccess("Registro creada con exito");
+      setTooltipSuccess("Registro creado con exito");
       setFieldReset(true);
     } catch (error) {
       // Manejar el error aquí
@@ -324,7 +323,7 @@ const RequestDataContent = ({
         )}
       </div>
 
-      <div className="bg-white rounded-bl-md rounded-r-md  h-full">
+      <div className="bg-white rounded-bl-md rounded-r-md h-full">
         {activeTab === 1 && (
           <div className="overflow-x-auto h-full">
             <div className="w-full">
@@ -358,7 +357,7 @@ const RequestDataContent = ({
                       <SelectGeneric
                         options={processes}
                         initialOption={""}
-                        key_name=""
+                        key_name="idprocesses"
                         handleSelect={handleSelectProcess}
                         styleSelect={"w-[157px]"}
                         fieldReset={fieldReset}

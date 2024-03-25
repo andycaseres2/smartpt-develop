@@ -7,13 +7,15 @@ const Modal = ({ onClose, children }) => {
       onClick={onClose}
     >
       <div
-        className="bg-white p-4 rounded shadow-md relative w-[1274px] h-[838px]"
+        className="bg-white p-8 rounded shadow-md relative w-[1274px] h-[838px]"
         onClick={(e) => e.stopPropagation()}
       >
         {children}
         <CloseIcon
           action={onClose}
-          className="absolute top-2 right-2 cursor-pointer"
+          className="absolute top-1 right-1 cursor-pointer hover:scale-105"
+          width={30}
+          height={30}
         />
       </div>
     </div>

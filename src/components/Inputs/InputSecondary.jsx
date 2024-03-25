@@ -7,13 +7,26 @@ const InputSecondary = ({
   handleChange,
   initialValue,
   readOnly,
+  onlyNumber,
+  className, // Nueva prop para indicar si solo se permiten números
 }) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleInputChange = (e) => {
-    const newValue = e.target.value;
+    let newValue = e.target.value;
+
+    // Si onlyNumber es true, solo se permiten números
+    if (onlyNumber) {
+      newValue = newValue.replace(/\D/, ""); // Remover todo lo que no sea dígito
+    }
+
     setInputValue(newValue);
-    handleChange({ target: { name: key_name, value: newValue } });
+    handleChange({
+      target: {
+        name: key_name,
+        value: onlyNumber ? Number(newValue) : newValue,
+      },
+    });
   };
 
   const isValidDate = (dateString) => {
@@ -47,7 +60,7 @@ const InputSecondary = ({
 
   return (
     <input
-      className="w-full p-2 bg-white rounded shadow-3xl focus:outline-none"
+      className={`w-full p-2 bg-white rounded shadow-3xl focus:outline-none ${className}`}
       type={type === "date" ? "date" : type}
       name={key_name}
       value={type === "date" ? formatDateForInput(inputValue) : inputValue}

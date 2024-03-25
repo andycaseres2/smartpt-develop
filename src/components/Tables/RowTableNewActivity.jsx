@@ -99,6 +99,7 @@ const RowTableNewActivity = ({
                 handleChange={handleChange}
                 handleSelect={handleSelectProcess}
                 resetFieldsAssinedTask={resetFieldsAssinedTask}
+                extraOptions={item.extraOptions}
               />
             ) : item.editComponent === "select" && !modeEdit ? (
               <span>{item.data}</span>
@@ -123,6 +124,9 @@ const RowTableNewActivity = ({
                 resetFieldsAssinedTask={resetFieldsAssinedTask}
                 handleChange={handleChange}
                 key_name={item.key_name}
+                minValue={
+                  item.key_name === "estimateddate" && stateRow["startdate"]
+                }
               />
             ) : item.editComponent === "input" &&
               item.type === "date" &&

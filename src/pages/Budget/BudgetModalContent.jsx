@@ -1,42 +1,412 @@
+import { useEffect, useRef, useState } from "react";
+import InputSecondary from "../../components/Inputs/InputSecondary";
 import SelectGeneric from "../../components/Selects/SelectGeneric";
+import { stateStore } from "../../store/stateStore";
+import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
+import CirclePlus from "../../assets/Icons/CirclePlus";
+import CloseIcon from "../../assets/Icons/CloseIcon";
+import { userStore } from "../../store/userStore";
+import { putData } from "../../services/putData";
+import ExportIcon from "../../assets/Icons/ExportIcon";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
-const BudgetModalContent = ({ data }) => {
+const BudgetModalContent = ({
+  currentBudget,
+  currentBudgetTables,
+  tax,
+  readOnly,
+  setTooltipError,
+  setTooltipSuccess,
+  setRealTime,
+  selectedRowId,
+}) => {
+  const { clients, processes, activities } = stateStore();
+  const modalRef = useRef(null);
+  const { token } = userStore();
+  const [fieldsStates, setFieldsStates] = useState({});
+
+  const [fieldReset, setFieldReset] = useState(false);
+  const [updateActivities, setUpdateActivities] = useState(activities);
+  const [porcentajeFinancial, setPorcentajeFinancial] = useState(null);
+  const [TRM, setTRM] = useState(null);
+  const [subTotal, setSubTotal] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [totalUSD, setTotalUSD] = useState(0);
+  const [rows, setRows] = useState([]);
+
+  const getById = (id, options) => {
+    const client = options.find((client) => client.id === id);
+    return client?.name;
+  };
+
+  useEffect(() => {
+    if (currentBudget) {
+      setFieldsStates(currentBudget);
+      setTRM(currentBudget.trm || 0);
+      setPorcentajeFinancial(currentBudget.financialexpense || 0);
+    }
+  }, [currentBudget]);
+
+  const recalculateRows = () => {
+    let totalGlobal = 0;
+    let nuevosElementos;
+
+    if (rows?.length === 0) {
+      // Si rows está vacío, utiliza currentBudgetTables
+      nuevosElementos = currentBudgetTables?.map((objeto) => {
+        const total = objeto.units * objeto.price;
+        const totalUSD = total / TRM;
+        totalGlobal += total;
+        return { ...objeto, total, totalUSD };
+      });
+    } else {
+      // Si rows ya tiene información, utiliza rows
+      nuevosElementos = rows?.map((objeto) => {
+        const total = objeto.units * objeto.price;
+        const totalUSD = total / TRM;
+        totalGlobal += total;
+        return { ...objeto, total, totalUSD };
+      });
+    }
+
+    const newSubTotal = totalGlobal; // Actualizar el subtotal
+    return { nuevosElementos, newSubTotal };
+  };
+
+  const handleSubmit = async (idBudget) => {
+    try {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const budgetEndpoint = `${baseUrl}BudgetDetails`;
+
+      for (const row of rows) {
+        row.idbudget = idBudget;
+        row.idtax = 1;
+
+        // Eliminar la propiedad 'id' de 'row'
+        const { id, ...rowWithoutId } = row;
+
+        const body = {
+          ...rowWithoutId,
+        };
+
+        // Concatenar el id a la URL
+        const rowEndpoint = `${budgetEndpoint}/${id}`;
+
+        await putData(rowEndpoint, body, token);
+      }
+    } catch (error) {
+      console.error("Error al manejar la solicitud:", error);
+    }
+  };
+
+  const handleFormSubmit = async (event) => {
+    try {
+      event.preventDefault();
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const budgetEndpoint = `${baseUrl}Budget/${selectedRowId}`;
+      const body = {
+        ...fieldsStates,
+        trm: TRM,
+      };
+      await putData(budgetEndpoint, body, token);
+      await handleSubmit(selectedRowId);
+      setTooltipSuccess("Registro creado con exito");
+    } catch (error) {
+      console.error("Error al enviar el formulario:", error);
+      setTooltipError("Hubo un error al crear el registro");
+    } finally {
+      setRealTime(true);
+    }
+  };
+
+  useEffect(() => {
+    // Función para recalcular filas y subtotal
+    const recalculateAndSetRows = () => {
+      const { nuevosElementos, newSubTotal } = recalculateRows();
+
+      // Comprobamos si los nuevos elementos son diferentes de los actuales antes de actualizar el estado
+      if (!areRowsEqual(rows, nuevosElementos)) {
+        setRows(nuevosElementos);
+      }
+
+      setSubTotal(newSubTotal);
+    };
+
+    // Llamamos a la función cuando cambian las filas
+    recalculateAndSetRows();
+  }, [rows]); // Aplicar efecto cuando rows cambie
+
+  // Función para comparar dos arrays de objetos
+  const areRowsEqual = (rows1, rows2) => {
+    if (rows1?.length !== rows2?.length) {
+      return false;
+    }
+    for (let i = 0; i < rows1?.length; i++) {
+      if (!areObjectsEqual(rows1[i], rows2[i])) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Función para comparar dos objetos
+  const areObjectsEqual = (obj1, obj2) => {
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+    for (let key of keys1) {
+      if (obj1[key] !== obj2[key]) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    const beforeTaxes = subTotal + (subTotal * porcentajeFinancial) / 100;
+    const taxes =
+      (tax.percentage * (subTotal + (subTotal * porcentajeFinancial) / 100)) /
+      100;
+    const total = beforeTaxes + taxes;
+    setTotal(total);
+    setTotalUSD((total / TRM).toFixed(2));
+  }, [total, TRM, subTotal, tax, porcentajeFinancial]);
+
+  const handleInputChange = (index, event) => {
+    const { name, value } = event.target;
+
+    // Creamos una copia de las filas actualizadas
+    const updatedRows = [...rows];
+
+    // Obtenemos la fila que queremos modificar
+    const updatedRow = { ...updatedRows[index] };
+
+    // Actualizamos el valor correspondiente en la fila
+    if (name === "description") {
+      updatedRow[name] = value;
+    } else {
+      const numericValue = parseFloat(value);
+      updatedRow[name] = isNaN(numericValue) ? "" : numericValue;
+    }
+
+    // Calculamos el total para la fila actual multiplicando unidades por precio
+    const units = parseFloat(updatedRow.units) || 0;
+    const price = parseFloat(updatedRow.price) || 0;
+    updatedRow.total = units * price;
+    updatedRow.totalUSD = updatedRow.total / TRM;
+
+    // Actualizamos la fila modificada en el arreglo de filas actualizadas
+    updatedRows[index] = updatedRow;
+
+    // Actualizamos el estado de las filas
+    setRows(updatedRows);
+
+    // Calculamos el nuevo total sumando los totales de todas las filas
+    let newTotal = 0;
+    updatedRows.forEach((row) => {
+      newTotal += parseFloat(row.total);
+    });
+
+    // Actualizamos el estado del total
+    setTotal(newTotal);
+    setSubTotal(newTotal);
+  };
+
+  const handleChange = (e) => {
+    setFieldsStates({
+      ...fieldsStates,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSelectProcess = (id) => {
+    const filterActivities = activities.filter(
+      (activity) => activity.idprocess === id
+    );
+    setUpdateActivities(filterActivities);
+  };
+
+  const addRow = () => {
+    setRows([
+      ...currentBudgetTables.filter((n) => n),
+      {
+        id: 0,
+        idbudget: 0,
+        description: "",
+        units: 1,
+        price: 0,
+        type: 0,
+        idtax: 0,
+      },
+    ]);
+  };
+
+  function findProcessName(activityId) {
+    // Find the activity by its ID
+    const activity = activities.find((act) => act.id === activityId);
+
+    // If activity is not found, return null
+    if (!activity) return null;
+
+    // Find the corresponding process by its idprocess
+    const process = processes.find((proc) => proc.id === activity.idprocess);
+
+    // If process is not found, return null
+    if (!process) return null;
+
+    // Return the name of the process
+    return process.name;
+  }
+
+  const handleGeneratePDF = () => {
+    const modalElement = modalRef.current;
+
+    // Clonar el contenido del modal
+    const clonedModal = modalElement.cloneNode(true);
+
+    // Agregar el clon al DOM para que html2canvas pueda renderizarlo correctamente
+    document.body.appendChild(clonedModal);
+
+    // Ajustar estilos de los textos generados dinámicamente de forma asíncrona en el clon
+    setTimeout(() => {
+      const inputs = clonedModal.querySelectorAll("input");
+      const textareas = clonedModal.querySelectorAll("textarea");
+      const containerSelects =
+        clonedModal.querySelectorAll(".container-select");
+
+      // Estilos para inputs, textareas y selects
+      inputs.forEach((input) => {
+        input.style.backgroundColor = "transparent";
+        input.style.background = "transparent";
+        input.style.border = "none";
+        input.style.height = "50px";
+        input.style.lineHeight = "normal";
+        input.style.verticalAlign = "middle";
+        input.style.color = ""; // Restaurar color de texto
+      });
+
+      textareas.forEach((textarea) => {
+        textarea.style.background = "transparent";
+        textarea.style.backgroundColor = "transparent";
+        textarea.style.border = "none";
+        textarea.style.height = "auto";
+        textarea.style.lineHeight = "normal";
+        textarea.style.verticalAlign = "middle";
+        textarea.style.color = ""; // Restaurar color de texto
+      });
+
+      containerSelects.forEach((containerSelect) => {
+        containerSelect.style.background = "transparent";
+        containerSelect.style.backgroundColor = "transparent";
+        containerSelect.style.border = "none";
+        containerSelect.style.height = "50px";
+        containerSelect.style.width = "max-content";
+        containerSelect.style.padding = "0 20px";
+        containerSelect.style.lineHeight = "normal";
+        containerSelect.style.verticalAlign = "middle";
+        containerSelect.style.display = "flex";
+        containerSelect.style.alignItems = "flex-start";
+        containerSelect.style.color = "";
+        // Restaurar color de texto
+
+        const span = containerSelect.querySelector("span");
+        if (span) {
+          span.style.background = "transparent";
+          span.style.backgroundColor = "transparent";
+          span.style.border = "none";
+          span.style.height = "auto";
+          span.style.lineHeight = "normal";
+          span.style.verticalAlign = "middle";
+          span.style.display = "flex";
+          span.style.alignItems = "flex-start";
+          span.style.marginTop = "6px";
+          span.style.height = "100%";
+          span.style.color = ""; // Restaurar color de texto
+        }
+      });
+
+      // Capturar el contenido del clon para generar el PDF
+      html2canvas(clonedModal, {
+        scrollY: -window.scrollY,
+        height: modalElement.scrollHeight,
+      }).then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("l", "px", [canvas.width, canvas.height]);
+        pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+        pdf.save("modal_content.pdf");
+
+        // Eliminar el clon del DOM después de generar el PDF
+        document.body.removeChild(clonedModal);
+      });
+    }, 0);
+  };
+
   return (
-    <div className=" h-full">
-      <div className="">
+    <div className=" overflow-y-auto overflow-hidden h-full">
+      <div ref={modalRef} className="">
         <div className="w-full flex px-6 py-5">
           <div className="w-full flex gap-7">
             <div className="flex flex-col gap-2">
               <h2>Cliente</h2>
               <SelectGeneric
-                options={[]}
-                initialOption={""}
-                key_name=""
-                handleChange={() => {}}
+                options={clients}
+                initialOption={getById(currentBudget?.idcustomer, clients)}
+                key_name="idcustomer"
+                handleChange={handleChange}
                 styleSelect={"w-[157px]"}
-                readOnly={true}
+                fieldReset={fieldReset}
+                readOnly={readOnly}
               />
             </div>
             <div className="flex flex-col gap-2">
-              <h2>Fecha</h2>
-              <SelectGeneric
-                options={[]}
-                initialOption={""}
-                key_name=""
-                handleChange={() => {}}
-                styleSelect={"w-[157px]"}
-                readOnly={true}
+              <h2>Nombre del servicio</h2>
+              <InputSecondary
+                type="text"
+                name="name"
+                placeholder="Nombre del servicio"
+                value={fieldsStates?.servicename}
+                key_name={"servicename"}
+                handleChange={handleChange}
+                readOnly={readOnly}
               />
             </div>
             <div className="flex flex-col gap-2">
-              <h2>Lugar</h2>
+              <h2>Vigencia presupuesto días</h2>
+              <InputSecondary
+                type="text"
+                name="name"
+                placeholder="Nombre del servicio"
+                value={fieldsStates?.validto}
+                handleChange={handleChange}
+                key_name={"validto"}
+                onlyNumber={true}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <h2>Proceso</h2>
               <SelectGeneric
-                options={[]}
-                initialOption={""}
-                key_name=""
-                handleChange={() => {}}
+                options={processes}
+                initialOption={findProcessName(fieldsStates?.idactivity)}
+                key_name="idprocesses"
+                handleSelect={handleSelectProcess}
                 styleSelect={"w-[157px]"}
-                readOnly={true}
+                fieldReset={fieldReset}
+                readOnly={readOnly}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <h2>Actividad</h2>
+              <SelectGeneric
+                options={updateActivities}
+                initialOption={getById(fieldsStates?.idactivity, activities)}
+                key_name="idactivity"
+                handleChange={handleChange}
+                styleSelect={"w-[157px]"}
+                fieldReset={fieldReset}
+                readOnly={readOnly}
               />
             </div>
           </div>
@@ -49,73 +419,283 @@ const BudgetModalContent = ({ data }) => {
               id="descripcion_pieza"
               cols="30"
               rows="10"
-              className="w-full rounded-md p-2 shadow-3xl h-[100px] focus:outline-none"
+              className="w-full rounded-md p-2 shadow-3xl h-[120px] focus:outline-none"
+              onChange={(e) => {
+                handleChange({
+                  target: {
+                    name: "description",
+                    value: e.target.value,
+                  },
+                });
+                setFieldReset(false);
+              }}
+              value={fieldReset ? "" : fieldsStates?.description}
+              readOnly={readOnly}
             ></textarea>
           </div>
         </div>
         <div className="w-full flex flex-col gap-4 px-6 mt-4">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3 ">
             <span>Presupuesto</span>
             <div className="w-full">
+              <div className="w-full h-full flex items-end justify-end pb-4 gap-4">
+                <div className="w-1/6">
+                  <h2 className="text-center">TRM</h2>
+                  <InputSecondary
+                    type="text"
+                    name="name"
+                    placeholder="Nombre del servicio"
+                    value={TRM}
+                    key_name={"trm"}
+                    handleChange={(e) => {
+                      setTRM(e.target.value);
+                      recalculateRows();
+                    }}
+                    onlyNumber={true}
+                    readOnly={readOnly}
+                  />
+                </div>
+                {readOnly ? (
+                  <div></div>
+                ) : (
+                  <ButtonWithIcon
+                    text=" Agregar fila"
+                    action={addRow}
+                    icon={<CirclePlus />}
+                  />
+                )}
+              </div>
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
-                  <tr>
-                    <th className="py-2 text-left">Descripción</th>
-                    <th className="py-2 text-left">Cantidad</th>
-                    <th className="py-2 text-left">Coste unitario</th>
-                    <th className="py-2 text-left">Total</th>
-                    <th className="py-2 text-left">Total USD</th>
+                  <tr className="w-full flex justify-center gap-8">
+                    <th className="py-2 text-center w-2/5">Descripción</th>
+                    <th className="py-2 text-center w-1/5">Cantidad</th>
+                    <th className="py-2 text-center w-1/5">Coste unitario</th>
+                    <th className="py-2 text-center w-1/5">Total</th>
+                    <th className="py-2 text-center w-1/5">Total USD</th>
+                    <th className="py-2 text-center w-1/7"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map((item, index) => (
-                    <tr key={index}>
-                      <td className="py-2">{item.descripcion}</td>
-                      <td className="py-2">{item.cantidad}</td>
-                      <td className="py-2">{item.costoUnitario}</td>
-                      <td className="py-2">{item.total}</td>
-                      <td className="py-2">{item.totalUSD}</td>
+                  {rows?.map((row, index) => (
+                    <tr
+                      key={index}
+                      className="w-full flex justify-center gap-8"
+                    >
+                      <td className="py-2 w-2/5">
+                        <input
+                          className="w-full p-2 bg-white rounded shadow-3xl focus:outline-none"
+                          type="text"
+                          name="description"
+                          value={row.description}
+                          readOnly={readOnly}
+                          onChange={(e) => handleInputChange(index, e)}
+                        />
+                      </td>
+                      <td className="py-2 w-1/5">
+                        <input
+                          className="w-full p-2 bg-white rounded shadow-3xl focus:outline-none"
+                          type="text"
+                          name="units" // Cambiado de "cantidad" a "units"
+                          value={row.units}
+                          readOnly={readOnly}
+                          onChange={(e) => handleInputChange(index, e)}
+                        />
+                      </td>
+                      <td className="py-2 w-1/5">
+                        <input
+                          className="w-full p-2 bg-white rounded shadow-3xl focus:outline-none"
+                          type="text"
+                          name="price" // Cambiado de "costoUnitario" a "price"
+                          value={row.price}
+                          readOnly={readOnly}
+                          onChange={(e) => handleInputChange(index, e)}
+                        />
+                      </td>
+
+                      <td className="py-2 w-1/5 text-center flex items-center justify-center">
+                        {isNaN(row.total)
+                          ? "$0.00"
+                          : Intl.NumberFormat("es-CO", {
+                              style: "currency",
+                              currency: "COP",
+                            }).format(row.total)}
+                      </td>
+                      <td className="py-2 w-1/5 text-center flex items-center justify-center">
+                        {isNaN(row.totalUSD)
+                          ? "$0.00"
+                          : Intl.NumberFormat("es-CO", {
+                              style: "currency",
+                              currency: "COP",
+                            }).format(row.totalUSD)}
+                      </td>
+                      <td className="py-2 w-1/8 text-center flex items-center justify-center">
+                        {!readOnly && (
+                          <CloseIcon
+                            action={() => {
+                              delete currentBudgetTables[index];
+                              recalculateRows();
+                            }}
+                            className={"cursor-pointer hover:scale-105"}
+                          />
+                        )}
+                      </td>
                     </tr>
                   ))}
-                  {/* Subtotal Row */}
-                  <tr className="bg-rose-100">
-                    <td className="py-2 font-bold" colSpan="3">
-                      Subtotal
+
+                  <tr className="w-full flex justify-center gap-8 bg-rose-100">
+                    <td className="py-2 font-bold w-2/5">Subtotal</td>
+                    <td className="py-2 w-1/5"></td>
+                    <td className="py-2 w-1/5"></td>
+                    <td className="py-2 w-1/5 text-center">
+                      {" "}
+                      {isNaN(subTotal)
+                        ? "$0.00"
+                        : Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format(subTotal)}
                     </td>
-                    <td className="py-2">$3.875.000</td>
-                    <td className="py-2">$971.01</td>
+                    <td className="py-2 w-1/5 text-center">
+                      {isNaN(subTotal)
+                        ? "$0.00"
+                        : Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format(subTotal / TRM)}
+                    </td>
+                    <td className="py-2 w-1/8"></td>
                   </tr>
-                  {/* Financial Expenses Row */}
-                  <tr className="">
-                    <td className="py-2" colSpan="3">
+
+                  <tr className="w-full flex justify-center gap-8 ">
+                    <td className="py-2 w-2/5 flex items-center">
                       Financial Expenses
                     </td>
-                    <td className="py-2">$3.875.000</td>
-                    <td className="py-2">$971.01</td>
-                  </tr>
-                  {/* BEFORE TAXES Row */}
-                  <tr className="font-bold">
-                    <td className="py-2" colSpan="3">
-                      BEFORE TAXES
+                    <td className="py-2 w-1/5"></td>
+                    <td className="py-2 w-1/5">
+                      <input
+                        className="w-full p-2 bg-white rounded shadow-3xl focus:outline-none"
+                        type="text"
+                        name=""
+                        value={porcentajeFinancial}
+                        placeholder="%"
+                        onChange={(e) => {
+                          const newValue = e.target.value.replace(/\D/g, "");
+                          setPorcentajeFinancial(newValue);
+                          handleChange({
+                            target: {
+                              name: "financialexpense",
+                              value: newValue,
+                            },
+                          });
+                        }}
+                        readOnly={readOnly}
+                      />
                     </td>
-                    <td className="py-2">$3.875.000</td>
-                    <td className="py-2">$971.01</td>
-                  </tr>
-                  {/* Local Taxes Row */}
-                  <tr className="">
-                    <td className="py-2" colSpan="3">
-                      Local Taxes (IVA - 19%)
+                    <td className="py-2 w-1/5 text-center flex items-center justify-center">
+                      {porcentajeFinancial
+                        ? Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format((subTotal * porcentajeFinancial) / 100)
+                        : "$0.00"}
                     </td>
-                    <td className="py-2">$3.875.000</td>
-                    <td className="py-2">$971.01</td>
-                  </tr>
-                  {/* Total Row */}
-                  <tr className="text-white bg-primary-red-600 font-bold">
-                    <td className="py-2" colSpan="3">
-                      Total
+                    <td className="py-2 w-1/5 text-center items-center flex justify-center">
+                      {porcentajeFinancial
+                        ? Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format(
+                            (subTotal * porcentajeFinancial) / 100 / TRM
+                          )
+                        : "$0.00"}
                     </td>
-                    <td className="py-2">$3.875.000</td>
-                    <td className="py-2">$971.01</td>
+                    <td className="py-2 w-1/8"></td>
+                  </tr>
+
+                  <tr className="w-full flex justify-center gap-8 font-bold">
+                    <td className="py-2 font-bold w-2/5">BEFORE TAXES</td>
+                    <td className="py-2 w-1/5"></td>
+                    <td className="py-2 w-1/5"></td>
+                    <td className="py-2 w-1/5 text-center">
+                      {isNaN(subTotal)
+                        ? "$0.00"
+                        : Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format(
+                            subTotal + (subTotal * porcentajeFinancial) / 100
+                          )}
+                    </td>
+                    <td className="py-2 w-1/5 text-center">
+                      {isNaN(subTotal)
+                        ? "$0.00"
+                        : Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format(
+                            (subTotal +
+                              (subTotal * porcentajeFinancial) / 100) /
+                              TRM
+                          )}
+                    </td>
+                    <td className="py-2 w-1/8"></td>
+                  </tr>
+
+                  <tr className="w-full flex justify-center gap-8 ">
+                    <td className="py-2  w-2/5">{"Local Taxes (IVA - 19%)"}</td>
+                    <td className="py-2 w-1/5"></td>
+                    <td className="py-2 w-1/5"></td>
+                    <td className="py-2 w-1/5 text-center flex justify-center items-center">
+                      {isNaN(subTotal)
+                        ? "$0.00"
+                        : Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format(
+                            (tax.percentage *
+                              (subTotal +
+                                (subTotal * porcentajeFinancial) / 100)) /
+                              100
+                          )}
+                    </td>
+                    <td className="py-2 w-1/5 text-center flex justify-center items-center">
+                      {isNaN(subTotal)
+                        ? "$0.00"
+                        : Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format(
+                            (tax.percentage *
+                              (subTotal +
+                                (subTotal * porcentajeFinancial) / 100)) /
+                              100 /
+                              TRM
+                          )}
+                    </td>
+                  </tr>
+
+                  <tr className="w-full flex justify-center gap-8 bg-primary-red-600 text-white font-bold">
+                    <td className="py-2 font-bold w-2/5">Total</td>
+                    <td className="py-2 w-1/5"></td>
+                    <td className="py-2 w-1/5"></td>
+                    <td className="py-2 w-1/5 text-center">
+                      {isNaN(total)
+                        ? "$0.00"
+                        : Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format(total)}
+                    </td>
+                    <td className="py-2 w-1/5 text-center">
+                      {isNaN(totalUSD)
+                        ? "$0.00"
+                        : Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                          }).format(totalUSD)}
+                    </td>
+                    <td className="py-2 w-1/8"></td>
                   </tr>
                 </tbody>
               </table>
@@ -133,6 +713,23 @@ const BudgetModalContent = ({ data }) => {
               contractual.
             </span>
           </div>
+        </div>
+
+        <div className="flex justify-end px-8 mb-8 gap-4">
+          <ButtonWithIcon
+            icon={<ExportIcon />}
+            text="Exportar"
+            action={handleGeneratePDF}
+            designButton="!w-44 h-8 flex justify-center items-center"
+          />
+          {!readOnly && (
+            <ButtonWithIcon
+              text="Guardar"
+              action={handleFormSubmit}
+              icon={<CirclePlus />}
+              designButton="!w-44 h-8 flex justify-center items-center"
+            />
+          )}
         </div>
       </div>
     </div>

@@ -13,12 +13,15 @@ const ModalNotifications = ({
   notificationHistory,
   employees,
   setRealTime,
+  tasks,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const { token } = userStore();
 
-  // const location = useLocation();
-  // const currentPath = location.pathname;
+  const getNameTask = (id) => {
+    const task = tasks.find((task) => task.id === id);
+    return task?.name;
+  };
 
   const tabs = [
     { id: 1, label: "Pendiente" },
@@ -27,7 +30,7 @@ const ModalNotifications = ({
 
   const getEmployeeFullNameById = (id) => {
     const employee = employees.find((employee) => employee.id === id);
-    return employee.fullname;
+    return employee?.fullname;
   };
 
   function formatDateString(dateString) {
@@ -38,7 +41,7 @@ const ModalNotifications = ({
 
     const [, year, month, day, hours, minutes, seconds] =
       dateString.match(regex);
-    const formattedDate = `${parseInt(month)}/${parseInt(day) - 1}/${year}`;
+    const formattedDate = `${parseInt(day)}/${parseInt(month)}/${year}`;
     const utcDate = new Date(
       Date.UTC(year, month - 1, day, hours, minutes, seconds)
     );
@@ -134,6 +137,7 @@ const ModalNotifications = ({
                 dateassigned={formatDateString(notification.dateassigned)}
                 showInput={true}
                 handleChange={() => handleCheckboxChange(notification)}
+                nameTask={getNameTask(notification.idtask)}
               />
             ))}
             {/* <NotificationItem showInput={true} />
@@ -154,6 +158,7 @@ const ModalNotifications = ({
                 )}
                 dateassigned={formatDateString(notification.dateassigned)}
                 showInput={false}
+                nameTask={getNameTask(notification.idtask)}
               />
             ))}
           </div>

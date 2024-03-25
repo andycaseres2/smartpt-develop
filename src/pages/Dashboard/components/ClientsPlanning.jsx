@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectGeneric from "../../../components/Selects/SelectGeneric";
 import InputDate from "../../../components/Inputs/InputDate";
 import BoxHours from "../../../components/Boxes/BoxHours";
@@ -7,38 +7,99 @@ import ExportIcon from "../../../assets/Icons/ExportIcon";
 import DotsIcon from "../../../assets/Icons/DotsIcon";
 import Chart from "react-google-charts";
 import Popup from "../../../components/Popups/Popup";
+import { userStore } from "../../../store/userStore";
+import { getData } from "../../../services/getData";
 
 const ClientsPlanning = () => {
+  const [realTime, setRealTime] = useState(true);
   const [openPopup, setOpenPopup] = useState(false);
   const [openSubPopup, setOpenSubPopup] = useState(false);
   const [openPopup2, setOpenPopup2] = useState(false);
   const [openSubPopup2, setOpenSubPopup2] = useState(false);
+  const [currentDataDedicacionPorCliente, setCurrentDataDedicacionPorCliente] =
+    useState([]);
+  const [
+    currentDataDedicacionPorColaborador,
+    setCurrentDataDedicacionPorColaborador,
+  ] = useState([]);
+  const { token } = userStore();
 
-  const data = [
-    [
-      "Element",
-      "Density",
-      { role: "style" },
-      {
-        sourceColumn: 0,
-        role: "annotation",
-        type: "string",
-        calc: "stringify",
-      },
-    ],
-    ["SmartPR", 3050, "#E93E37", null],
-    ["Schneider Electric", 2800, "#E93E37", null],
-    ["Indra", 2700, "#DF4D62", null],
-    ["Schneider Electric", 2500, "#FF7686", null],
-    ["Indra", 2400, "#E47526", null],
-    ["SmartPR", 2000, "#EA9717", null],
-    ["Xiaomi", 1500, "#81BA63", null],
-    ["SmartPR", 1200, "#43E18C", null],
-    ["SmartPR", 1000, "##80B5C5", null],
-    ["GI group", 800, "#b87333", null],
-    ["Xiaomi", 500, "#0192D3", null],
-    ["SmartPR", 300, "##8B6BAE", null],
-  ];
+  useEffect(() => {
+    const transformToBarPlot = (originalData, key) => {
+      const colors = [
+        "#E93E37",
+        "#DF4D62",
+        "#FF7686",
+        "#E47526",
+        "#EA9717",
+        "#81BA63",
+        "#43E18C",
+        "#80B5C5",
+        "#b87333",
+        "#0192D3",
+        "#8B6BAE",
+      ];
+
+      var result = [
+        [
+          "Element",
+          "Density",
+          { role: "style" },
+          {
+            sourceColumn: 0,
+            role: "annotation",
+            type: "string",
+            calc: "stringify",
+          },
+        ],
+      ];
+      for (
+        var i = 0, currentColor = 0;
+        i < originalData.length;
+        i++, currentColor++
+      ) {
+        if (currentColor >= colors.length) {
+          currentColor = 0;
+        }
+        result.push([
+          originalData[i][key],
+          originalData[i]["sum"],
+          colors[currentColor],
+          null,
+        ]);
+      }
+      return result;
+    };
+
+    const fetchDataOnMount = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+        const dashboardEndpointReport1 = `${baseUrl}Dashboard?reporte=1&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
+        const dashboardEndpointReport2 = `${baseUrl}Dashboard?reporte=2&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
+
+        const dataDedicacionPorCliente = await getData(
+          dashboardEndpointReport1,
+          token
+        );
+        setCurrentDataDedicacionPorCliente(
+          transformToBarPlot(dataDedicacionPorCliente, "name")
+        );
+
+        const dataDedicacionPorColaborador = await getData(
+          dashboardEndpointReport2,
+          token
+        );
+        setCurrentDataDedicacionPorColaborador(
+          transformToBarPlot(dataDedicacionPorColaborador, "fullname")
+        );
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchDataOnMount();
+    setRealTime(false);
+  }, [realTime]);
 
   const options = {
     bar: { groupWidth: "75%" },
@@ -119,10 +180,10 @@ const ClientsPlanning = () => {
                 </div>
               </div>
               <Chart
-                chartType="BarChart"
+                chartType="PieChart"
                 width="100%"
                 height="100%"
-                data={data}
+                data={currentDataDedicacionPorCliente}
                 options={options}
               />
               {openPopup && (
@@ -150,10 +211,10 @@ const ClientsPlanning = () => {
                 </div>
               </div>
               <Chart
-                chartType="BarChart"
+                chartType="PieChart"
                 width="100%"
                 height="100%"
-                data={data}
+                data={currentDataDedicacionPorColaborador}
                 options={options}
               />
               {openPopup2 && (

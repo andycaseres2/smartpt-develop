@@ -36,7 +36,6 @@ const RowTable = ({
   endpoint,
   section,
   handleCleanFilters,
-  onlyView,
 }) => {
   const {
     clients,
@@ -187,15 +186,12 @@ const RowTable = ({
         } else if ("id" in body) {
           delete body["id"];
         }
-        if (body.state === 3 || body.state === 4) {
+        if (body.state === 3) {
           body.realenddate =
             new Date().toISOString().split("T")[0] + "T00:00:00";
         }
 
-        if (
-          (body.state === 3 || body.state === 4) &&
-          body.realtimespent !== null
-        ) {
+        if (body.state === 3 && body.realtimespent !== null) {
           await putData(taskEndpoint, body, token);
           setRealTime(true);
           setTooltipSuccess("Tarea editada con éxito");
@@ -205,7 +201,7 @@ const RowTable = ({
           setRealTime(true);
           setTooltipSuccess("Tarea editada con exito");
           setStateRow({});
-        } else if (body.state !== 3 && body.state !== 4) {
+        } else if (body.state !== 3) {
           await putData(taskEndpoint, body, token);
           setRealTime(true);
           setTooltipSuccess("Tarea editada con éxito");
@@ -375,7 +371,9 @@ const RowTable = ({
           ) : item?.editComponent === "input" &&
             item?.type === "text" &&
             !modeEdit ? (
-            <span>{item?.data}</span>
+            <span className={`whitespace-normal overflow-hidden text-ellipsis`}>
+              {item?.data}
+            </span>
           ) : item?.editComponent === "input" &&
             item?.type === "link" &&
             modeEdit ? (
@@ -442,6 +440,9 @@ const RowTable = ({
               handleChange={handleChange}
               defaultValue={item?.data}
               key_name={item?.key_name}
+              minValue={
+                item?.key_name === "estimateddate" && stateRow["startdate"]
+              }
             />
           ) : (item?.editComponent === "input" &&
               item?.type === "date" &&
@@ -515,7 +516,7 @@ const RowTable = ({
               )
             ) : null
           ) : (
-            <span className="truncate ">{item?.data}</span>
+            <span className="truncate">{item?.data}</span>
           )}
         </td>
       ))}

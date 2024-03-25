@@ -6,6 +6,7 @@ const DateInput = ({
   key_name,
   readOnly,
   resetFieldsAssinedTask,
+  minValue,
 }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const today = new Date().toISOString().split("T")[0];
@@ -37,6 +38,10 @@ const DateInput = ({
     });
   };
 
+  function convertirFechaISOaFecha(fechaISO) {
+    return new Date(fechaISO).toISOString().split("T")[0];
+  }
+
   return (
     <input
       className={
@@ -49,7 +54,7 @@ const DateInput = ({
       onChange={handleDateChange}
       name={key_name}
       readOnly={readOnly}
-      min={today}
+      min={(minValue && convertirFechaISOaFecha(minValue)) || today}
     />
   );
 };

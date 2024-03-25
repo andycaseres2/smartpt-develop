@@ -5,7 +5,7 @@ import CollaboratorsPlanning from "./components/CollaboratorsPlanning";
 import ClientsPlanning from "./components/ClientsPlanning";
 import GeneralDashboards from "./components/GeneralDashboards";
 
-const DashboardContent = () => {
+const DashboardContent = ({ realTime, setRealTime }) => {
   const [generalDashboard, setGeneralDashboard] = useState(true);
   const [collaboratorsPlanningState, setCollaboratorsPlanningState] =
     useState(false);
@@ -53,8 +53,12 @@ const DashboardContent = () => {
         />
       </div>
       {generalDashboard && <GeneralDashboards />}
-      {collaboratorsPlanningState && <CollaboratorsPlanning />}
-      {clientsPlanningState && <ClientsPlanning />}
+      {collaboratorsPlanningState && (
+        <CollaboratorsPlanning realTime={realTime} setRealTime={setRealTime} />
+      )}
+      {clientsPlanningState && (
+        <ClientsPlanning realTime={realTime} setRealTime={setRealTime} />
+      )}
     </div>
   );
 };

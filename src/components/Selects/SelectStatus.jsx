@@ -48,7 +48,7 @@ const SelectStatus = ({
         updatedStateRow.state = id;
 
         // Agregar la lógica para id igual a 3 o 4
-        if (id === 3 || id === 4) {
+        if (id === 3) {
           updatedStateRow.realenddate =
             new Date().toISOString().split("T")[0] + "T00:00:00";
         }
@@ -60,11 +60,11 @@ const SelectStatus = ({
         const taskEndpoint = `${baseUrl}Task/${rowId}`;
 
         // Enviar los datos modificados al servidor utilizando la función putData (o postData según tu implementación)
-        if ((id === 3 || id === 4) && updatedStateRow.realtimespent !== null) {
+        if (id === 3 && updatedStateRow.realtimespent !== null) {
           await putData(taskEndpoint, updatedStateRow, token);
           setRealTime(true);
           setTooltipSuccess("Tarea editada con éxito");
-        } else if (id !== 3 && id !== 4) {
+        } else if (id !== 3) {
           await putData(taskEndpoint, updatedStateRow, token);
           setRealTime(true);
           setTooltipSuccess("Tarea editada con éxito");
