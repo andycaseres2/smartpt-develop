@@ -1,4 +1,8 @@
 const MonthLegend = ({ months, colors }) => {
+<<<<<<< HEAD
+=======
+  console.log(colors);
+>>>>>>> b7ecf2887956819aed0507d5ec357a78c09ff6b2
   return (
     <div className="flex flex-wrap justify-end w-[500px]">
       {months.map((month, index) => (

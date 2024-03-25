@@ -1,0 +1,614 @@
+import { useEffect, useState } from "react";
+import Tabs from "../../components/Tabs/Tabs";
+import { stateStore } from "../../store/stateStore";
+import SelectGeneric from "../../components/Selects/SelectGeneric";
+import Pagination from "../../components/Paginations/Pagination";
+import InputDate from "../../components/Inputs/InputDate";
+import ButtonWithIcon from "../../components/Buttons/ButtonWithIcon";
+import Select from "../../components/Selects/Select";
+import RowTableRequest from "../../components/Tables/RowTableRequest";
+import ColumnTableRequest from "../../components/Tables/ColumnTableRequest";
+import CirclePlus from "../../assets/Icons/CirclePlus";
+import { postData } from "../../services/postData";
+import TimeInput from "../../components/Inputs/TimeInput";
+
+const AdminRequest = ({
+  setTooltipSuccess,
+  setTooltipError,
+  requests,
+  setRequests,
+  totalPages,
+  loading,
+  setLoading,
+}) => {
+  const [activeTab, setActiveTab] = useState(1);
+  const {
+    setOpenNotifications,
+    clients,
+    activities,
+    processes,
+    employees,
+    designFormats,
+    designPieces,
+  } = stateStore();
+  const [stateRow, setStateRow] = useState({});
+  const [fieldReset, setFieldReset] = useState(false);
+  const [updateActivities, setUpdateActivities] = useState([]);
+  const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
+  const [initialOptionFormat, setInitialOptionFormat] = useState("Formato");
+  const [initialOptionPeace, setInitialOptionPeace] = useState("Pieza");
+  const [initialOptionEmployee, setInitialOptionEmployee] =
+    useState("Responsable");
+  const [urlBase, setUrlBase] = useState(`
+    ${
+      import.meta.env.VITE_REACT_APP_URL_BASE
+    }FormattedDesignRequest?page=1&size=10&viewAdmin=true`);
+  const [processRequest, setProcessRequest] = useState([]);
+
+  useEffect(() => {
+    const filteredArray = processes.filter(
+      (process) => process.id === 2 || process.id === 14
+    );
+    setProcessRequest(filteredArray);
+  }, [processes]);
+
+  async function createRequest() {
+    try {
+      const body = stateRow;
+      // Definir la URL base
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+      // Construir la URL del endpoint para las tareas
+      const tasksEndpoint = `${baseUrl}DesignRequest`;
+      // Enviar los datos modificados al servidor utilizando la función postData
+      body.realtime = null;
+      body.idemployeeassigned = null;
+      await postData(tasksEndpoint, body);
+      setStateRow({});
+      setTooltipSuccess("Registro creada con exito");
+      setFieldReset(true);
+    } catch (error) {
+      // Manejar el error aquí
+      console.error("Error al crear la tarea:", error);
+
+      // Puedes definir un estado de error y guardarlo en tu componente si es necesario
+      setTooltipError("Hubo un error al crear el registro");
+    }
+  }
+
+  const handleSelectProcess = (id) => {
+    const filterActivities = processRequest.filter(
+      (activity) => activity.idprocess === id
+    );
+    setUpdateActivities(filterActivities);
+  };
+
+  const handleChange = (e) => {
+    setStateRow((prevState) => {
+      return {
+        ...prevState,
+        [e.target.name]: e.target.value,
+      };
+    });
+  };
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+  };
+
+  const tabs = [
+    { id: 1, label: "Registrar solicituddd" },
+    { id: 2, label: "Solicitudes" },
+    { id: 3, label: "Consolidado" },
+  ];
+
+  const columnTitles = [
+    "Cliente",
+    "Formato",
+    "Pieza ",
+    "Descripción pieza",
+    "Requerimientos pieza ",
+    "Fecha de entrega ",
+    "Responsable",
+    "Horas estimadas",
+    "Horas reales",
+    "Fecha de trabajo ",
+    "Estado ",
+    "Observaciones ",
+    "",
+  ];
+
+  const columnWidths = [
+    "w-44", // Ancho para Columna 1
+    "w-44", // Ancho para Columna 2
+    "w-44", // Ancho para Columna 3
+    "w-[350px]", // Ancho para Columna 4
+    "w-[350px]", // Ancho para Columna 5
+    "w-44", // Ancho para Columna 6
+    "w-44", // Ancho para Columna 7
+    "w-44", // Ancho para Columna 8
+    "w-44", // Ancho para Columna 9
+    "w-44", // Ancho para Columna 10
+    "w-44", // Ancho para Columna 11
+    "w-44", // Ancho para Columna 12
+    "w-10", // Ancho para Columna 13
+  ];
+
+  const listItems = [
+    {
+      data: "Ford",
+      editComponent: "select",
+      options: [
+        { id: 1, value: "SmartPR" },
+        { id: 2, value: "MTC" },
+        { id: 3, value: "Ford" },
+        { id: 4, value: "Toyota" },
+      ],
+      key_name: "cliente",
+    },
+    {
+      data: "Video",
+      editComponent: "select",
+      options: [
+        { id: 1, value: "Video" },
+        { id: 2, value: "Grafica" },
+        { id: 3, value: "Ambos" },
+      ],
+      key_name: "video",
+    },
+    {
+      data: "Video corto",
+      editComponent: "input",
+      type: "text",
+      key_name: "pieza",
+    },
+    {
+      data: "Video corto sobre las capacidades de ...",
+      editComponent: "input",
+      type: "text",
+      key_name: "descripción_pieza",
+    },
+    {
+      data: "look and feel smartPR tenerlo...",
+      editComponent: "input",
+      type: "text",
+      key_name: "requerimientos_pieza",
+    },
+    {
+      data: "2024-01-26",
+      editComponent: "input",
+      type: "date",
+      key_name: "fecha_entrega",
+    },
+    {
+      data: "German",
+      editComponent: "select",
+      options: [
+        { id: 1, value: "German" },
+        { id: 2, value: "Sebas" },
+      ],
+      key_name: "Responsable",
+    },
+    {
+      data: "04:00",
+      editComponent: "input",
+      type: "time",
+      key_name: "hora_estimada",
+    },
+    {
+      data: "05:00",
+      editComponent: "input",
+      type: "time",
+      key_name: "hora_reales",
+    },
+    {
+      data: "2024-01-26",
+      editComponent: "input",
+      type: "date",
+      key_name: "fecha_trabajo",
+    },
+    {
+      data: "En proceso",
+      editComponent: "status",
+      options: [
+        { id: 1, value: "Pendiente" },
+        { id: 2, value: "Finalizado" },
+        { id: 3, value: "En ejecucion" },
+        { id: 4, value: "En proceso" },
+      ],
+      key_name: "estado",
+    },
+    {
+      data: "Animación",
+      editComponent: "input",
+      type: "text",
+      key_name: "observaciones",
+    },
+  ];
+
+  return (
+    <div className="flex flex-col" onClick={() => setOpenNotifications(false)}>
+      <div className="w-full flex justify-between z-[2]">
+        <div className="flex items-end tab">
+          <div className="flex items-end">
+            <Tabs
+              tabs={tabs}
+              activeTab={activeTab}
+              handleTabClick={handleTabClick}
+            />
+          </div>
+        </div>
+        {activeTab === 2 && (
+          <div className="flex gap-3 items-center mb-2">
+            <Select
+              options={clients}
+              setTasks={setRequests}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
+            <Select
+              options={employees}
+              setTasks={setRequests}
+              newFilter={"IdEmployee"}
+              initialOption={initialOptionEmployee}
+              setInitialOption={setInitialOptionEmployee}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
+          </div>
+        )}
+
+        {activeTab === 3 && (
+          <div className="flex gap-3 items-center mb-2">
+            <Select
+              options={clients}
+              setTasks={setRequests}
+              newFilter={"IdCustomer"}
+              initialOption={initialOptionClient}
+              setInitialOption={setInitialOptionClient}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
+            <Select
+              options={designFormats}
+              setTasks={setRequests}
+              newFilter={"iddesignformat"}
+              initialOption={initialOptionFormat}
+              setInitialOption={setInitialOptionFormat}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
+            <Select
+              options={designPieces}
+              setTasks={setRequests}
+              newFilter={"iddesignpiece"}
+              initialOption={initialOptionPeace}
+              setInitialOption={setInitialOptionPeace}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
+            <InputDate
+              text={"Fecha inicio"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setRequests={setRequests}
+              newFilter={"startDate"}
+            />
+            <Select
+              options={employees}
+              setTasks={setRequests}
+              newFilter={"IdEmployee"}
+              initialOption={initialOptionEmployee}
+              setInitialOption={setInitialOptionEmployee}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-bl-md rounded-r-md overflow-auto h-[660px]">
+        {activeTab === 1 && (
+          <div className="overflow-x-auto h-full">
+            <div className="min-w-max">
+              <div className="w-full flex px-6 py-5">
+                <div className="w-full flex gap-7">
+                  <div className="flex flex-col gap-2">
+                    <h2>Cliente</h2>
+                    <SelectGeneric
+                      options={clients}
+                      initialOption={""}
+                      key_name="idcustomer"
+                      handleChange={handleChange}
+                      styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <h2>Formato</h2>
+                    <SelectGeneric
+                      options={designFormats}
+                      initialOption={""}
+                      key_name="iddesignformat"
+                      handleChange={handleChange}
+                      styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <h2>Pieza</h2>
+                    <SelectGeneric
+                      options={designPieces}
+                      initialOption={""}
+                      key_name="iddesignpiece"
+                      handleChange={handleChange}
+                      styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <h2>Proceso</h2>
+                    <SelectGeneric
+                      options={processRequest}
+                      initialOption={""}
+                      key_name=""
+                      handleSelect={handleSelectProcess}
+                      styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <h2>Actividad</h2>
+                    <SelectGeneric
+                      options={updateActivities || activities}
+                      initialOption={""}
+                      key_name="idactivity"
+                      handleChange={handleChange}
+                      styleSelect={"w-[157px]"}
+                      fieldReset={fieldReset}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="w-full flex flex-col gap-4 px-6">
+                <div className="flex flex-col gap-3 ">
+                  <span>Descripción pieza</span>
+                  <textarea
+                    name="descripcion_pieza"
+                    id="descripcion_pieza"
+                    cols="30"
+                    rows="10"
+                    className="w-full rounded-md p-2 shadow-3xl h-[120px] focus:outline-none"
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: "description",
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    value={fieldReset ? "" : stateRow.description}
+                  ></textarea>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <span>Requerimientos pieza</span>
+                  <textarea
+                    name="descripcion_pieza"
+                    id="descripcion_pieza"
+                    cols="30"
+                    rows="10"
+                    className="w-full rounded-md p-2 shadow-3xl h-[120px] focus:outline-none"
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: "requirements",
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    value={fieldReset ? "" : stateRow.requirements}
+                  ></textarea>
+                </div>
+              </div>
+              <div className="w-1/2 flex gap-8 px-6 py-8 justify-start">
+                <div className="w-max flex flex-col gap-3">
+                  <span>Fecha entrega</span>
+                  <InputDate
+                    handleChange={handleChange}
+                    key_name={"deliverydate"}
+                    position={"absolute top-11 -right-20"}
+                    fieldReset={fieldReset}
+                  />
+                </div>
+                <div className="w-max flex flex-col gap-3">
+                  <span>Hora estimada </span>
+                  <TimeInput
+                    handleChange={handleChange}
+                    key_name={"estimatedtime"}
+                    type={"time"}
+                    fieldReset={fieldReset}
+                  />
+                </div>
+                <div className="w-max flex flex-col gap-3">
+                  <span>Hora real</span>
+                </div>
+              </div>
+              <div className="w-full flex flex-col gap-4 px-6">
+                <div className="flex flex-col gap-3 ">
+                  <span>Observaciones</span>
+                  <textarea
+                    name="descripcion_pieza"
+                    id="descripcion_pieza"
+                    cols="30"
+                    rows="10"
+                    className="w-full rounded-md p-2 shadow-3xl h-[100px] focus:outline-none"
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: "observations",
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    value={fieldReset ? "" : stateRow.observations}
+                  ></textarea>
+                </div>
+              </div>
+              <div className="flex justify-end py-8 px-6">
+                <ButtonWithIcon
+                  text="Registrar solicitud"
+                  action={createRequest}
+                  icon={<CirclePlus />}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 2 && (
+          <div className="overflow-x-auto h-full">
+            <div className="min-w-max">
+              <div className="w-full p-3">
+                <table className="min-w-full">
+                  <thead>
+                    <ColumnTableRequest
+                      columnTitlesActivity={columnTitles}
+                      columnWidths={columnWidths}
+                      readOnly={false}
+                    />
+                  </thead>
+                  <tbody className="border-b border-gray-300">
+                    {requests?.map((item, index) => (
+                      <RowTableRequest
+                        key={index}
+                        listItems={item}
+                        columnWidths={columnWidths}
+                        stateRow={stateRow}
+                        handleChange={handleChange}
+                        readOnly={false}
+                        editStatus={true}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 3 && (
+          <div className="w-full h-full flex flex-col gap-6">
+            <div className="w-full h-full flex flex-col">
+              <div className="flex px-4 mt-6 bg-white justify-between">
+                <div className="flex gap-2 items-center">
+                  <p className="text-xl text-primary-red-600 font-semibold">
+                    SmartPR
+                  </p>
+                  <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500">
+                    140 horas
+                  </span>
+                </div>
+                <div className="flex gap-2 items-center">
+                  <p className="text-xl text-primary-red-600 font-semibold">
+                    Horas totales:
+                  </p>
+                  <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-blue-500">
+                    504 horas
+                  </span>
+                </div>
+              </div>
+              <div className="overflow-x-auto h-full">
+                <div className="min-w-max">
+                  <div className="w-full p-3">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full">
+                        <thead>
+                          <ColumnTableRequest
+                            columnTitlesActivity={columnTitles}
+                            columnWidths={columnWidths}
+                            readOnly={false}
+                          />
+                        </thead>
+                        <tbody className="border-b border-gray-300">
+                          <RowTableRequest
+                            listItems={listItems}
+                            columnWidths={columnWidths}
+                            stateRow={stateRow}
+                            handleChange={handleChange}
+                            readOnly={true}
+                            editStatus={false}
+                          />
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="w-full h-full flex flex-col">
+              <div className="flex px-4 mt-6 bg-white justify-between">
+                <div className="flex gap-2 items-center">
+                  <p className="text-xl text-primary-red-600 font-semibold">
+                    SmartPR
+                  </p>
+                  <span className="py-1 px-4 rounded-lg text-white font-base bg-primary-green-500">
+                    140 horas
+                  </span>
+                </div>
+              </div>
+              <div className="overflow-x-auto h-full">
+                <div className="min-w-max">
+                  <div className="w-full p-3">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full">
+                        <thead>
+                          <ColumnTableRequest
+                            columnTitlesActivity={columnTitles}
+                            columnWidths={columnWidths}
+                            readOnly={false}
+                          />
+                        </thead>
+                        <tbody className="border-b border-gray-300">
+                          <RowTableRequest
+                            listItems={listItems}
+                            columnWidths={columnWidths}
+                            stateRow={stateRow}
+                            handleChange={handleChange}
+                            readOnly={true}
+                            editStatus={false}
+                          />
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      {activeTab === 3 && (
+        <div className="flex justify-end">
+          <Pagination
+            setRequests={setRequests}
+            totalPages={totalPages}
+            urlBase={urlBase}
+            setUrlBase={setUrlBase}
+            setLoading={setLoading}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AdminRequest;

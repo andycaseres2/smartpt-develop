@@ -1,0 +1,63 @@
+import { useEffect, useRef, useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import Calendar from "../../assets/Icons/Calendar";
+
+const InputDate = ({ text }) => {
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const calendarRef = useRef(null);
+
+  const handleDateChange = (date) => {
+    const formattedDate = `${("0" + date.getDate()).slice(-2)}/${(
+      "0" +
+      (date.getMonth() + 1)
+    ).slice(-2)}/${date.getFullYear()}`;
+    setSelectedDate(formattedDate);
+    setCalendarOpen(false);
+  };
+
+  const handleClickOutside = (event) => {
+    if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+      setCalendarOpen(false);
+    }
+  };
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+  console.log(selectedDate);
+
+  return (
+    <div
+      className="bg-white shadow-lg rounded-lg px-4 py-2 flex justify-between items-center gap-2 relative cursor-pointer"
+      onClick={() => setCalendarOpen(!calendarOpen)}
+      ref={calendarRef}
+    >
+      {selectedDate ? (
+        <span className="font-semibold">{selectedDate}</span>
+      ) : (
+        <span className="font-semibold">{text}</span>
+      )}
+
+      <div className="relative">
+        <Calendar />
+      </div>
+      {calendarOpen && (
+        <div className="absolute top-11 right-0">
+          <DatePicker
+            selected={selectedDate}
+            onChange={handleDateChange}
+            showPopperArrow={false}
+            popperPlacement="bottom-start"
+            inline
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default InputDate;

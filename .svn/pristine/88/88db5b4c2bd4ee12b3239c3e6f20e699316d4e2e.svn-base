@@ -1,0 +1,98 @@
+import { useState, useEffect } from "react";
+
+const TimeInput = ({ defaultValue, handleChange, key_name, fieldReset }) => {
+  const [inputValue, setInputValue] = useState("");
+
+  useEffect(() => {
+    if (fieldReset) {
+      setInputValue("");
+    }
+  }, [fieldReset]);
+
+  useEffect(() => {
+    if (defaultValue) {
+      // Convertir los minutos a horas y minutos
+      const hours = Math.floor(defaultValue / 60);
+      const minutes = defaultValue % 60;
+
+      // Formatear en formato de 12 horas
+      const formattedTime = formatTime24Hours(hours + minutes / 60);
+
+      setInputValue(formattedTime);
+
+      handleChange({
+        target: {
+          name: key_name,
+          value: defaultValue, // Mantener el valor en minutos
+        },
+      });
+    }
+  }, [defaultValue]);
+
+  // Función para formatear el tiempo en formato de 12 horas
+  const formatTime24Hours = (time) => {
+    const parsedTime = parseFloat(time);
+
+    if (!isNaN(parsedTime)) {
+      const hours = Math.floor(parsedTime);
+      const minutes = Math.round((parsedTime - hours) * 60);
+
+      const formattedTime = `${String(hours).padStart(2, "0")}:${String(
+        minutes
+      ).padStart(2, "0")}`;
+
+      return formattedTime;
+    } else {
+      return time;
+    }
+  };
+
+  // Generar opciones de horas en formato de 12 horas
+  const generateHourOptions = () => {
+    const options = [];
+    for (let i = 0; i < 24; i++) {
+      for (let j = 0; j < 60; j += 15) {
+        const time = formatTime24Hours(i + j / 60);
+        options.push(time);
+      }
+    }
+    return options;
+  };
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+
+    setInputValue(newValue);
+
+    // Convertir el formato "8:30" a 8.5
+    const match = newValue.match(/^(\d{1,2}):(\d{2})$/);
+
+    if (match) {
+      const hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+
+      const nuevoValor = hours * 60 + minutes;
+
+      handleChange({
+        target: { name: key_name, value: nuevoValor },
+      });
+    }
+  };
+
+  return (
+    <select
+      className="w-full border-none p-2 bg-gray-100 rounded-md focus:outline-none max-h-16 overflow-y-auto"
+      value={inputValue}
+      onChange={handleInputChange}
+      name={key_name}
+    >
+      {generateHourOptions().map((option, index) => (
+        <option key={index} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
+  );
+};
+
+export default TimeInput;
