@@ -23,7 +23,6 @@ const NotificationItem = ({
         const urlBase = import.meta.env.VITE_REACT_APP_URL_BASE;
         const taskEndpoint = `${urlBase}Task/${idTask}`;
         const task = await getData(taskEndpoint, token);
-        console.log("task", task);
         if (task && task.name) {
           setNameTask(task.name);
         }

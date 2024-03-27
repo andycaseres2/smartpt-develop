@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import SelectGeneric from "../../../components/Selects/SelectGeneric";
+// import SelectGeneric from "../../../components/Selects/SelectGeneric";
 import InputDate from "../../../components/Inputs/InputDate";
 import BoxHours from "../../../components/Boxes/BoxHours";
 import ButtonWithIcon from "../../../components/Buttons/ButtonWithIcon";
@@ -9,6 +9,9 @@ import Chart from "react-google-charts";
 import Popup from "../../../components/Popups/Popup";
 import { userStore } from "../../../store/userStore";
 import { getData } from "../../../services/getData";
+import MultiSelect from "../../../components/Selects/MultiSelect";
+import CleanIcon from "../../../assets/Icons/CleanIcon";
+import { stateStore } from "../../../store/stateStore";
 
 const ClientsPlanning = () => {
   const [realTime, setRealTime] = useState(true);
@@ -16,17 +19,22 @@ const ClientsPlanning = () => {
   const [openSubPopup, setOpenSubPopup] = useState(false);
   const [openPopup2, setOpenPopup2] = useState(false);
   const [openSubPopup2, setOpenSubPopup2] = useState(false);
-  const [currentDataDedicacionPorCliente, setCurrentDataDedicacionPorCliente] =
-    useState([]);
-  const [
-    currentDataDedicacionPorColaborador,
-    setCurrentDataDedicacionPorColaborador,
-  ] = useState([]);
+  const [dataReportByClient, setDataReportByClient] = useState([]);
+  const [dataReportByWorker, setDataReportByWorker] = useState([]);
+  // const [dataReportByClientMonth, setDataReportByClientMonth] = useState([]);
+  const [dataReportByProcess, setDataReportByProcess] = useState([]);
+  const [dataReportByActivity, setDataReportByActivity] = useState([]);
+  const [selectedClient, setSelectedClient] = useState([]);
+  const [dateStart, setDateStart] = useState(null);
+  const [dateEnd, setDateEnd] = useState(null);
+  const [fieldReset, setFieldReset] = useState(false);
   const { token } = userStore();
+  const { clients } = stateStore();
 
   useEffect(() => {
     const transformToBarPlot = (originalData, key) => {
       const colors = [
+        "#E93E37",
         "#E93E37",
         "#DF4D62",
         "#FF7686",
@@ -71,27 +79,133 @@ const ClientsPlanning = () => {
       return result;
     };
 
+    // const transformToPieBarPlot = (originalData) => {
+    //   const transformedArray = [["Task", "Hours per Day"]];
+
+    //   originalData.forEach((item) => {
+    //     transformedArray.push([item.state.toString(), item.count]);
+    //   });
+
+    //   return transformedArray;
+    // };
+    // const transformToComboBarPlot = (originalData) => {
+    //   const colors = [
+    //     "#E93E37",
+    //     "#E93E70",
+    //     "#DF4D62",
+    //     "#FF7686",
+    //     "#E47526",
+    //     "#EA9717",
+    //     "#81BA63",
+    //     "#43E18C",
+    //     "#80B5C5",
+    //     "#b87333",
+    //     "#0192D3",
+    //     "#8B6BAE",
+    //   ];
+    //   var result = [
+    //     [
+    //       "Element",
+    //       "Density",
+    //       { role: "style" },
+    //       {
+    //         sourceColumn: 0,
+    //         role: "annotation",
+    //         type: "string",
+    //         calc: "stringify",
+    //       },
+    //     ],
+    //   ];
+
+    //   // Agrupar datos por cliente y mes
+    //   var clientsData = {};
+    //   originalData.forEach((item) => {
+    //     const client = item.name;
+    //     const month = new Date(item.to_char).toLocaleString("en-US", {
+    //       month: "long",
+    //     });
+    //     if (!clientsData[client]) {
+    //       clientsData[client] = {};
+    //     }
+    //     clientsData[client][month] = item.sum;
+    //   });
+
+    //   // Iterar sobre los clientes
+    //   Object.keys(clientsData).forEach((client) => {
+    //     const clientData = clientsData[client];
+    //     Object.keys(clientData).forEach((month) => {
+    //       const color = colors[Math.floor(Math.random() * colors.length)];
+    //       result.push([client, clientData[month], color, null]);
+    //     });
+    //   });
+
+    //   return result;
+    // };
+
     const fetchDataOnMount = async () => {
       try {
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-        const dashboardEndpointReport1 = `${baseUrl}Dashboard?reporte=1&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport2 = `${baseUrl}Dashboard?reporte=2&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
+        const baseParams = `reporte=1&startDate=${
+          dateStart || "2024-02-01T00:00:00"
+        }&endDate=${dateEnd || "2024-03-01T00:00:00"}`;
+        let endpointParams = "";
 
-        const dataDedicacionPorCliente = await getData(
+        // Verificar si selectedClient tiene algún valor
+        if (selectedClient.length > 0) {
+          const IdEmployeeString = `IdClient=(${selectedClient.join(",")})`;
+          endpointParams = `&${IdEmployeeString}`;
+        }
+
+        const dashboardEndpointReport1 = `${baseUrl}Dashboard?${baseParams}${endpointParams}`;
+        const dashboardEndpointReport2 = `${baseUrl}Dashboard?reporte=2&${baseParams}${endpointParams}`;
+        // const dashboardEndpointReport3 = `${baseUrl}Dashboard?reporte=3&${baseParams}${endpointParams}`;
+        const dashboardEndpointReport4 = `${baseUrl}Dashboard?reporte=4&${baseParams}${endpointParams}`;
+        const dashboardEndpointReport5 = `${baseUrl}Dashboard?reporte=5&${baseParams}${endpointParams}`;
+        // const dashboardEndpointReport6 = `${baseUrl}Dashboard?reporte=6&${baseParams}${endpointParams}`;
+
+        const dataReportByClient = await getData(
           dashboardEndpointReport1,
           token
         );
-        setCurrentDataDedicacionPorCliente(
-          transformToBarPlot(dataDedicacionPorCliente, "name")
-        );
+        setDataReportByClient(transformToBarPlot(dataReportByClient, "name"));
 
-        const dataDedicacionPorColaborador = await getData(
+        const dataReportByWorker = await getData(
           dashboardEndpointReport2,
           token
         );
-        setCurrentDataDedicacionPorColaborador(
-          transformToBarPlot(dataDedicacionPorColaborador, "fullname")
+        setDataReportByWorker(
+          transformToBarPlot(dataReportByWorker, "fullname")
         );
+
+        // const dataReportByClientMonth = await getData(
+        //   dashboardEndpointReport3,
+        //   token
+        // );
+        // setDataReportByClientMonth(
+        //   transformToComboBarPlot(dataReportByClientMonth, "name")
+        // );
+
+        const dataReportByProcess = await getData(
+          dashboardEndpointReport4,
+          token
+        );
+        setDataReportByProcess(transformToBarPlot(dataReportByProcess, "name"));
+
+        const dataReportByActivity = await getData(
+          dashboardEndpointReport5,
+          token
+        );
+        setDataReportByActivity(
+          transformToBarPlot(dataReportByActivity, "name")
+        );
+
+        // const dataReportActivity = await getData(
+        //   dashboardEndpointReport6,
+        //   token
+        // );
+        // setDataReportActivity(
+        //   transformToPieBarPlot(dataReportActivity, "state")
+        // );
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -99,7 +213,7 @@ const ClientsPlanning = () => {
 
     fetchDataOnMount();
     setRealTime(false);
-  }, [realTime]);
+  }, [realTime, selectedClient, dateStart, dateEnd]);
 
   const options = {
     bar: { groupWidth: "75%" },
@@ -111,21 +225,71 @@ const ClientsPlanning = () => {
       ticks: [0, 1000, 2000, 3100], // Establece los ticks específicos
     },
   };
+
+  const optionsPie = {
+    bar: { groupWidth: "100%" },
+    legend: { position: "none" },
+    chartArea: { width: "60%", height: "85%" },
+    height: 300,
+    hAxis: {
+      minValue: 0,
+      ticks: [0, 1000, 2000, 3100], // Establece los ticks específicos
+    },
+    pieHole: 0.6,
+    is3D: false,
+  };
+
+  const handleCleanFilters = () => {
+    setSelectedClient([]);
+    setDateStart(null);
+    setDateEnd(null);
+    setFieldReset(true);
+  };
+
   return (
     <div className="w-full h-[690px] bg-white p-4 shadow-3xl rounded-lg relative overflow-hidden overflow-y-auto">
       <div className="flex justify-between">
         <h1 className="w-max text-primary-blue-500 text-[32px] font-bold">
           Estado planeación colaboradores
         </h1>
-        <div className="flex gap-4">
-          <SelectGeneric
-            options={[]}
-            initialOption={"Cliente"}
-            key_name=""
-            handleChange={() => {}}
+        <div className="w-max flex gap-3 justify-end">
+          <MultiSelect
+            options={clients}
+            setTasks={""}
+            newFilter={""}
+            placeholder={"Clientes"}
+            setSelectedEmployees={setSelectedClient}
+            consolided={true}
+            isFilter={true}
+            urlBase={""}
+            setUrlBase={""}
+            colorSelect={"bg-primary-purple-50"}
+            fieldReset={fieldReset}
+            setFieldReset={setFieldReset}
           />
-          <InputDate text={"Fecha inicio"} />
-          <InputDate text={"Fecha fin"} />
+          <InputDate
+            text={"Fecha inicio"}
+            urlBase={""}
+            setUrlBase={""}
+            setTasks={""}
+            newFilter={"startDate"}
+            fieldReset={fieldReset}
+            setUpdateState={setDateStart}
+          />
+          <InputDate
+            text={"Fecha fin"}
+            urlBase={""}
+            setUrlBase={""}
+            setTasks={""}
+            newFilter={"endDate"}
+            fieldReset={fieldReset}
+            setUpdateState={setDateEnd}
+          />
+          <ButtonWithIcon
+            text={"Limpiar filtros"}
+            icon={<CleanIcon />}
+            action={handleCleanFilters}
+          />
         </div>
       </div>
 
@@ -165,11 +329,8 @@ const ClientsPlanning = () => {
             <div className="w-full shadow-3xl rounded-lg flex flex-col py-2 justify-center px-4 relative">
               <div className="flex pl-2 justify-between items-center">
                 <div className="flex flex-col">
-                  <span className="text-primary-red-600 font-bold text-[16px]">
-                    Dedicación por cliente
-                  </span>
-                  <span className="text-primary-red-600 text-[14px]">
-                    Clientes x Horas reales
+                  <span className="text-primary-blue-500 font-bold text-[16px]">
+                    Porcentaje competitud
                   </span>
                 </div>
                 <div
@@ -179,13 +340,37 @@ const ClientsPlanning = () => {
                   <DotsIcon />
                 </div>
               </div>
-              <Chart
-                chartType="PieChart"
-                width="100%"
-                height="100%"
-                data={currentDataDedicacionPorCliente}
-                options={options}
-              />
+
+              <div className="flex justify-start items-center">
+                <Chart
+                  chartType="PieChart"
+                  width="100%"
+                  height="100%"
+                  data={dataReportByClient}
+                  options={optionsPie}
+                />
+                <div className="w-1/2 flex flex-col items-center">
+                  <div className="flex flex-col items-center">
+                    <div className="w-full flex gap-2 justify-start items-center">
+                      <span className="text-2xl text-[#0192D3] rounded-full">
+                        •
+                      </span>
+                      <span className="text-[#0192D3]">Total de tareas</span>
+                    </div>
+                    <span>barra progreso</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-full flex gap-2 justify-start items-center">
+                      <span className="text-2xl text-[#82BA63] rounded-full">
+                        •
+                      </span>
+                      <span className="text-[#82BA63]">Total de tareas</span>
+                    </div>
+                    <span>barra progreso</span>
+                  </div>
+                </div>
+              </div>
+
               {openPopup && (
                 <Popup
                   openSubPopup={openSubPopup}
@@ -196,10 +381,68 @@ const ClientsPlanning = () => {
             <div className="w-full shadow-3xl rounded-lg flex flex-col py-2 justify-center px-4 relative">
               <div className="flex pl-2 justify-between items-center">
                 <div className="flex flex-col">
-                  <span className="text-primary-red-600 font-bold text-[16px]">
-                    Dedicación por cliente
+                  <span className="text-primary-blue-500 font-bold text-[16px]">
+                    Estados actividades
                   </span>
-                  <span className="text-primary-red-600 text-[14px]">
+                </div>
+                <div
+                  className={"cursor-pointer hover:scale-105 px-4 py-2"}
+                  onClick={() => setOpenPopup2(!openPopup2)}
+                >
+                  <DotsIcon />
+                </div>
+              </div>
+              <div className="flex justify-start items-center">
+                <Chart
+                  chartType="PieChart"
+                  width="100%"
+                  height="100%"
+                  data={dataReportByWorker}
+                  options={optionsPie}
+                />
+                <div className="w-1/3 flex flex-col items-center">
+                  <div className="w-full flex gap-2 justify-start items-center">
+                    <span className="text-2xl text-primary-green-500 rounded-full">
+                      •
+                    </span>
+                    <span>Finalizado</span>
+                  </div>
+                  <div className="w-full flex gap-2 items-center">
+                    <span className="text-2xl text-primary-yellow-500 rounded-full">
+                      •
+                    </span>
+                    <span>En proceso</span>
+                  </div>
+                  <div className="w-full flex gap-2 items-center">
+                    <span className="text-2xl text-primary-red-500 rounded-full">
+                      •
+                    </span>
+                    <span>Pendiente</span>
+                  </div>
+                  <div className="w-full flex gap-2 items-center">
+                    <span className="text-2xl text-primary-blue-500 rounded-full">
+                      •
+                    </span>
+                    <span>No ejecutado</span>
+                  </div>
+                </div>
+              </div>
+              {openPopup2 && (
+                <Popup
+                  openSubPopup={openSubPopup2}
+                  setOpenSubPopup={setOpenSubPopup2}
+                />
+              )}
+            </div>
+          </div>
+          <div className="flex w-full items-start gap-6 mt-6">
+            <div className="w-full shadow-3xl rounded-lg flex flex-col py-2 justify-center px-4 relative">
+              <div className="flex pl-2 justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="text-primary-blue-600 font-bold text-[16px]">
+                    Dedicación por colaborador
+                  </span>
+                  <span className="text-primary-blue-600 text-[14px]">
                     Clientes x Horas reales
                   </span>
                 </div>
@@ -211,10 +454,74 @@ const ClientsPlanning = () => {
                 </div>
               </div>
               <Chart
-                chartType="PieChart"
+                chartType="BarChart"
                 width="100%"
                 height="100%"
-                data={currentDataDedicacionPorColaborador}
+                data={dataReportByWorker}
+                options={options}
+              />
+              {openPopup2 && (
+                <Popup
+                  openSubPopup={openSubPopup2}
+                  setOpenSubPopup={setOpenSubPopup2}
+                />
+              )}
+            </div>
+            <div className="w-full shadow-3xl rounded-lg flex flex-col py-2 justify-center px-4 relative">
+              <div className="flex pl-2 justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="text-primary-blue-600 font-bold text-[16px]">
+                    Dedicación por proceso
+                  </span>
+                  <span className="text-primary-blue-600 text-[14px]">
+                    Proceso x Horas reales
+                  </span>
+                </div>
+                <div
+                  className={"cursor-pointer hover:scale-105 px-4 py-2"}
+                  onClick={() => setOpenPopup(!openPopup)}
+                >
+                  <DotsIcon />
+                </div>
+              </div>
+              <Chart
+                chartType="BarChart"
+                width="100%"
+                height="100%"
+                data={dataReportByProcess}
+                options={options}
+              />
+              {openPopup && (
+                <Popup
+                  openSubPopup={openSubPopup}
+                  setOpenSubPopup={setOpenSubPopup}
+                />
+              )}
+            </div>
+          </div>
+          <div className="flex w-full justify-center items-start gap-6 mt-6">
+            <div className="w-1/2 shadow-3xl rounded-lg flex flex-col py-2 justify-center px-4 relative">
+              <div className="flex pl-2 justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="text-primary-blue-600 font-bold text-[16px]">
+                    Dedicación por actividad
+                  </span>
+                  <span className="text-primary-blue-600 text-[14px]">
+                    Actividad x Horas reales
+                  </span>
+                </div>
+                <div
+                  className={"cursor-pointer hover:scale-105 px-4 py-2"}
+                  onClick={() => setOpenPopup2(!openPopup2)}
+                >
+                  <DotsIcon />
+                </div>
+              </div>
+              <Chart
+                chartType="BarChart"
+                width="100%"
+                height="100%"
+                data={dataReportByActivity}
                 options={options}
               />
               {openPopup2 && (

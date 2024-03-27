@@ -12,6 +12,7 @@ import Select from "../../../components/Selects/Select";
 import MonthLegend from "../../../components/MonthLegend";
 import { stateStore } from "../../../store/stateStore";
 import CleanIcon from "../../../assets/Icons/CleanIcon";
+import MultiSelect from "../../../components/Selects/MultiSelect";
 
 const CollaboratorsPlanning = ({ realTime, setRealTime }) => {
   const { employees } = stateStore();
@@ -24,12 +25,16 @@ const CollaboratorsPlanning = ({ realTime, setRealTime }) => {
   const [dataReportByClientMonth, setDataReportByClientMonth] = useState([]);
   const [dataReportByProcess, setDataReportByProcess] = useState([]);
   const [dataReportByActivity, setDataReportByActivity] = useState([]);
-
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [dateStart, setDateStart] = useState(null);
+  const [dateEnd, setDateEnd] = useState(null);
+  const [fieldReset, setFieldReset] = useState(false);
   const { token } = userStore();
 
   useEffect(() => {
     const transformToBarPlot = (originalData, key) => {
       const colors = [
+        "#E93E37",
         "#E93E37",
         "#DF4D62",
         "#FF7686",
@@ -74,6 +79,15 @@ const CollaboratorsPlanning = ({ realTime, setRealTime }) => {
       return result;
     };
 
+    // const transformToPieBarPlot = (originalData) => {
+    //   const transformedArray = [["Task", "Hours per Day"]];
+
+    //   originalData.forEach((item) => {
+    //     transformedArray.push([item.state.toString(), item.count]);
+    //   });
+
+    //   return transformedArray;
+    // };
     const transformToComboBarPlot = (originalData) => {
       const colors = [
         "#E93E37",
@@ -128,25 +142,28 @@ const CollaboratorsPlanning = ({ realTime, setRealTime }) => {
       return result;
     };
 
-    const transformToPieBarPlot = (originalData) => {
-      const transformedArray = [["Task", "Hours per Day"]];
-
-      originalData.forEach((item) => {
-        transformedArray.push([item.state.toString(), item.count]);
-      });
-
-      return transformedArray;
-    };
-
     const fetchDataOnMount = async () => {
       try {
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-        const dashboardEndpointReport1 = `${baseUrl}Dashboard?reporte=1&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport2 = `${baseUrl}Dashboard?reporte=2&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport3 = `${baseUrl}Dashboard?reporte=3&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport4 = `${baseUrl}Dashboard?reporte=4&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport5 = `${baseUrl}Dashboard?reporte=5&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport6 = `${baseUrl}Dashboard?reporte=6&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
+        const baseParams = `reporte=1&startDate=${
+          dateStart || "2024-02-01T00:00:00"
+        }&endDate=${dateEnd || "2024-03-01T00:00:00"}`;
+        let endpointParams = "";
+
+        // Verificar si selectedEmployees tiene algún valor
+        if (selectedEmployees.length > 0) {
+          const IdEmployeeString = `IdEmployee=(${selectedEmployees.join(
+            ","
+          )})`;
+          endpointParams = `&${IdEmployeeString}`;
+        }
+
+        const dashboardEndpointReport1 = `${baseUrl}Dashboard?${baseParams}${endpointParams}`;
+        const dashboardEndpointReport2 = `${baseUrl}Dashboard?reporte=2&${baseParams}${endpointParams}`;
+        const dashboardEndpointReport3 = `${baseUrl}Dashboard?reporte=3&${baseParams}${endpointParams}`;
+        const dashboardEndpointReport4 = `${baseUrl}Dashboard?reporte=4&${baseParams}${endpointParams}`;
+        const dashboardEndpointReport5 = `${baseUrl}Dashboard?reporte=5&${baseParams}${endpointParams}`;
+        // const dashboardEndpointReport6 = `${baseUrl}Dashboard?reporte=6&${baseParams}${endpointParams}`;
 
         const dataReportByClient = await getData(
           dashboardEndpointReport1,
@@ -183,6 +200,14 @@ const CollaboratorsPlanning = ({ realTime, setRealTime }) => {
         setDataReportByActivity(
           transformToBarPlot(dataReportByActivity, "name")
         );
+
+        // const dataReportActivity = await getData(
+        //   dashboardEndpointReport6,
+        //   token
+        // );
+        // setDataReportActivity(
+        //   transformToPieBarPlot(dataReportActivity, "state")
+        // );
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -190,7 +215,7 @@ const CollaboratorsPlanning = ({ realTime, setRealTime }) => {
 
     fetchDataOnMount();
     setRealTime(false);
-  }, [realTime]);
+  }, [realTime, selectedEmployees, dateStart, dateEnd]);
 
   const colors = [
     "#E93E37",
@@ -253,23 +278,34 @@ const CollaboratorsPlanning = ({ realTime, setRealTime }) => {
   const optionsComboBar = {
     seriesType: "bars",
   };
+
+  const handleCleanFilters = () => {
+    setSelectedEmployees([]);
+    setDateStart(null);
+    setDateEnd(null);
+    setFieldReset(true);
+  };
+
   return (
     <div className="w-full h-[690px] bg-white p-4 shadow-3xl rounded-lg relative overflow-hidden overflow-y-auto">
       <div className="flex justify-between">
         <h1 className="w-max text-primary-orange-500 text-[32px] font-bold">
           Estado planeación clientes
         </h1>
-        <div className="flex gap-4">
-          <Select
+        <div className="w-max flex gap-3 justify-end">
+          <MultiSelect
             options={employees}
             setTasks={""}
             newFilter={""}
-            initialOption={"Colaborador"}
-            setInitialOption={""}
+            placeholder={"Colaborador"}
+            setSelectedEmployees={setSelectedEmployees}
             consolided={true}
             isFilter={true}
             urlBase={""}
             setUrlBase={""}
+            colorSelect={"bg-primary-purple-50"}
+            fieldReset={fieldReset}
+            setFieldReset={setFieldReset}
           />
           <InputDate
             text={"Fecha inicio"}
@@ -277,7 +313,8 @@ const CollaboratorsPlanning = ({ realTime, setRealTime }) => {
             setUrlBase={""}
             setTasks={""}
             newFilter={"startDate"}
-            fieldReset={""}
+            fieldReset={fieldReset}
+            setUpdateState={setDateStart}
           />
           <InputDate
             text={"Fecha fin"}
@@ -285,12 +322,13 @@ const CollaboratorsPlanning = ({ realTime, setRealTime }) => {
             setUrlBase={""}
             setTasks={""}
             newFilter={"endDate"}
-            fieldReset={""}
+            fieldReset={fieldReset}
+            setUpdateState={setDateEnd}
           />
           <ButtonWithIcon
             text={"Limpiar filtros"}
             icon={<CleanIcon />}
-            action={""}
+            action={handleCleanFilters}
           />
         </div>
       </div>

@@ -17,6 +17,7 @@ const InputDate = ({
   handleChange,
   fieldReset,
   minValue,
+  setUpdateState,
 }) => {
   const { token } = userStore();
   const [selectedDate, setSelectedDate] = useState(null);
@@ -27,11 +28,13 @@ const InputDate = ({
   useEffect(() => {
     if (fieldReset) {
       setSelectedDate(null);
+      setUpdateState(null);
     }
   }, [fieldReset]);
 
   const handleDate = async (date, filter) => {
     setSelectedDate(date);
+    setUpdateState(date.toISOString());
     const formattedDate = date.toISOString();
     if (handleChange) {
       handleChange({

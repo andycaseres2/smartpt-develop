@@ -63,6 +63,10 @@ const GeneralDashboards = () => {
   const [dataReportByActivity, setDataReportByActivity] = useState([]);
   const [dataReportActivity, setDataReportActivity] = useState([]);
   const [dataReportByClientTable, setDataReportByClientTable] = useState([]);
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [dateStart, setDateStart] = useState(null);
+  const [dateEnd, setDateEnd] = useState(null);
+  const [fieldReset, setFieldReset] = useState(false);
 
   useEffect(() => {
     const transformToBarPlot = (originalData, key) => {
@@ -178,12 +182,25 @@ const GeneralDashboards = () => {
     const fetchDataOnMount = async () => {
       try {
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-        const dashboardEndpointReport1 = `${baseUrl}Dashboard?reporte=1&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport2 = `${baseUrl}Dashboard?reporte=2&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport3 = `${baseUrl}Dashboard?reporte=3&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport4 = `${baseUrl}Dashboard?reporte=4&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport5 = `${baseUrl}Dashboard?reporte=5&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
-        const dashboardEndpointReport6 = `${baseUrl}Dashboard?reporte=6&startDate=${"2024-02-01T00:00:00"}&endDate=${"2024-03-01T00:00:00"}`;
+        const baseParams = `reporte=1&startDate=${
+          dateStart || "2024-02-01T00:00:00"
+        }&endDate=${dateEnd || "2024-03-01T00:00:00"}`;
+        let endpointParams = "";
+
+        // Verificar si selectedEmployees tiene algún valor
+        if (selectedEmployees.length > 0) {
+          const IdEmployeeString = `IdEmployee=(${selectedEmployees.join(
+            ","
+          )})`;
+          endpointParams = `&${IdEmployeeString}`;
+        }
+
+        const dashboardEndpointReport1 = `${baseUrl}Dashboard?${baseParams}${endpointParams}`;
+        const dashboardEndpointReport2 = `${baseUrl}Dashboard?reporte=2&${baseParams}${endpointParams}`;
+        const dashboardEndpointReport3 = `${baseUrl}Dashboard?reporte=3&${baseParams}${endpointParams}`;
+        const dashboardEndpointReport4 = `${baseUrl}Dashboard?reporte=4&${baseParams}${endpointParams}`;
+        const dashboardEndpointReport5 = `${baseUrl}Dashboard?reporte=5&${baseParams}${endpointParams}`;
+        const dashboardEndpointReport6 = `${baseUrl}Dashboard?reporte=6&${baseParams}${endpointParams}`;
 
         const dataReportByClient = await getData(
           dashboardEndpointReport1,
@@ -236,7 +253,7 @@ const GeneralDashboards = () => {
 
     fetchDataOnMount();
     setRealTime(false);
-  }, [realTime]);
+  }, [realTime, selectedEmployees, dateStart, dateEnd]);
 
   const options = {
     bar: { groupWidth: "75%" },
@@ -270,6 +287,13 @@ const GeneralDashboards = () => {
     0
   );
 
+  const handleCleanFilters = () => {
+    setSelectedEmployees([]);
+    setDateStart(null);
+    setDateEnd(null);
+    setFieldReset(true);
+  };
+
   return (
     <div className="w-full h-[690px] bg-white p-4 shadow-3xl rounded-lg relative overflow-hidden overflow-y-auto">
       <div className="w-full flex justify-between">
@@ -281,13 +305,15 @@ const GeneralDashboards = () => {
             options={employees}
             setTasks={""}
             newFilter={""}
-            initialOption={"Colaborador"}
-            setInitialOption={""}
+            placeholder={"Colaborador"}
+            setSelectedEmployees={setSelectedEmployees}
             consolided={true}
             isFilter={true}
             urlBase={""}
             setUrlBase={""}
             colorSelect={"bg-primary-purple-50"}
+            fieldReset={fieldReset}
+            setFieldReset={setFieldReset}
           />
           <InputDate
             text={"Fecha inicio"}
@@ -295,7 +321,8 @@ const GeneralDashboards = () => {
             setUrlBase={""}
             setTasks={""}
             newFilter={"startDate"}
-            fieldReset={""}
+            fieldReset={fieldReset}
+            setUpdateState={setDateStart}
           />
           <InputDate
             text={"Fecha fin"}
@@ -303,12 +330,13 @@ const GeneralDashboards = () => {
             setUrlBase={""}
             setTasks={""}
             newFilter={"endDate"}
-            fieldReset={""}
+            fieldReset={fieldReset}
+            setUpdateState={setDateEnd}
           />
           <ButtonWithIcon
             text={"Limpiar filtros"}
             icon={<CleanIcon />}
-            action={""}
+            action={handleCleanFilters}
           />
         </div>
       </div>

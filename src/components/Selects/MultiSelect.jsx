@@ -11,12 +11,15 @@ const MultiSelect = ({
   containerStyle,
   setTasks,
   newFilter,
-  setInitialOptions,
+  setSelectedEmployees,
   handleSelect,
   isFilter,
   setUrlBase,
   urlBase,
   colorSelect,
+  placeholder,
+  fieldReset,
+  setFieldReset,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -25,8 +28,17 @@ const MultiSelect = ({
   useEffect(() => {
     if (initialOptions && initialOptions.length > 0) {
       setSelectedOptions(initialOptions);
+      setSelectedEmployees(initialOptions);
     }
   }, [initialOptions]);
+
+  useEffect(() => {
+    if (fieldReset) {
+      setSelectedOptions([]);
+      setSelectedEmployees([]);
+    }
+    setFieldReset(false);
+  }, [fieldReset]);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -43,7 +55,7 @@ const MultiSelect = ({
     }
 
     setSelectedOptions(updatedOptions);
-
+    setSelectedEmployees(updatedOptions);
     if (handleSelect) {
       handleSelect(updatedOptions);
     }
@@ -88,11 +100,12 @@ const MultiSelect = ({
         <span className="overflow-hidden whitespace-nowrap overflow-ellipsis w-full">
           {selectedOptions.length > 0
             ? selectedOptions
-                .map(
-                  (id) => options.find((option) => option.id === id)?.fullname
-                )
+                .map((id) => {
+                  const option = options.find((option) => option.id === id);
+                  return option ? option.fullname || option.name : null;
+                })
                 .join(", ")
-            : "Seleccione..."}
+            : placeholder}
         </span>
         {isOpen ? (
           <ArrowDown fill={colorArrow} className="rotate-180" />
@@ -109,25 +122,36 @@ const MultiSelect = ({
           {options.map((option) => (
             <div
               key={option.id}
-              className={`p-2 cursor-pointer hover:bg-gray-100 w-full ${
-                selectedOptions.includes(option.id) &&
-                `${colorSelect} font-bold`
+              className={`p-2 cursor-pointer  ${
+                !selectedOptions.includes(option.id) && "hover:bg-gray-100"
+              }  w-full flex items-center gap-2 ${
+                selectedOptions.includes(option.id) && colorSelect
               }`}
               onClick={() =>
                 handleOptionClick(option.name || option.fullname, option.id)
               }
             >
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="accent-primary-red-500 border border-white"
-                  onChange={() =>
-                    handleOptionClick(option.name || option.fullname, option.id)
-                  }
-                  checked={selectedOptions.includes(option.id)}
-                />
-                {option.name || option.fullname}
+              <div
+                className={`w-4.5 h-4.5 border-2 border-white flex items-center justify-center ${
+                  selectedOptions.includes(option.id) && `bg-primary-red-500`
+                }`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-3 w-3 text-white ${
+                    selectedOptions.includes(option.id) ? "" : "hidden"
+                  }`}
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3.293 9.293a1 1 0 0 1 1.414 0L9 13.586l6.293-6.293a1 1 0 1 1 1.414 1.414l-7 7a1 1 0 0 1-1.414 0l-7-7a1 1 0 0 1 0-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </div>
+              <div>{option.name || option.fullname}</div>
             </div>
           ))}
         </div>
