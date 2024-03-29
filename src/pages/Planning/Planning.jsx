@@ -120,6 +120,7 @@ const Planning = () => {
             taskFullyLoaded={taskFullyLoaded}
             setLoading={setLoading}
             loading={loading}
+            currentWeek={currentWeek}
           />
         ) : (
           <WorkerPlanning

@@ -24,6 +24,14 @@ const ClientsPlanning = () => {
   // const [dataReportByClientMonth, setDataReportByClientMonth] = useState([]);
   const [dataReportByProcess, setDataReportByProcess] = useState([]);
   const [dataReportByActivity, setDataReportByActivity] = useState([]);
+  const [dataReportByClientTable, setDataReportByClientTable] = useState([]);
+
+  const [dataOptionsByClient, setDataOptionsByClient] = useState([]);
+  const [dataOptionsByWorker, setDataOptionsByWorker] = useState([]);
+  // const [dataReportByClientMonth, setDataReportByClientMonth] = useState([]);
+  const [dataOptionsByProcess, setDataOptionsByProcess] = useState([]);
+  const [dataOptionsByActivity, setDataOptionsByActivity] = useState([]);
+
   const [selectedClient, setSelectedClient] = useState([]);
   const [dateStart, setDateStart] = useState(null);
   const [dateEnd, setDateEnd] = useState(null);
@@ -32,6 +40,50 @@ const ClientsPlanning = () => {
   const { clients } = stateStore();
 
   useEffect(() => {
+    function nextChar(c) {
+      return String.fromCharCode(c.charCodeAt(0) + 1);
+    }
+    const getOptionsBarPlot = (originalData) => {
+      var maxValue = 0;
+      for (var i = 0; i < originalData.length; i++) {
+        if (maxValue < originalData[i]["sum"]) {
+          maxValue = originalData[i]["sum"];
+        }
+      }
+      var valor = maxValue.toString().split("");
+      if (valor.length > 0) {
+        if (valor[0] < "9") {
+          //SI se opera sobre char
+          valor[0] = nextChar(valor[0]);
+        } else {
+          valor = ["1", ...valor];
+        }
+        for (var i = 1; i < valor.length; i++) {
+          valor[i] = "0";
+        }
+        maxValue = parseInt(valor.join(""));
+      }
+      var listOfTicks = [];
+      if (maxValue > 10) {
+        var portion = Math.floor(maxValue / 5);
+        for (var i = 0; i < maxValue; i = i + portion) {
+          listOfTicks.push(i);
+        }
+      } else {
+        listOfTicks = [0, maxValue];
+      }
+      const options = {
+        bar: { groupWidth: "75%" },
+        legend: { position: "none" },
+        chartArea: { width: "60%", height: "85%" },
+        height: 500,
+        hAxis: {
+          minValue: 0,
+          ticks: listOfTicks, // Establece los ticks específicos
+        },
+      };
+      return options;
+    };
     const transformToBarPlot = (originalData, key) => {
       const colors = [
         "#E93E37",
@@ -167,6 +219,7 @@ const ClientsPlanning = () => {
           dashboardEndpointReport1,
           token
         );
+        setDataReportByClientTable(dataReportByClient);
         setDataReportByClient(transformToBarPlot(dataReportByClient, "name"));
 
         const dataReportByWorker = await getData(
@@ -176,6 +229,7 @@ const ClientsPlanning = () => {
         setDataReportByWorker(
           transformToBarPlot(dataReportByWorker, "fullname")
         );
+        setDataOptionsByWorker(getOptionsBarPlot(dataReportByWorker));
 
         // const dataReportByClientMonth = await getData(
         //   dashboardEndpointReport3,
@@ -190,6 +244,7 @@ const ClientsPlanning = () => {
           token
         );
         setDataReportByProcess(transformToBarPlot(dataReportByProcess, "name"));
+        setDataOptionsByProcess(getOptionsBarPlot(dataReportByProcess));
 
         const dataReportByActivity = await getData(
           dashboardEndpointReport5,
@@ -198,6 +253,7 @@ const ClientsPlanning = () => {
         setDataReportByActivity(
           transformToBarPlot(dataReportByActivity, "name")
         );
+        setDataOptionsByActivity(getOptionsBarPlot(dataReportByActivity));
 
         // const dataReportActivity = await getData(
         //   dashboardEndpointReport6,
@@ -235,7 +291,7 @@ const ClientsPlanning = () => {
       minValue: 0,
       ticks: [0, 1000, 2000, 3100], // Establece los ticks específicos
     },
-    pieHole: 0.6,
+    pieHole: 0.45,
     is3D: false,
   };
 
@@ -246,11 +302,16 @@ const ClientsPlanning = () => {
     setFieldReset(true);
   };
 
+  const totalHoras = dataReportByClientTable.reduce(
+    (total, cliente) => total + cliente.sum,
+    0
+  );
+
   return (
     <div className="w-full h-[690px] bg-white p-4 shadow-3xl rounded-lg relative overflow-hidden overflow-y-auto">
       <div className="flex justify-between">
         <h1 className="w-max text-primary-blue-500 text-[32px] font-bold">
-          Estado planeación colaboradores
+          Estado planeación clientes
         </h1>
         <div className="w-max flex gap-3 justify-end">
           <MultiSelect
@@ -303,21 +364,20 @@ const ClientsPlanning = () => {
             <BoxHours
               title="Horas programadas"
               porcentaje="+11%"
-              values="15.000"
+              values={totalHoras}
               color={"primary-blue-500"}
             />
             <BoxHours
               title="Horas reales"
               porcentaje="+11%"
-              values="14.900"
+              values={totalHoras}
               color={"primary-blue-500"}
             />
             <BoxHours
               title="Porcentaje de planeación"
               porcentaje="+11%"
-              values="1%"
+              values={`${totalHoras * dataReportByClient.length}%`}
               color={"primary-blue-500"}
-              textColor={"text-primary-green-500"}
             />
             <ButtonWithIcon
               buttonColor={"bg-primary-blue-500 absolute left-0 top-0"}
@@ -347,7 +407,7 @@ const ClientsPlanning = () => {
                   width="100%"
                   height="100%"
                   data={dataReportByClient}
-                  options={optionsPie}
+                  options={dataOptionsByClient}
                 />
                 <div className="w-1/2 flex flex-col items-center">
                   <div className="flex flex-col items-center">
@@ -458,7 +518,7 @@ const ClientsPlanning = () => {
                 width="100%"
                 height="100%"
                 data={dataReportByWorker}
-                options={options}
+                options={dataOptionsByWorker}
               />
               {openPopup2 && (
                 <Popup
@@ -489,7 +549,7 @@ const ClientsPlanning = () => {
                 width="100%"
                 height="100%"
                 data={dataReportByProcess}
-                options={options}
+                options={dataOptionsByProcess}
               />
               {openPopup && (
                 <Popup
@@ -522,7 +582,7 @@ const ClientsPlanning = () => {
                 width="100%"
                 height="100%"
                 data={dataReportByActivity}
-                options={options}
+                options={dataOptionsByActivity}
               />
               {openPopup2 && (
                 <Popup

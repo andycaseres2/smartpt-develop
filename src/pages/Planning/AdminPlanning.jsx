@@ -20,6 +20,7 @@ import { postData } from "../../services/postData";
 import { userStore } from "../../store/userStore";
 import ModalConfirmation from "../../components/Modals/ModalConfirmation";
 import ModalGeneric from "../../components/Modals/ModalGeneric";
+import SelectMonth from "../../components/Selects/SelectMonth";
 
 const AdminPlanning = ({
   tasks,
@@ -33,6 +34,7 @@ const AdminPlanning = ({
   taskFullyLoaded,
   loading,
   setLoading,
+  currentWeek,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
   const { token, user } = userStore();
@@ -50,7 +52,6 @@ const AdminPlanning = ({
   } = stateStore();
   const [selectedFrequencyOption, setselectedFrequencyOption] =
     useState("Semanal");
-  const [selectedMonthOption, setselectedMonthOption] = useState("Septiembre");
 
   const [stateRow, setStateRow] = useState({});
 
@@ -71,6 +72,79 @@ const AdminPlanning = ({
   const [totalTimes, setTotalTimes] = useState(0);
   const [asignedActividity, setAsignedActividity] = useState(false);
   const [responsable, setResponsable] = useState("");
+  const [tracking, setTracking] = useState(false);
+  const [trackingDates, setTrackingDates] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(null);
+
+  useEffect(() => {
+    const dateTracking = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+        const [year, month] = currentWeek[0].split("-");
+        const date = `${year}-${selectedMonth || month}-01T00:00:00`;
+
+        // Aquí ya puedes utilizar currentWeekWithCurrentMonth en la URL del endpoint
+        const trackingsEndpoint = `${baseUrl}/FormattedDates/Tracking?startDate=${date}`;
+        const trackingResponse = await getData(trackingsEndpoint, token);
+        setTrackingDates(trackingResponse);
+      } catch (error) {
+        console.error("Error al obtener el presupuesto:", error);
+      }
+    };
+
+    dateTracking();
+  }, [selectedMonth, currentWeek]);
+
+  const fetchDataTracking = async (dateStart, dateEnd) => {
+    try {
+      const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const trackingsEndpoint = `${baseUrl}Tracking?IdEmployee=${selectedUserId}&startDate=${dateStart}&endDate=${dateEnd}`;
+      const trackingResponse = await getData(trackingsEndpoint, token);
+      return trackingResponse;
+    } catch (error) {
+      console.error("Error al obtener los datos de seguimiento:", error);
+      return null;
+    }
+  };
+
+  const fetchAllData = async (data) => {
+    const fetchedData = [];
+
+    for (const pair of data) {
+      const [dateStart, dateEnd] = pair;
+      const trackingResponse = await fetchDataTracking(dateStart, dateEnd);
+
+      if (trackingResponse) {
+        // Separar las fechas de inicio y fin sin la marca de tiempo
+        const formattedDateStart = dateStart.split("T")[0];
+        const formattedDateEnd = dateEnd.split("T")[0];
+
+        // Crear el título con el formato deseado
+        const title = `${formattedDateStart}-${formattedDateEnd}`;
+        const value = trackingResponse;
+        fetchedData.push({ title, value });
+      }
+    }
+
+    return fetchedData;
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const fetchedData = await fetchAllData(trackingDates);
+        setTracking(fetchedData);
+      } catch (error) {
+        console.error("Error al obtener los datos de seguimiento:", error);
+      }
+    };
+
+    fetchData();
+  }, [selectedUserId, trackingDates]);
+
+  console.log("tracking", tracking);
 
   useEffect(() => {
     if (employees) {
@@ -239,75 +313,48 @@ const AdminPlanning = ({
   ];
 
   const optionsFrecuency = [
-    { id: 4, value: "Semanal" },
-    { id: 5, value: "Diario" },
+    { id: 1, name: "Semanal" },
+    { id: 2, name: "Diario" },
   ];
 
   const optionsMonths = [
-    { id: 1, value: "Diciembre" },
-    { id: 2, value: "Noviembre" },
-    { id: 3, value: "Octubre" },
-    { id: 4, value: "Septiembre" },
-    { id: 5, value: "Agosto" },
-    { id: 6, value: "Julio" },
-    { id: 7, value: "Junio" },
-    { id: 8, value: "Mayo" },
-    { id: 9, value: "Abril" },
-    { id: 10, value: "Marzo" },
-    { id: 11, value: "Febrero" },
-    { id: 12, value: "Enero" },
+    { id: 12, value: "Enero", numberMonth: "01" },
+    { id: 11, value: "Febrero", numberMonth: "02" },
+    { id: 10, value: "Marzo", numberMonth: "03" },
+    { id: 9, value: "Abril", numberMonth: "04" },
+    { id: 8, value: "Mayo", numberMonth: "05" },
+    { id: 7, value: "Junio", numberMonth: "06" },
+    { id: 6, value: "Julio", numberMonth: "07" },
+    { id: 5, value: "Agosto", numberMonth: "08" },
+    { id: 4, value: "Septiembre", numberMonth: "09" },
+    { id: 3, value: "Octubre", numberMonth: "10" },
+    { id: 2, value: "Noviembre", numberMonth: "11" },
+    { id: 1, value: "Diciembre", numberMonth: "12" },
   ];
+
+  useEffect(() => {
+    const getCurrentMonthValue = () => {
+      if (currentWeek.length === 0) return null; // Verificar si el array está vacío
+
+      const [_, month] = currentWeek[0].split("-");
+      const currentMonthObject = optionsMonths.find(
+        (monthObj) => monthObj.numberMonth == month
+      );
+      setCurrentMonth(currentMonthObject.value);
+      return currentMonthObject ? currentMonthObject.value : null;
+    };
+
+    getCurrentMonthValue();
+  }, [currentWeek]);
 
   const handleSelectedFrecuency = (selectedOption) => {
     setselectedFrequencyOption(selectedOption);
-  };
-
-  const handleSelectedMonth = (selectedOption) => {
-    setselectedMonthOption(selectedOption);
   };
 
   const handleUserSelection = (clientId) => {
     setSelectedUserId(clientId);
     setResetFieldsAssinedTask(true);
   };
-
-  const data = [
-    {
-      nombre: "Cliente 2",
-      horasReales: 15,
-      actividadesProgramadas: 25,
-      actividadesCompletadas: 18,
-      porcentajeCompletado: "100%",
-    },
-    {
-      nombre: "Cliente 2",
-      horasReales: 15,
-      actividadesProgramadas: 25,
-      actividadesCompletadas: 18,
-      porcentajeCompletado: "100%",
-    },
-    {
-      nombre: "Cliente 2",
-      horasReales: 15,
-      actividadesProgramadas: 25,
-      actividadesCompletadas: 18,
-      porcentajeCompletado: "100%",
-    },
-    {
-      nombre: "Cliente 3",
-      horasReales: 15,
-      actividadesProgramadas: 25,
-      actividadesCompletadas: 18,
-      porcentajeCompletado: "50%",
-    },
-    {
-      nombre: "Cliente 3",
-      horasReales: 15,
-      actividadesProgramadas: 25,
-      actividadesCompletadas: 18,
-      porcentajeCompletado: "92%",
-    },
-  ];
 
   const columnWidths = [
     "w-44", // Ancho para Columna 1
@@ -774,12 +821,12 @@ const AdminPlanning = ({
               readOnly={false}
               editStatus={true}
             />
-            <Select
+            <SelectMonth
               options={optionsMonths}
-              onSelect={handleSelectedMonth}
-              initialOption={selectedMonthOption}
+              initialOption={currentMonth}
               readOnly={false}
               editStatus={true}
+              setSelectedMonth={setSelectedMonth}
             />
           </div>
         )}
@@ -919,16 +966,7 @@ const AdminPlanning = ({
                           handleChange={handleChange}
                           readOnly={true}
                           editStatus={true}
-                        />
-                      </tbody>
-                      <tbody className="border-b border-gray-300">
-                        <RowTable
-                          listItems={listItems}
-                          columnWidths={columnWidths}
-                          stateRow={stateRow}
-                          handleChange={handleChange}
-                          readOnly={true}
-                          editStatus={true}
+                          setStateRow={setStateRow}
                         />
                       </tbody>
                     </table>
@@ -936,150 +974,58 @@ const AdminPlanning = ({
                 </div>
               ) : (
                 <div className="w-full flex flex-col gap-5">
-                  <div
-                    className={`w-full ${
-                      data.length > 4 ? "h-[313px]" : "h-max"
-                    } border border-gray-100 rounded-md shadow-md overflow-hidden overflow-y-auto`}
-                  >
-                    <div className="w-full p-3">
-                      <h2 className="text-xl text-primary-red-600 font-semibold">
-                        Semana del 4/07/2023 - 8/07/2023
-                      </h2>
-                    </div>
-                    <table className="border-collapse w-full">
-                      <thead className="w-full justify-center">
-                        {columns.map((column, index) => (
-                          <th
-                            key={index}
-                            className=" border-b border-gray-300 p-3"
-                          >
-                            {column}
-                          </th>
-                        ))}
-                      </thead>
-                      <tbody>
-                        {data.map((row, index) => (
-                          <tr key={index} className="border-b border-gray-300">
-                            <td className="p-1 text-center">{row.nombre}</td>
-                            <td className="p-1 text-center">
-                              {row.horasReales}
-                            </td>
-                            <td className="p-1 text-center">
-                              {row.actividadesProgramadas}
-                            </td>
-                            <td className="p-1 text-center">
-                              {row.actividadesCompletadas}
-                            </td>
-                            <td className="p-2 text-center flex justify-center text-white">
-                              <span
-                                className={`px-8 rounded ${getColorBasedOnPercentage(
-                                  row.porcentajeCompletado
-                                )} w-24 h-9 flex items-center justify-center`}
+                  {tracking &&
+                    tracking?.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`w-full ${
+                          item?.length > 4 ? "h-[313px]" : "h-max"
+                        } border border-gray-100 rounded-md shadow-md overflow-hidden overflow-y-auto`}
+                      >
+                        <div className="w-full p-3">
+                          <h2 className="text-xl text-primary-red-600 font-semibold">
+                            Semana del {item.title}
+                          </h2>
+                        </div>
+                        <table className="border-collapse w-full">
+                          <thead className="w-full justify-center">
+                            {columns.map((column, index) => (
+                              <th
+                                key={index}
+                                className=" border-b border-gray-300 p-3"
                               >
-                                {row.porcentajeCompletado}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div
-                    className={`w-full ${
-                      data.length > 4 ? "h-[313px]" : "h-max"
-                    } border border-gray-100 rounded-md shadow-md overflow-hidden overflow-y-auto`}
-                  >
-                    <div className="w-full p-3">
-                      <h2 className="text-xl text-primary-red-600 font-semibold">
-                        Semana del 4/07/2023 - 8/07/2023
-                      </h2>
-                    </div>
-                    <table className="border-collapse w-full">
-                      <thead className="w-full justify-center">
-                        {columns.map((column, index) => (
-                          <th
-                            key={index}
-                            className=" border-b border-gray-300 p-3"
-                          >
-                            {column}
-                          </th>
-                        ))}
-                      </thead>
-                      <tbody>
-                        {data.map((row, index) => (
-                          <tr key={index} className="border-b border-gray-300">
-                            <td className="p-1 text-center">{row.nombre}</td>
-                            <td className="p-1 text-center">
-                              {row.horasReales}
-                            </td>
-                            <td className="p-1 text-center">
-                              {row.actividadesProgramadas}
-                            </td>
-                            <td className="p-1 text-center">
-                              {row.actividadesCompletadas}
-                            </td>
-                            <td className="p-2 text-center flex justify-center text-white">
-                              <span
-                                className={`px-8 rounded ${getColorBasedOnPercentage(
-                                  row.porcentajeCompletado
-                                )} w-24 h-9 flex items-center justify-center`}
+                                {column}
+                              </th>
+                            ))}
+                          </thead>
+
+                          <tbody>
+                            {item?.value.map((row, index) => (
+                              <tr
+                                key={index}
+                                className="border-b border-gray-300"
                               >
-                                {row.porcentajeCompletado}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div
-                    className={`w-full ${
-                      data.length > 4 ? "h-[313px]" : "h-max"
-                    } border border-gray-100 rounded-md shadow-md overflow-hidden overflow-y-auto`}
-                  >
-                    <div className="w-full p-3">
-                      <h2 className="text-xl text-primary-red-600 font-semibold">
-                        Semana del 4/07/2023 - 8/07/2023
-                      </h2>
-                    </div>
-                    <table className="border-collapse w-full">
-                      <thead className="w-full justify-center">
-                        {columns.map((column, index) => (
-                          <th
-                            key={index}
-                            className=" border-b border-gray-300 p-3"
-                          >
-                            {column}
-                          </th>
-                        ))}
-                      </thead>
-                      <tbody>
-                        {data.map((row, index) => (
-                          <tr key={index} className="border-b border-gray-300">
-                            <td className="p-1 text-center">{row.nombre}</td>
-                            <td className="p-1 text-center">
-                              {row.horasReales}
-                            </td>
-                            <td className="p-1 text-center">
-                              {row.actividadesProgramadas}
-                            </td>
-                            <td className="p-1 text-center">
-                              {row.actividadesCompletadas}
-                            </td>
-                            <td className="p-2 text-center flex justify-center text-white">
-                              <span
-                                className={`px-8 rounded ${getColorBasedOnPercentage(
-                                  row.porcentajeCompletado
-                                )} w-24 h-9 flex items-center justify-center`}
-                              >
-                                {row.porcentajeCompletado}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                                <td className="p-1 text-center">{row.name}</td>
+                                <td className="p-1 text-center">{row.sum}</td>
+                                <td className="p-1 text-center">{row.count}</td>
+                                <td className="p-1 text-center">
+                                  {row.percentage}
+                                </td>
+                                <td className="p-2 text-center flex justify-center text-white">
+                                  <span
+                                    className={`px-8 rounded ${getColorBasedOnPercentage(
+                                      row.percentage
+                                    )} w-24 h-9 flex items-center justify-center`}
+                                  >
+                                    {row.percentage}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>

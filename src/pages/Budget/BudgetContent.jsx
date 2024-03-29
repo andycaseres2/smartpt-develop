@@ -310,9 +310,40 @@ const BudgetContent = ({
     }
   };
 
+  function fieldsValidation(stateRow) {
+    // Array con los nombres de los campos requeridos
+    const camposRequeridos = [
+      "servicename",
+      "validto",
+      "idcustomer",
+      "idactivity",
+      "description",
+    ];
+
+    // Iterar sobre los campos requeridos
+    for (let campo of camposRequeridos) {
+      // Verificar si el campo actual no está presente en stateRow o su valor es null o undefined
+      if (
+        !(campo in stateRow) ||
+        stateRow[campo] === null ||
+        stateRow[campo] === undefined
+      ) {
+        // Si falta algún campo, retornar false
+        return false;
+      }
+    }
+
+    // Si se pasaron todas las validaciones, retornar true
+    return true;
+  }
+
   const handleFormSubmit = async (event) => {
     try {
       event.preventDefault();
+      if (!fieldsValidation(stateRow) && bodyRow.length) {
+        setTooltipError("Faltan campos por rellenar");
+        return;
+      }
       const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
       const budgetEndpoint = `${baseUrl}Budget`;
       const body = {
@@ -495,6 +526,7 @@ const BudgetContent = ({
       setCurrentBudgetTables(null);
     }
   }, [selectedRowId, realTime]);
+  console.log(bodyRow);
 
   return (
     <div
@@ -552,7 +584,7 @@ const BudgetContent = ({
           </div>
         )}
       </div>
-      <div className="bg-white rounded-bl-md rounded-r-md">
+      <div className="bg-white rounded-bl-md rounded-r-md h-full overflow-y-auto">
         {activeTab === 1 && (
           <div className="overflow-x-auto h-full">
             <div className="">
@@ -929,7 +961,7 @@ const BudgetContent = ({
         )}
 
         {activeTab === 2 && (
-          <div className="overflow-x-auto overflow-y-auto h-[520px]">
+          <div className="h-[400px] min-[1380px]:h-[540px] overflow-hidden overflow-y-auto overflow-x-auto">
             <div className="h-[580px] min-w-max">
               <div className="min-w-max h-full">
                 <div className="w-full p-3 ">
@@ -979,40 +1011,52 @@ const BudgetContent = ({
             </div>
             <div className="bg-red-600">
               {showBottonsAproved && (
-                <div className="fixed bottom-[110px] w-full flex justify-center py-4 margin-bottom-10">
+                <div className="fixed bottom-[110px] w-full flex justify-center margin-bottom-10">
                   <div className="flex bg-primary-red-500 justify-center items-center rounded px-2">
                     <ButtonWithIcon
                       icon={<CircleCheck />}
                       text="Aprobar por planeación "
-                      action={() => handleUpdateBudgetAprobedPlanning(1)}
+                      action={() =>
+                        selectedRowId && handleUpdateBudgetAprobedPlanning(1)
+                      }
                       designButton={"!rounded-none"}
                     />
                     <span className="h-6 w-0.5 bg-white"></span>
                     <ButtonWithIcon
                       icon={<CircleCheck />}
                       text="Desaprobado por planeación "
-                      action={() => handleUpdateBudgetAprobedPlanning(0)}
+                      action={() =>
+                        selectedRowId && handleUpdateBudgetAprobedPlanning(0)
+                      }
                       designButton={"!rounded-none"}
                     />
-                    <span className="h-6 w-0.5 bg-white"></span>
-                    <ButtonWithIcon
-                      icon={<ProfileCheck />}
-                      text="Aprobar por cliente"
-                      action={() => handleUpdateBudgetAprobedClient(1)}
-                      designButton={"!rounded-none"}
-                    />
-                    <span className="h-6 w-0.5 bg-white"></span>
-                    <ButtonWithIcon
-                      icon={<ProfileCheck />}
-                      text="Desaprobado por cliente"
-                      action={() => handleUpdateBudgetAprobedClient(0)}
-                      designButton={"!rounded-none"}
-                    />
+                    {user.fullname === bodyRow.idemployeecreator && (
+                      <>
+                        <span className="h-6 w-0.5 bg-white"></span>
+                        <ButtonWithIcon
+                          icon={<ProfileCheck />}
+                          text="Aprobar por cliente"
+                          action={() =>
+                            selectedRowId && handleUpdateBudgetAprobedClient(1)
+                          }
+                          designButton={"!rounded-none"}
+                        />
+                        <span className="h-6 w-0.5 bg-white"></span>
+                        <ButtonWithIcon
+                          icon={<ProfileCheck />}
+                          text="Desaprobado por cliente"
+                          action={() =>
+                            selectedRowId && handleUpdateBudgetAprobedClient(0)
+                          }
+                          designButton={"!rounded-none"}
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
               )}
 
-              <div className="fixed w-full flex gap-4 justify-center py-4">
+              <div className="fixed bottom-12 w-full flex gap-4 justify-center">
                 <ButtonWithIcon
                   icon={<ProfileCheck />}
                   text="Archivar"

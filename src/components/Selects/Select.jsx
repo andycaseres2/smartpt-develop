@@ -16,6 +16,7 @@ const Select = ({
   isFilter,
   setUrlBase,
   urlBase,
+  onSelect,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { token } = userStore();
@@ -24,7 +25,13 @@ const Select = ({
   };
 
   const handleOptionClick = async (option, id) => {
-    setInitialOption(option);
+    if (setInitialOption) {
+      setInitialOption(option);
+    }
+    if (onSelect) {
+      console.log(option);
+      onSelect(option);
+    }
     if (handleSelect) {
       handleSelect(id);
     }

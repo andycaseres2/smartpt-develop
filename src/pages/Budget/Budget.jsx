@@ -112,7 +112,7 @@ const Budget = () => {
   return (
     <div className="flex flex-col w-full h-screen">
       <Header title="Presupuesto clientes" date={currentWeek} />
-      <div className="w-full flex flex-col bg-primary-blue-50 py-4 px-6 h-full">
+      <div className="w-full flex flex-col bg-primary-blue-50 py-4 px-6 h-full overflow-hidden overflow-y-hidden">
         <BudgetContent
           columnWidths={columnWidths}
           columnTitles={columnTitles}

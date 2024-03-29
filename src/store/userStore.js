@@ -16,7 +16,7 @@ export const userStore = create((set) => {
     const currentTime = new Date().getTime();
     const elapsedTime = currentTime - parseInt(tokenTime);
 
-    if (elapsedTime > 3600000) {
+    if (elapsedTime > 8 * 3600000) {
       // Si ha pasado más de una hora
       removeToken(); // Eliminar el token
     }

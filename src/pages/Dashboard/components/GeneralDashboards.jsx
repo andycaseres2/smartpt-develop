@@ -63,12 +63,66 @@ const GeneralDashboards = () => {
   const [dataReportByActivity, setDataReportByActivity] = useState([]);
   const [dataReportActivity, setDataReportActivity] = useState([]);
   const [dataReportByClientTable, setDataReportByClientTable] = useState([]);
+
+  const [dataOptionsByClient, setDataOptionsByClient] = useState([]);
+  const [dataOptionsByWorker, setDataOptionsByWorker] = useState([]);
+  const [dataOptionsByClientMonth, setDataOptionsByClientMonth] = useState([]);
+  const [dataOptionsByProcess, setDataOptionsByProcess] = useState([]);
+  const [dataOptionsByActivity, setDataOptionsByActivity] = useState([]);
+  const [dataOptionsActivity, setDataOptionsActivity] = useState([]);
+  const [dataOptionsByClientTable, setDataOptionsByClientTable] = useState([]);
+
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [dateStart, setDateStart] = useState(null);
   const [dateEnd, setDateEnd] = useState(null);
   const [fieldReset, setFieldReset] = useState(false);
 
   useEffect(() => {
+    function nextChar(c) {
+      return String.fromCharCode(c.charCodeAt(0) + 1);
+    }
+    const getOptionsBarPlot = (originalData) => {
+      var maxValue = 0;
+      for (var i = 0; i < originalData.length; i++) {
+        if (maxValue < originalData[i]["sum"]) {
+          maxValue = originalData[i]["sum"];
+        }
+      }
+      var valor = maxValue.toString().split("");
+      if (valor.length > 0) {
+        if (valor[0] < "9") {
+          //SI se opera sobre char
+          valor[0] = nextChar(valor[0]);
+        } else {
+          valor = ["1", ...valor];
+        }
+        for (var i = 1; i < valor.length; i++) {
+          valor[i] = "0";
+        }
+        maxValue = parseInt(valor.join(""));
+      }
+      var listOfTicks = [];
+      if (maxValue > 10) {
+        var portion = Math.floor(maxValue / 5);
+        for (var i = 0; i < maxValue; i = i + portion) {
+          listOfTicks.push(i);
+        }
+      } else {
+        listOfTicks = [0, maxValue];
+      }
+      const options = {
+        bar: { groupWidth: "75%" },
+        legend: { position: "none" },
+        chartArea: { width: "60%", height: "85%" },
+        height: 500,
+        hAxis: {
+          minValue: 0,
+          ticks: listOfTicks, // Establece los ticks específicos
+        },
+      };
+      return options;
+    };
+
     const transformToBarPlot = (originalData, key) => {
       const colors = [
         "#E93E37",
@@ -120,7 +174,7 @@ const GeneralDashboards = () => {
       const transformedArray = [["Task", "Hours per Day"]];
 
       originalData.forEach((item) => {
-        transformedArray.push([item.state.toString(), item.count]);
+        transformedArray.push([item.state.toString(), item.sum]);
       });
 
       return transformedArray;
@@ -182,7 +236,7 @@ const GeneralDashboards = () => {
     const fetchDataOnMount = async () => {
       try {
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
-        const baseParams = `reporte=1&startDate=${
+        const baseParams = `startDate=${
           dateStart || "2024-02-01T00:00:00"
         }&endDate=${dateEnd || "2024-03-01T00:00:00"}`;
         let endpointParams = "";
@@ -195,7 +249,7 @@ const GeneralDashboards = () => {
           endpointParams = `&${IdEmployeeString}`;
         }
 
-        const dashboardEndpointReport1 = `${baseUrl}Dashboard?${baseParams}${endpointParams}`;
+        const dashboardEndpointReport1 = `${baseUrl}Dashboard?reporte=1&${baseParams}${endpointParams}`;
         const dashboardEndpointReport2 = `${baseUrl}Dashboard?reporte=2&${baseParams}${endpointParams}`;
         const dashboardEndpointReport3 = `${baseUrl}Dashboard?reporte=3&${baseParams}${endpointParams}`;
         const dashboardEndpointReport4 = `${baseUrl}Dashboard?reporte=4&${baseParams}${endpointParams}`;
@@ -208,6 +262,7 @@ const GeneralDashboards = () => {
         );
         setDataReportByClientTable(dataReportByClient);
         setDataReportByClient(transformToBarPlot(dataReportByClient, "name"));
+        setDataOptionsByClient(getOptionsBarPlot(dataReportByClient));
 
         const dataReportByWorker = await getData(
           dashboardEndpointReport2,
@@ -216,6 +271,7 @@ const GeneralDashboards = () => {
         setDataReportByWorker(
           transformToBarPlot(dataReportByWorker, "fullname")
         );
+        setDataOptionsByWorker(getOptionsBarPlot(dataReportByWorker));
 
         const dataReportByClientMonth = await getData(
           dashboardEndpointReport3,
@@ -224,12 +280,14 @@ const GeneralDashboards = () => {
         setDataReportByClientMonth(
           transformToComboBarPlot(dataReportByClientMonth, "name")
         );
+        //setDataReportByClientMonth(getOptionsBarPlot(dataReportByClientMonth));
 
         const dataReportByProcess = await getData(
           dashboardEndpointReport4,
           token
         );
         setDataReportByProcess(transformToBarPlot(dataReportByProcess, "name"));
+        setDataOptionsByProcess(getOptionsBarPlot(dataReportByProcess));
 
         const dataReportByActivity = await getData(
           dashboardEndpointReport5,
@@ -238,6 +296,7 @@ const GeneralDashboards = () => {
         setDataReportByActivity(
           transformToBarPlot(dataReportByActivity, "name")
         );
+        setDataOptionsByActivity(getOptionsBarPlot(dataReportByActivity));
 
         const dataReportActivity = await getData(
           dashboardEndpointReport6,
@@ -246,6 +305,7 @@ const GeneralDashboards = () => {
         setDataReportActivity(
           transformToPieBarPlot(dataReportActivity, "state")
         );
+        //setDataReportActivity(getOptionsBarPlot(dataReportActivity));
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -255,27 +315,15 @@ const GeneralDashboards = () => {
     setRealTime(false);
   }, [realTime, selectedEmployees, dateStart, dateEnd]);
 
-  const options = {
-    bar: { groupWidth: "75%" },
-    legend: { position: "none" },
-    chartArea: { width: "60%", height: "85%" },
-    height: 500,
-    hAxis: {
-      minValue: 0,
-      ticks: [0, 5000, 10000, 15000, 20000, 25000], // Establece los ticks específicos
-    },
-  };
-
   const optionsPie = {
     bar: { groupWidth: "100%" },
-    legend: { position: "none" },
     chartArea: { width: "60%", height: "85%" },
     height: 300,
     hAxis: {
       minValue: 0,
       ticks: [0, 1000, 2000, 3100], // Establece los ticks específicos
     },
-    pieHole: 0.6,
+    pieHole: 0.45,
     is3D: false,
   };
   const optionsComboBar = {
@@ -392,7 +440,7 @@ const GeneralDashboards = () => {
                 width="100%"
                 height="100%"
                 data={dataReportByClient}
-                options={options}
+                options={dataOptionsByClient}
               />
               {openPopup && (
                 <Popup
@@ -423,7 +471,7 @@ const GeneralDashboards = () => {
                 width="100%"
                 height="100%"
                 data={dataReportByWorker}
-                options={options}
+                options={dataOptionsByWorker}
               />
               {openPopup2 && (
                 <Popup
@@ -504,7 +552,7 @@ const GeneralDashboards = () => {
                 width="100%"
                 height="100%"
                 data={dataReportByProcess}
-                options={options}
+                options={dataOptionsByProcess}
               />
               {openPopup && (
                 <Popup
@@ -535,7 +583,7 @@ const GeneralDashboards = () => {
                 width="100%"
                 height="100%"
                 data={dataReportByActivity}
-                options={options}
+                options={dataOptionsByActivity}
               />
               {openPopup2 && (
                 <Popup
@@ -620,32 +668,6 @@ const GeneralDashboards = () => {
                   data={dataReportActivity}
                   options={optionsPie}
                 />
-                <div className="w-1/3 flex flex-col items-center">
-                  <div className="w-full flex gap-2 justify-start items-center">
-                    <span className="text-2xl text-primary-green-500 rounded-full">
-                      •
-                    </span>
-                    <span>Finalizado</span>
-                  </div>
-                  <div className="w-full flex gap-2 items-center">
-                    <span className="text-2xl text-primary-yellow-500 rounded-full">
-                      •
-                    </span>
-                    <span>En proceso</span>
-                  </div>
-                  <div className="w-full flex gap-2 items-center">
-                    <span className="text-2xl text-primary-red-500 rounded-full">
-                      •
-                    </span>
-                    <span>Pendiente</span>
-                  </div>
-                  <div className="w-full flex gap-2 items-center">
-                    <span className="text-2xl text-primary-blue-500 rounded-full">
-                      •
-                    </span>
-                    <span>No ejecutado</span>
-                  </div>
-                </div>
               </div>
               {openPopup2 && (
                 <Popup
