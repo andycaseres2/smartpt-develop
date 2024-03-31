@@ -1,0 +1,5 @@
+const AdminPlanning = () => {
+  return <div>AdminPlanning</div>;
+};
+
+export default AdminPlanning;

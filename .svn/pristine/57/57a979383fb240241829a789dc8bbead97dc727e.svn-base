@@ -1,0 +1,5 @@
+const RequestsData = () => {
+  return <div>RequestsData</div>;
+};
+
+export default RequestsData;

@@ -1,0 +1,195 @@
+import { useEffect, useState } from "react";
+import ArrowDown from "../../assets/Icons/ArrowDown";
+import { putData } from "../../services/putData";
+import ModalConfirmation from "../Modals/ModalConfirmation";
+import { userStore } from "../../store/userStore";
+
+const SelectStatus = ({
+  options,
+  onSelect,
+  initialOption,
+  colorArrow,
+  readOnly,
+  editStatus,
+  styleSelect,
+  handleChange,
+  key_name,
+  newTaskAdd,
+  modeEdit,
+  stateRow,
+  setRealTime,
+  setTooltipSuccess,
+  setTooltipError,
+  rowId,
+  setIsUpdateStatus,
+  handleCleanFilters,
+  resetFieldsAssinedTask,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const { token } = userStore();
+
+  useEffect(() => {
+    if (resetFieldsAssinedTask) {
+      setSelectedOption("Pendiente");
+      setSelectedOptionId(1);
+    }
+  }, [resetFieldsAssinedTask]);
+
+  async function editTask(id) {
+    if (!modeEdit) {
+      try {
+        // Clonar el estado actual para no mutarlo directamente
+        const updatedStateRow = { ...stateRow };
+
+        // Agregar la propiedad 'state' con el valor recibido al objeto
+        updatedStateRow.state = id;
+
+        // Agregar la lógica para id igual a 3 o 4
+        if (id === 3 || id === 4) {
+          updatedStateRow.realenddate =
+            new Date().toISOString().split("T")[0] + "T00:00:00";
+        }
+
+        // Definir la URL base
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+        // Construir la URL del endpoint para la tarea específica
+        const taskEndpoint = `${baseUrl}Task/${rowId}`;
+
+        // Enviar los datos modificados al servidor utilizando la función putData (o postData según tu implementación)
+        if ((id === 3 || id === 4) && updatedStateRow.realtimespent !== null) {
+          await putData(taskEndpoint, updatedStateRow, token);
+          setRealTime(true);
+          setTooltipSuccess("Tarea editada con éxito");
+        } else if (id !== 3 && id !== 4) {
+          await putData(taskEndpoint, updatedStateRow, token);
+          setRealTime(true);
+          setTooltipSuccess("Tarea editada con éxito");
+        } else {
+          setTooltipError("Hubo un error editando la tarea");
+        }
+      } catch (error) {
+        // Manejar el error aquí
+        console.error("Error al editar la tarea:", error);
+
+        // Puedes definir un estado de error y guardarlo en tu componente si es necesario
+        setTooltipError("Hubo un error editando la tarea");
+      } finally {
+        handleCleanFilters();
+      }
+    }
+  }
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setRealTime(true);
+  };
+
+  useEffect(() => {
+    if (initialOption && initialOption !== "") {
+      setSelectedOption(initialOption);
+      const foundOption = options.find(
+        (option) => option.value === initialOption
+      );
+      if (foundOption) {
+        setSelectedOptionId(foundOption.id);
+        if (newTaskAdd) {
+          handleChange({ target: { name: key_name, value: 1 } });
+        }
+        if (modeEdit) {
+          handleChange({ target: { name: key_name, value: foundOption.id } });
+        }
+      }
+    }
+  }, [initialOption, key_name, newTaskAdd, modeEdit]);
+
+  const toggleDropdown = () => {
+    if (readOnly) {
+      return;
+    }
+    setIsOpen(!isOpen);
+    setIsUpdateStatus(true);
+  };
+
+  const handleOptionClick = (option, id) => {
+    setSelectedOption(option);
+    setSelectedOptionId(id);
+    if (!modeEdit) {
+      setOpenModal(true);
+    }
+    setIsOpen(false);
+    onSelect(option);
+    selectColors(id);
+    if (handleChange) {
+      handleChange({ target: { name: key_name, value: id } });
+    }
+  };
+
+  function selectColors(id) {
+    switch (id) {
+      case 1:
+        return "bg-red-500 text-white fill-white";
+      case 2:
+        return "bg-yellow-500 text-white fill-white";
+      case 3:
+        return "bg-green-500 text-white fill-white";
+      case 4:
+        return "bg-blue-500 text-white fill-white";
+      default:
+        return "bg-white";
+    }
+  }
+
+  return (
+    <div
+      className="relative inline-block"
+      onBlur={() => setIsOpen(false)}
+      tabIndex={0}
+    >
+      <div
+        className={`${selectColors(selectedOptionId)} py-2 text-[15px] ${
+          styleSelect || "px-4"
+        } rounded cursor-pointer font-semibold relative flex items-center justify-between gap-4 w-44`}
+        onClick={toggleDropdown}
+      >
+        {selectedOption}
+        {(!readOnly || (editStatus !== undefined && editStatus)) && (
+          <>
+            {editStatus ? (
+              isOpen ? (
+                <ArrowDown fill={colorArrow} className="rotate-180" />
+              ) : (
+                <ArrowDown fill={colorArrow} />
+              )
+            ) : null}
+          </>
+        )}
+      </div>
+      {isOpen && !newTaskAdd && (
+        <div className="absolute top-[37px] left-0 bg-white border border-gray-300 mt-1 rounded shadow-lg !z-50 w-full">
+          {options.map((option) => (
+            <div
+              key={option.id}
+              className="p-2 cursor-pointer hover:bg-gray-100 w-full z-50"
+              onClick={() => handleOptionClick(option.value, option.id)}
+            >
+              {option.value}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {openModal && (
+        <ModalConfirmation
+          onClose={handleCloseModal}
+          handleCancel={() => editTask(selectedOptionId)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default SelectStatus;

@@ -1,0 +1,82 @@
+import Header from "../../components/Header/Header";
+import AdminRequest from "./AdminRequest";
+import WorkerRequest from "./WorkerRequest";
+import { getData } from "../../services/getData";
+import { stateStore } from "../../store/stateStore";
+import { useEffect, useState } from "react";
+
+const Requests = () => {
+  const userRole = "admin";
+  const { setClients, setActivities, setProcesses, setEmployees, setDesignFormats, setDesignPieces } = stateStore();
+  const [realTime, setRealTime] = useState(true);
+  
+  useEffect(() => {
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+    const clientsEndpoint = `${baseUrl}Customer`;
+    const activitiesEndpoint = `${baseUrl}Activity`;
+    const processesEndpoint = `${baseUrl}Process`;
+    
+    const fetchDataOnMount = async () => {
+
+      try {
+        const clientsData = await getData(clientsEndpoint);
+        setClients(clientsData);
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+
+      try {
+        const activitiesData = await getData(activitiesEndpoint);
+        setActivities(activitiesData);
+      } catch (error) {
+        console.error("Error fetching activities data:", error);
+      }
+
+      try {
+        const processesData = await getData(processesEndpoint);
+        setProcesses(processesData);
+      } catch (error) {
+        console.error("Error fetching processes data:", error);
+      }
+
+      try {
+        const employeesData = await getData(`${baseUrl}Employee`);
+        setEmployees(employeesData);
+        console.log(employeesData);
+      } catch (error) {
+        console.error("Error fetching employees data:", error);
+      }
+
+      try {
+        const designFormatsData = await getData(`${baseUrl}DesignFormat`);
+        setDesignFormats(designFormatsData);
+      } catch (error) {
+        console.error("Error fetching design formats data:", error);
+      }
+
+      try {
+        const designPiecesData = await getData(`${baseUrl}DesignPiece`);
+        setDesignPieces(designPiecesData);
+      } catch (error) {
+        console.error("Error fetching design pieces data:", error);
+      }
+    };
+    
+    fetchDataOnMount();
+    setRealTime(false);
+  }, [realTime]);
+  return (
+    <div className="flex flex-col w-full h-screen">
+      <Header
+        title="Solicitudes de diseño"
+        date="4/12/2023 - 8/12/2023"
+        userName="Kenet Sebastián Segura Murillo"
+      />
+      <div className="w-full flex flex-col bg-primary-yellow-50 py-4 px-6 h-full">
+        {userRole === "admin" ? <AdminRequest setRealTime={setRealTime} /> : <WorkerRequest />}
+      </div>
+    </div>
+  );
+};
+
+export default Requests;

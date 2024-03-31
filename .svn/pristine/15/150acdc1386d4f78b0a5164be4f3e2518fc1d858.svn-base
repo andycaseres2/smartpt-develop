@@ -1,0 +1,10 @@
+import { create } from "zustand";
+
+export const stateStore = create((set) => {
+  return {
+    openNotifications: false,
+    setOpenNotifications: (open) => {
+      set({ openNotifications: open });
+    },
+  };
+});

@@ -1,0 +1,193 @@
+import { useEffect, useState } from "react";
+import Header from "../../components/Header/Header";
+import AdminPlanning from "./AdminPlanning";
+import WorkerPlanning from "./WorkerPlanning";
+import { getData } from "../../services/getData";
+import { stateStore } from "../../store/stateStore";
+import Tooltip from "../../components/Tooltips/Tooltip";
+import CircleCheck from "../../assets/Icons/CircleCheck";
+import WarningCircle from "../../assets/Icons/WarningCircle";
+
+const Planning = () => {
+  const userRole = import.meta.env.VITE_REACT_APP_ROLE;
+  const { setProcesses, setClients, setActivities, setEmployees } =
+    stateStore();
+  const [tasks, setTasks] = useState([]);
+  const [isNewTask, setIsNewTask] = useState(false);
+  const [realTime, setRealTime] = useState(true);
+  const [totalTimes, setTotalTimes] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [tooltipSuccess, setTooltipSuccess] = useState("");
+  const [tooltipError, setTooltipError] = useState("");
+  const [taskFullyLoaded, setTaskFullyLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (tooltipSuccess || tooltipError) {
+      const timer = setTimeout(() => {
+        setTooltipSuccess("");
+        setTooltipError("");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [tooltipSuccess, tooltipError]);
+
+  useEffect(() => {
+    // Verificar si tasks tiene al menos un elemento antes de acceder
+    if (tasks && tasks.length > 0) {
+      // Filtrar elementos que tienen un valor válido para "EstimatedTime"
+      const validTasks = tasks.filter((objeto) => {
+        const estimatedTimeObject = objeto.find(
+          (propiedad) => propiedad.key_name === "estimatedtime"
+        );
+        return estimatedTimeObject && estimatedTimeObject.data !== null;
+      });
+
+      // Obtener los valores de "EstimatedTime"
+      const estimatedTimes = validTasks.map((objeto) => {
+        const estimatedTimeObject = objeto.find(
+          (propiedad) => propiedad.key_name === "estimatedtime"
+        );
+        return estimatedTimeObject ? estimatedTimeObject.data : null;
+      });
+
+      // Filtrar los valores nulos
+      const validEstimatedTimes = estimatedTimes.filter(
+        (valor) => valor !== null
+      );
+
+      // Sumar los valores válidos
+      const total = validEstimatedTimes.reduce(
+        (acumulador, valorActual) => acumulador + valorActual,
+        0
+      );
+
+      // Actualizar el estado con los valores obtenidos
+      setTotalTimes(Math.round(total / 60));
+    }
+  }, [tasks]);
+
+  useEffect(() => {
+    setLoading(true); // Activar indicador de carga
+
+    const fetchDataOnMount = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+        const clientsEndpoint = `${baseUrl}Customer`;
+        const tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100`;
+        const activitiesEndpoint = `${baseUrl}Activity`;
+        const processesEndpoint = `${baseUrl}Process`;
+        const paginationsEndpoint = `${baseUrl}FormattedTask/Pages`;
+        const employeesEndpoint = `${baseUrl}Employee`;
+
+        const employeesData = await getData(employeesEndpoint);
+        setEmployees(employeesData);
+
+        const clientsData = await getData(clientsEndpoint);
+        setClients(clientsData);
+
+        const tasksData = await getData(tasksEndpoint);
+        setTasks(tasksData);
+        setTaskFullyLoaded(true);
+
+        const activitiesData = await getData(activitiesEndpoint);
+        setActivities(activitiesData);
+
+        const processesData = await getData(processesEndpoint);
+        setProcesses(processesData);
+
+        const paginationsData = await getData(paginationsEndpoint);
+        const totalPages = Math.ceil(paginationsData / 10);
+        setTotalPages(totalPages);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Desactivar indicador de carga, ya sea éxito o error
+      }
+    };
+
+    fetchDataOnMount();
+    setRealTime(false);
+  }, [isNewTask, realTime]);
+
+  const columnTitles = [
+    "Cliente",
+    "Tarea",
+    "Fecha inicio",
+    "Fecha entrega",
+    "Estado",
+    "Comentarios",
+    "Proceso",
+    "Actividad",
+    "Hora estimada",
+    "Hora real",
+    "Documentos asociados",
+    "Fecha fin",
+    "",
+  ];
+
+  return (
+    <div className="flex flex-col w-full h-screen">
+      <Header
+        title="Planeación semanal"
+        date="4/12/2023 - 8/12/2023"
+        userName="Kenet Sebastián Segura Murillo"
+        baseColor="bg-primary-red-600"
+      />
+      <div className="w-full flex flex-col bg-primary-pink-50 py-4 px-6 h-full">
+        {userRole === "ADMIN" ? (
+          <AdminPlanning
+            tasks={tasks}
+            setTasks={setTasks}
+            setRealTime={setRealTime}
+            setIsNewTask={setIsNewTask}
+            isNewTask={isNewTask}
+            totalTimes={totalTimes}
+            totalPages={totalPages}
+            setTooltipSuccess={setTooltipSuccess}
+            setTooltipError={setTooltipError}
+            columnTitlesActivity={columnTitles}
+            taskFullyLoaded={taskFullyLoaded}
+            setLoading={setLoading}
+            loading={loading}
+          />
+        ) : (
+          <WorkerPlanning
+            tasks={tasks}
+            setTasks={setTasks}
+            setIsNewTask={setIsNewTask}
+            isNewTask={isNewTask}
+            setRealTime={setRealTime}
+            totalTimes={totalTimes}
+            totalPages={totalPages}
+            setTooltipSuccess={setTooltipSuccess}
+            setTooltipError={setTooltipError}
+            columnTitles={columnTitles}
+            taskFullyLoaded={taskFullyLoaded}
+            setLoading={setLoading}
+            loading={loading}
+          />
+        )}
+      </div>
+      {tooltipSuccess && (
+        <Tooltip
+          text={tooltipSuccess}
+          icon={<CircleCheck fill={"#60D935"} className={"w-7 h-7"} />}
+          color="bg-primary-green-500"
+        />
+      )}
+
+      {tooltipError && (
+        <Tooltip
+          text={tooltipError}
+          icon={<WarningCircle stroke={"#F70000"} className={"w-7 h-7"} />}
+          color="bg-primary-red-500"
+        />
+      )}
+    </div>
+  );
+};
+
+export default Planning;

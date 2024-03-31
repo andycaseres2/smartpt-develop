@@ -1,0 +1,156 @@
+import Header from "../../components/Header/Header";
+import AdminRequest from "./AdminRequest";
+import WorkerRequest from "./WorkerRequest";
+import { getData } from "../../services/getData";
+import { stateStore } from "../../store/stateStore";
+import { useEffect, useState } from "react";
+import Tooltip from "../../components/Tooltips/Tooltip";
+import CircleCheck from "../../assets/Icons/CircleCheck";
+import WarningCircle from "../../assets/Icons/WarningCircle";
+
+const Requests = () => {
+  const userRole = import.meta.env.VITE_REACT_APP_ROLE;
+  const {
+    setClients,
+    setActivities,
+    setProcesses,
+    setEmployees,
+    setDesignFormats,
+    setDesignPieces,
+  } = stateStore();
+  const [realTime, setRealTime] = useState(true);
+  const [requests, setRequests] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [tooltipSuccess, setTooltipSuccess] = useState("");
+  const [tooltipError, setTooltipError] = useState("");
+
+  useEffect(() => {
+    if (tooltipSuccess || tooltipError) {
+      const timer = setTimeout(() => {
+        setTooltipSuccess("");
+        setTooltipError("");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [tooltipSuccess, tooltipError]);
+
+  useEffect(() => {
+    const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+    const clientsEndpoint = `${baseUrl}Customer`;
+    const activitiesEndpoint = `${baseUrl}Activity`;
+    const processesEndpoint = `${baseUrl}Process`;
+    const tasksEndpoint = `${baseUrl}FormattedDesignRequest?page=1&size=10`;
+    const paginations = `${baseUrl}FormattedDesignRequest/Pages`;
+
+    const fetchDataOnMount = async () => {
+      try {
+        const tasksData = await getData(tasksEndpoint);
+        setRequests(tasksData);
+      } catch (error) {
+        console.error("Error fetching tasks data:", error);
+      }
+
+      try {
+        const paginationsData = await getData(paginations);
+        const totalPages = Math.ceil(paginationsData / 10); // Redondear hacia arriba para asegurarse de que todas las tareas se muestren
+        setTotalPages(totalPages);
+      } catch (error) {
+        console.error("Error fetching paginations data:", error);
+      }
+
+      try {
+        const clientsData = await getData(clientsEndpoint);
+        setClients(clientsData);
+      } catch (error) {
+        console.error("Error fetching clients data:", error);
+      }
+
+      try {
+        const activitiesData = await getData(activitiesEndpoint);
+        setActivities(activitiesData);
+      } catch (error) {
+        console.error("Error fetching activities data:", error);
+      }
+
+      try {
+        const processesData = await getData(processesEndpoint);
+        setProcesses(processesData);
+      } catch (error) {
+        console.error("Error fetching processes data:", error);
+      }
+
+      try {
+        const employeesData = await getData(`${baseUrl}Employee`);
+        setEmployees(employeesData);
+      } catch (error) {
+        console.error("Error fetching employees data:", error);
+      }
+
+      try {
+        const designFormatsData = await getData(`${baseUrl}DesignFormat`);
+        setDesignFormats(designFormatsData);
+      } catch (error) {
+        console.error("Error fetching design formats data:", error);
+      }
+
+      try {
+        const designPiecesData = await getData(`${baseUrl}DesignPiece`);
+        setDesignPieces(designPiecesData);
+      } catch (error) {
+        console.error("Error fetching design pieces data:", error);
+      }
+    };
+
+    fetchDataOnMount();
+    setRealTime(false);
+  }, [realTime]);
+  return (
+    <div className="flex flex-col w-full h-screen">
+      <Header
+        title="Solicitudes de diseño"
+        date="4/12/2023 - 8/12/2023"
+        userName="Kenet Sebastián Segura Murillo"
+      />
+      <div className="w-full flex flex-col bg-primary-yellow-50 py-4 px-6 h-full">
+        {userRole === "ADMIN" ? (
+          <AdminRequest
+            setRealTime={setRealTime}
+            requests={requests}
+            setRequests={setRequests}
+            totalPages={totalPages}
+            setTooltipSuccess={setTooltipSuccess}
+            setTooltipError={setTooltipError}
+          />
+        ) : (
+          <WorkerRequest
+            setRealTime={setRealTime}
+            requests={requests}
+            setRequests={setRequests}
+            totalPages={totalPages}
+            setTooltipSuccess={setTooltipSuccess}
+            setTooltipError={setTooltipError}
+          />
+        )}
+      </div>
+
+      {tooltipSuccess && (
+        <Tooltip
+          text={tooltipSuccess}
+          icon={<CircleCheck fill={"#60D935"} className={"w-7 h-7"} />}
+          color="bg-primary-green-500"
+        />
+      )}
+
+      {tooltipError && (
+        <Tooltip
+          text={tooltipError}
+          icon={<WarningCircle stroke={"#F70000"} className={"w-7 h-7"} />}
+          color="bg-primary-red-500"
+        />
+      )}
+    </div>
+  );
+};
+
+export default Requests;
