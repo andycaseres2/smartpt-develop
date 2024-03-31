@@ -119,6 +119,10 @@ export const stateStore = create((set) => {
         newTaskEmpty: createNewTaskEmpty(state, clients),
       }));
     },
+    workerGroups: [],
+    setWorkerGroups: (workerGroups) => {
+      set({ workerGroups });
+    },
     processes: [],
     setProcesses: (processes) => {
       set({ processes });

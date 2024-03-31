@@ -49,6 +49,7 @@ const AdminPlanning = ({
     employees,
     statusModeEdit,
     setUpdateNotifications,
+    workerGroups,
   } = stateStore();
   const [selectedFrequencyOption, setselectedFrequencyOption] =
     useState("Semanal");
@@ -56,8 +57,12 @@ const AdminPlanning = ({
   const [stateRow, setStateRow] = useState({});
 
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
+  const [initialOptionEmployee, setInitialOptionEmployee] =
+    useState("Colaborador");
   const [initialOptionSelectActivity, setInitialOptionSelectActivity] =
     useState("Actividad");
+  const [initialOptionSelectWorkerGroup, setInitialOptionSelectWorkerGroup] =
+    useState("Grupos");
   const [initialOptionSelectProcess, setInitialOptionSelectProcess] =
     useState("Proceso");
   const [updateActivities, setUpdateActivities] = useState([]);
@@ -143,8 +148,6 @@ const AdminPlanning = ({
 
     fetchData();
   }, [selectedUserId, trackingDates]);
-
-  console.log("tracking", tracking);
 
   useEffect(() => {
     if (employees) {
@@ -270,7 +273,7 @@ const AdminPlanning = ({
       let tasksEndpoint = "";
       let initialOptions = {};
 
-      if (tab === 4) {
+      if (tab === 4 || tab === 5) {
         tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
         initialOptions = {
           client: "Clientes",
@@ -310,6 +313,7 @@ const AdminPlanning = ({
     { id: 2, label: "Asignar actividad" },
     { id: 3, label: "Actividades" },
     { id: 4, label: "Consolidado" },
+    { id: 5, label: "Consolidado de mi equipo" },
   ];
 
   const optionsFrecuency = [
@@ -608,11 +612,13 @@ const AdminPlanning = ({
     setInitialOptionSelectActivity("Actividad");
     setInitialOptionSelectProcess("Proceso");
     setInitialOptionState("Estados");
+    setInitialOptionSelectWorkerGroup("Grupos");
+    setInitialOptionEmployee("Colaborador");
     const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
     let tasksEndpoint = "";
     if (activeTab === 3) {
       tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100&IdEmployee=${user.id}`;
-    } else if (activeTab === 4) {
+    } else if (activeTab === 4 || activeTab === 5) {
       tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
     }
     setUrlBase(tasksEndpoint);
@@ -898,6 +904,53 @@ const AdminPlanning = ({
               urlBase={urlBase}
               setUrlBase={setUrlBase}
             />
+            <InputDate
+              text={"Fecha inicio"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setTasks={setTasks}
+              newFilter={"startDate"}
+              fieldReset={fieldReset}
+            />
+            <InputDate
+              text={"Fecha fin"}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+              setTasks={setTasks}
+              newFilter={"endDate"}
+              fieldReset={fieldReset}
+            />
+            <ButtonWithIcon
+              text={"Limpiar filtros"}
+              icon={<CleanIcon />}
+              action={handleCleanFilters}
+            />
+          </div>
+        )}
+        {activeTab === 5 && (user.profile === 1 || user.profile === 2) && (
+          <div className="flex flex-wrap gap-2 items-center mb-2 w-full justify-end">
+            <Select
+              options={employees}
+              setTasks={setTasks}
+              newFilter={"IdEmployee"}
+              initialOption={initialOptionEmployee}
+              setInitialOption={setInitialOptionEmployee}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
+
+            <Select
+              options={workerGroups}
+              setTasks={setTasks}
+              newFilter={"IdWorkgroup"}
+              initialOption={initialOptionSelectWorkerGroup}
+              setInitialOption={setInitialOptionSelectWorkerGroup}
+              isFilter={true}
+              urlBase={urlBase}
+              setUrlBase={setUrlBase}
+            />
+
             <InputDate
               text={"Fecha inicio"}
               urlBase={urlBase}
@@ -1224,8 +1277,46 @@ const AdminPlanning = ({
             </div>
           </div>
         )}
+        {activeTab === 5 && (user.profile === 1 || user.profile === 2) && (
+          <div className="overflow-x-auto h-full">
+            <div className="min-w-max">
+              <table className="min-w-full">
+                <thead>
+                  <ColumnTable
+                    columnTitlesActivity={columnTitles}
+                    columnWidths={columnWidths}
+                    readOnly={true}
+                  />
+                </thead>
+                <tbody className="">
+                  {loading ? (
+                    <div className="w-full h-[600px] flex top-[200px] relative left-[600px]">
+                      <Spinner design={"!h-[60px] !w-[60px]"} />
+                    </div>
+                  ) : (
+                    <>
+                      {tasks.map((item, index) => (
+                        <RowTable
+                          key={index}
+                          listItems={item}
+                          columnWidths={columnWidths}
+                          stateRow={stateRow}
+                          handleChange={handleChange}
+                          readOnly={true}
+                          newTaskAdd={newTaskAdd}
+                          setNewTaskAdd={setNewTaskAdd}
+                          setStateRow={setStateRow}
+                        />
+                      ))}
+                    </>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
-      {activeTab === 4 && (
+      {(activeTab === 4 || activeTab === 5) && (
         <div className="flex justify-end">
           <Pagination
             setTasks={setTasks}

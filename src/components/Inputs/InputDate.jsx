@@ -28,13 +28,18 @@ const InputDate = ({
   useEffect(() => {
     if (fieldReset) {
       setSelectedDate(null);
-      setUpdateState(null);
+      if (setUpdateState) {
+        setUpdateState(null);
+      }
     }
   }, [fieldReset]);
 
   const handleDate = async (date, filter) => {
     setSelectedDate(date);
-    setUpdateState(date.toISOString());
+    if (setUpdateState) {
+      setUpdateState(date.toISOString());
+    }
+
     const formattedDate = date.toISOString();
     if (handleChange) {
       handleChange({

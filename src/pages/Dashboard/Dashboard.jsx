@@ -25,7 +25,7 @@ const Dashboard = () => {
       return () => clearTimeout(timer);
     }
   }, [tooltipSuccess, tooltipError]);
-
+  console.log(currentWeek);
   useEffect(() => {
     // Activar indicador de carga
     ("2024-02-28T00:00:00");
@@ -33,7 +33,7 @@ const Dashboard = () => {
       try {
         const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
         const clientsEndpoint = `${baseUrl}Customer`;
-        const dashBoardEndpoint = `${baseUrl}Dashboard?reporte=${1}&startDate=${"2024-03-01T00:00:00"}&endDate=${"2024-03-31T00:00:00"}`;
+        const dashBoardEndpoint = `${baseUrl}Dashboard?reporte=${1}&startDate=${`${currentWeek[0]}T00:00:00`}&endDate=${`${currentWeek[1]}T00:00:00`}`;
         const activitiesEndpoint = `${baseUrl}Activity`;
         const processesEndpoint = `${baseUrl}Process?intask=true`;
         const currentWeekEndpoint = `${baseUrl}Dashboard/CurrentWeek`;

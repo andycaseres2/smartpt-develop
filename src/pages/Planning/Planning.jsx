@@ -10,8 +10,13 @@ import WarningCircle from "../../assets/Icons/WarningCircle";
 import { userStore } from "../../store/userStore";
 
 const Planning = () => {
-  const { setProcesses, setClients, setActivities, setEmployees } =
-    stateStore();
+  const {
+    setProcesses,
+    setClients,
+    setActivities,
+    setEmployees,
+    setWorkerGroups,
+  } = stateStore();
   const { token, user } = userStore();
   const [tasks, setTasks] = useState([]);
   const [isNewTask, setIsNewTask] = useState(false);
@@ -47,6 +52,10 @@ const Planning = () => {
         const paginationsEndpoint = `${baseUrl}FormattedTask/Pages`;
         const currentWeekEndpoint = `${baseUrl}FormattedTask/CurrentWeek`;
         const employeesEndpoint = `${baseUrl}Employee`;
+        const workerGroupsEndpoint = `${baseUrl}WorkgroupNamed`;
+
+        const workerGroupsData = await getData(workerGroupsEndpoint, token);
+        setWorkerGroups(workerGroupsData);
 
         const employeesData = await getData(employeesEndpoint, token);
         setEmployees(employeesData);
