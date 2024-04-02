@@ -273,8 +273,19 @@ const AdminPlanning = ({
       let tasksEndpoint = "";
       let initialOptions = {};
 
-      if (tab === 4 || tab === 5) {
+      if (tab === 4) {
         tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
+        initialOptions = {
+          client: "Clientes",
+          activity: "Actividad",
+          process: "Proceso",
+        };
+        setCancelEdit(true);
+        setUrlBase(tasksEndpoint);
+        const tasksData = await getData(tasksEndpoint, token);
+        setTasks(tasksData);
+      } else if (tab === 5) {
+        tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&consolidatedWorkgroup=true`;
         initialOptions = {
           client: "Clientes",
           activity: "Actividad",
@@ -618,8 +629,10 @@ const AdminPlanning = ({
     let tasksEndpoint = "";
     if (activeTab === 3) {
       tasksEndpoint = `${baseUrl}FormattedTask?page=1&size=100&IdEmployee=${user.id}`;
-    } else if (activeTab === 4 || activeTab === 5) {
+    } else if (activeTab === 4) {
       tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&IdEmployee=${user.id}`;
+    } else if (activeTab === 5) {
+      tasksEndpoint = `${baseUrl}FormattedTask?consolidated=true&page=1&size=10&consolidatedWorkgroup=true`;
     }
     setUrlBase(tasksEndpoint);
     try {

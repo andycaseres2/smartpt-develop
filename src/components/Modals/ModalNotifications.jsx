@@ -4,6 +4,9 @@ import NotificationItem from "../Notifications/NotificationItem";
 import NotificationsTab from "../Tabs/NotificationsTab";
 import { putData } from "../../services/putData";
 import { userStore } from "../../store/userStore";
+import { getData } from "../../services/getData";
+import { postData } from "../../services/postData";
+
 // import NotificationItemBudget from "../Notifications/NotificationItemBudget";
 // import { useLocation } from "react-router-dom";
 
@@ -15,7 +18,7 @@ const ModalNotifications = ({
   setRealTime,
 }) => {
   const [activeTab, setActiveTab] = useState(1);
-  const { token } = userStore();
+  const { token, user } = userStore();
 
   const tabs = [
     { id: 1, label: "Pendiente" },
@@ -91,9 +94,48 @@ const ModalNotifications = ({
     }
   };
 
+  async function createTaskFromNotification(notification) {
+    try {
+      const urlBase = import.meta.env.VITE_REACT_APP_URL_BASE;
+      const taskEndpoint = await `${urlBase}Task/${notification.idtask}`;
+      const task = await getData(taskEndpoint, token);
+
+      // Verificar si la tarea existe y tiene la información necesaria
+      if (task) {
+        // Obtener el objeto stateRow
+        let body = task;
+
+        // Eliminar el id del objeto si existe
+        if ("id" in body) {
+          delete body.id;
+        }
+
+        // Agregar la propiedad 'IdEmployeeAsigned' con el valor 1 al objeto
+        body.idemployeeasigned = user.id;
+
+        // Definir la URL base
+        const baseUrl = import.meta.env.VITE_REACT_APP_URL_BASE;
+
+        // Construir la URL del endpoint para las tareas
+        const tasksEndpoint = `${baseUrl}Task`;
+
+        // Enviar los datos modificados al servidor utilizando la función postData
+        await postData(tasksEndpoint, body, token);
+      } else {
+        console.error(
+          "La tarea seleccionada no contiene la información necesaria."
+        );
+      }
+    } catch (error) {
+      console.error("Error al crear la tarea:", error);
+    }
+  }
+
   const handleAcceptSelectedTasks = async () => {
     try {
       for (const notification of selectedNotifications) {
+        // Crear una nueva tarea basada en la tarea seleccionada
+        await createTaskFromNotification(notification);
         await handleAceptTask(notification);
       }
       // Limpia las notificaciones seleccionadas después de asignarlas

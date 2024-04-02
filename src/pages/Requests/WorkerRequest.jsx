@@ -21,7 +21,6 @@ const WorkerRequest = ({
   totalPages,
   setTooltipSuccess,
   setTooltipError,
-  loading,
   setLoading,
   setRealTime,
   columnWidths,
@@ -37,6 +36,7 @@ const WorkerRequest = ({
     designPieces,
     setCancelEdit,
   } = stateStore();
+  const { token, user } = userStore();
   const [stateRow, setStateRow] = useState({});
   const [updateActivities, setUpdateActivities] = useState([]);
   const [initialOptionClient, setInitialOptionClient] = useState("Cliente");
@@ -47,7 +47,6 @@ const WorkerRequest = ({
       import.meta.env.VITE_REACT_APP_URL_BASE
     }FormattedDesignRequest?page=1&size=100&IdEmployee=${user.id}`);
   const [fieldReset, setFieldReset] = useState(false);
-  const { token, user } = userStore();
 
   useEffect(() => {
     if (fieldReset) {
